@@ -1,0 +1,3174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Report Payroll Raja Emas Indonesia</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- PapaParse CDN for parsing CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- SheetJS (xlsx) CDN for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- PptxGenJS CDN for PowerPoint Export -->
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #fcfbfa 0%, #fefce8 50%, #f8fafc 100%);
+        background-attachment: fixed;
+    }
+    .login-bg {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        background-attachment: fixed;
+    }
+    .card-shadow {
+        box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(251, 191, 36, 0.15);
+    }
+    .gold-border {
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .gold-glow:focus-within {
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+        border-color: #f59e0b;
+    }
+    .pulse-live {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .4; }
+    }
+</style>
+</head>
+<body class="text-slate-800">
+
+<!-- ================= SECTION 1: FORM LOGIN ================= -->
+<div id="login-section" class="min-h-screen login-bg pt-12 md:pt-16 pb-12 px-4 flex justify-center">
+    <div class="w-full max-w-md bg-slate-900/90 rounded-2xl p-6 md:p-8 gold-border shadow-2xl backdrop-blur-sm self-start">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center p-3 bg-slate-950 border border-amber-500/40 rounded-2xl mb-4 shadow-inner">
+                <div class="text-left leading-tight px-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-crown text-amber-400 text-lg"></i>
+                        <span class="text-white font-extrabold tracking-wider text-lg">RAJA EMAS<span class="text-amber-400"> INDONESIA</span></span>
+                    </div>
+                    <span class="text-[10px] text-amber-200 tracking-wider block italic font-medium">"Terima Emas Harga Tinggi"</span>
+                </div>
+            </div>
+            <h2 class="text-xl font-bold text-white tracking-wide">Portal Report Payroll Raja Emas Indonesia</h2>
+            <p class="text-xs text-slate-400 mt-1">Silakan masuk untuk mengakses laporan penggajian</p>
+        </div>
+
+        <div id="error-alert" class="hidden mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/40 text-rose-400 text-xs text-center flex items-center justify-center gap-2">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>Username atau Password salah!</span>
+        </div>
+
+        <form onsubmit="handleLogin(event)" class="space-y-5">
+            <div>
+                <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-2">Username</label>
+                <div class="relative flex items-center gold-glow rounded-xl border border-slate-700 bg-slate-950/70 transition-all">
+                    <span class="pl-4 text-slate-400"><i class="fa-solid fa-user text-sm"></i></span>
+                    <input type="text" id="username" required placeholder="Masukkan username" 
+                        class="w-full bg-transparent py-3 px-3 text-sm text-white placeholder-slate-500 focus:outline-none">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-2">Password</label>
+                <div class="relative flex items-center gold-glow rounded-xl border border-slate-700 bg-slate-950/70 transition-all">
+                    <span class="pl-4 text-slate-400"><i class="fa-solid fa-lock text-sm"></i></span>
+                    <input type="password" id="password" required placeholder="Masukkan password" 
+                        class="w-full bg-transparent py-3 px-3 text-sm text-white placeholder-slate-500 focus:outline-none">
+                    <button type="button" onclick="togglePassword()" class="pr-4 text-slate-400 hover:text-amber-400 transition-colors focus:outline-none">
+                        <i id="toggle-icon" class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" 
+                class="w-full mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-200 flex items-center justify-center gap-2">
+                <span>MASUK</span>
+                <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+            </button>
+        </form>
+
+        <div class="mt-8 text-center border-t border-slate-800 pt-4">
+            <p class="text-[11px] text-slate-500">&copy; PT Raja Emas Indonesia. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ================= SECTION 2: AREA DASHBOARD FULL LAYAR ================= -->
+<div id="dashboard-section" class="hidden min-h-screen flex flex-col md:flex-row">
+    
+    <!-- SIDEBAR MENU -->
+    <aside class="w-full md:w-72 bg-slate-900 border-r border-slate-800 p-4 md:p-6 flex flex-col justify-between shrink-0 shadow-xl">
+        <div class="space-y-6">
+            <!-- Brand Header -->
+            <div class="p-3 bg-slate-950 border border-amber-500/30 rounded-2xl shadow-inner flex items-center gap-3">
+                <i class="fa-solid fa-crown text-amber-400 text-xl"></i>
+                <div>
+                    <span class="text-white font-extrabold tracking-wider text-sm block">RAJA EMAS<span class="text-amber-400"> INDONESIA</span></span>
+                    <span class="text-[9px] text-amber-200 tracking-wider block italic">"Terima Emas Harga Tinggi"</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="space-y-1.5">
+                <button onclick="switchSubMenu('dashboard')" id="btn-tab-dashboard" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md">
+                    <i class="fa-solid fa-chart-pie text-sm text-slate-950"></i> Dashboard Utama
+                </button>
+                <button onclick="switchSubMenu('summary')" id="btn-tab-summary" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-file-invoice-dollar text-sm text-amber-400"></i> Payroll Summary
+                </button>
+                <button onclick="switchSubMenu('allowance')" id="btn-tab-allowance" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-gift text-sm text-emerald-400"></i> Allowance & Benefit
+                </button>
+                <button onclick="switchSubMenu('kewajiban')" id="btn-tab-kewajiban" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-file-invoice text-sm text-rose-400"></i> Kewajiban (Potongan)
+                </button>
+                <button onclick="switchSubMenu('loan')" id="btn-tab-loan" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-hand-holding-dollar text-sm text-orange-400"></i> Loan (Pinjaman)
+                </button>
+                <button onclick="switchSubMenu('overtime')" id="btn-tab-overtime" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-business-time text-sm text-purple-400"></i> Overtime Cost
+                </button>
+                <button onclick="switchSubMenu('cost-analysis')" id="btn-tab-cost-analysis" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-chart-column text-sm text-indigo-400"></i> Cost Analysis
+                </button>
+                <button onclick="switchSubMenu('timeline')" id="btn-tab-timeline" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-clock-rotate-left text-sm text-cyan-400"></i> Payroll Timeline
+                </button>
+                <button onclick="switchSubMenu('adjustment')" id="btn-tab-adjustment" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-comments text-sm text-amber-400"></i> Payroll Complainan
+                </button>
+                <button onclick="switchSubMenu('database')" id="btn-tab-database" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-database text-sm text-sky-400"></i> Database Payroll
+                </button>
+                <button onclick="switchSubMenu('laporan')" id="btn-tab-laporan" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-amber-500/20">
+                    <i class="fa-solid fa-file-excel text-sm text-emerald-400"></i> Sub Menu Laporan (Excel)
+                </button>
+                <button onclick="switchSubMenu('ppt')" id="btn-tab-ppt" 
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-indigo-500/30">
+                    <i class="fa-solid fa-file-powerpoint text-sm text-indigo-400"></i> Laporan PPT Bulanan
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer / Logout -->
+        <div class="pt-6 border-t border-slate-800">
+            <button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/40 text-rose-400 hover:bg-rose-500 hover:text-white px-4 py-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout & Kembali ke Login
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto">
+        
+        <!-- TOP BAR -->
+        <div class="bg-white rounded-2xl p-5 md:p-6 card-shadow space-y-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-amber-100">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-900">Portal Report Payroll</h1>
+                    <p class="text-xs md:text-sm text-slate-500 mt-0.5">PT Raja Emas Indonesia &bull; Laporan Realtime Penggajian</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 bg-amber-50/50 border border-amber-200/60 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-live"></span>
+                        <span id="last-update">Memuat Data...</span>
+                    </div>
+                    <button id="btn-refresh" onclick="loadAllData()" title="Refresh Data" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition-colors border border-amber-200/50">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTER, SEARCH & CONTROLS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-1">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Cari Karyawan</label>
+                    <div class="relative flex items-center">
+                        <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
+                        <input type="text" id="search-query" oninput="updateDashboard()" placeholder="Nama atau ID..." 
+                            class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Tahun</label>
+                    <select id="filter-tahun" onchange="updateDashboard()" class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl p-2.5">
+                        <option value="ALL">Semua Tahun</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Periode Bulan</label>
+                    <select id="filter-periode" onchange="updateDashboard()" class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl p-2.5">
+                        <option value="ALL">Semua Bulan</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Perusahaan</label>
+                    <select id="filter-perusahaan" onchange="updateDashboard()" class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl p-2.5">
+                        <option value="ALL">Semua Perusahaan</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Divisi</label>
+                    <select id="filter-divisi" onchange="updateDashboard()" class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl p-2.5">
+                        <option value="ALL">Semua Divisi</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="resetFilters()" class="w-full bg-amber-50/60 hover:bg-amber-100 text-amber-800 font-medium text-xs p-2.5 rounded-xl transition-colors border border-amber-200/60 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 1: DASHBOARD UTAMA ================= -->
+        <div id="tab-content-dashboard" class="space-y-6">
+            <!-- BARIS 1: DEMOGRAFI -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-4 card-shadow flex items-center gap-4">
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-200/40"><i class="fa-solid fa-users text-xl"></i></div>
+                    <div><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Karyawan</p><h3 id="metric-karyawan" class="text-xl font-bold text-slate-800">0 Orang</h3></div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow flex items-center gap-4">
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-200/40"><i class="fa-solid fa-building text-xl"></i></div>
+                    <div><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Perusahaan</p><h3 id="metric-total-perusahaan" class="text-xl font-bold text-slate-800">0</h3></div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow flex items-center gap-4">
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-200/40"><i class="fa-solid fa-sitemap text-xl"></i></div>
+                    <div><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Divisi</p><h3 id="metric-total-divisi" class="text-xl font-bold text-slate-800">0</h3></div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow flex items-center gap-4">
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-200/40"><i class="fa-solid fa-code-branch text-xl"></i></div>
+                    <div><p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Cabang</p><h3 id="metric-total-cabang" class="text-xl font-bold text-slate-800">0</h3></div>
+                </div>
+            </div>
+
+            <!-- BARIS 2: TOTAL GAPOK, TOTAL TUNJANGAN, TOTAL LEMBUR, TOTAL KEKURANGAN BULAN LALU -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-blue-600 overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Gapok</p>
+                    <h3 id="metric-gapok" class="text-base sm:text-lg font-bold text-slate-800 mt-2 truncate">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-emerald-500 overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Tunjangan</p>
+                    <h3 id="metric-tunjangan" class="text-base sm:text-lg font-bold text-emerald-600 mt-2 truncate">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-purple-500 overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Lembur</p>
+                    <h3 id="metric-lemburan" class="text-base sm:text-lg font-bold text-purple-600 mt-2 truncate">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-amber-400 overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Kekurangan Bulan Lalu</p>
+                    <h3 id="metric-kekurangan" class="text-base sm:text-lg font-bold text-amber-600 mt-2 truncate">Rp 0</h3>
+                </div>
+            </div>
+
+            <!-- BARIS 3: TOTAL GROSS, TOTAL KEWAJIBAN, TOTAL THP -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-amber-500 overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Gross</p>
+                    <h3 id="metric-gross" class="text-base sm:text-xl font-bold text-slate-800 mt-2 truncate">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-rose-500 overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Kewajiban</p>
+                    <h3 id="metric-kewajiban" class="text-base sm:text-xl font-bold text-rose-600 mt-2 truncate">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-amber-600 bg-amber-50/10 overflow-hidden">
+                    <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">Total THP</p>
+                    <h3 id="metric-thp" class="text-base sm:text-xl font-bold text-amber-900 mt-2 truncate">Rp 0</h3>
+                </div>
+            </div>
+
+            <!-- BARIS 4: KOLOM KHUSUS DATA LOAN -->
+            <div class="bg-white rounded-2xl p-5 card-shadow border-t-4 border-t-orange-500 space-y-4">
+                <div class="flex items-center justify-between border-b border-orange-100 pb-3">
+                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-dollar text-orange-500 text-base"></i> Ringkasan Data Pinjaman Karyawan (Loan)
+                    </h2>
+                    <span class="text-[11px] bg-orange-50 text-orange-700 px-3 py-1 rounded-full font-semibold border border-orange-200/60">Sumber: Database Loan</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-orange-50/40 rounded-xl p-4 border border-orange-200/60 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Pinjaman</p>
+                            <h3 id="metric-total-loan-dashboard" class="text-xl sm:text-2xl font-bold text-orange-600 mt-1">Rp 0</h3>
+                            <p class="text-[10px] text-slate-500 mt-1 italic"></p>
+                        </div>
+                        <div class="p-3 bg-orange-100 text-orange-600 rounded-xl"><i class="fa-solid fa-money-bill-wave text-xl"></i></div>
+                    </div>
+                    <div class="bg-amber-50/40 rounded-xl p-4 border border-amber-200/60 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Karyawan yang Meminjam</p>
+                            <h3 id="metric-total-loan-employees" class="text-xl sm:text-2xl font-bold text-slate-800 mt-1">0 Orang</h3>
+                            <p class="text-[10px] text-slate-500 mt-1 italic"></p>
+                        </div>
+                        <div class="p-3 bg-amber-100 text-amber-600 rounded-xl"><i class="fa-solid fa-user-check text-xl"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARIS 5: TABEL TOP 5 THP PALING TINGGI PER DIVISI -->
+            <div class="bg-white rounded-2xl p-5 card-shadow">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-500"></i> Top 5 THP Paling Tinggi per Divisi 
+                    </h2>
+                    <span class="text-xs text-slate-400 font-medium">Peringkat 5 Divisi Tertinggi</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-700">
+                        <thead class="bg-amber-50/70 text-amber-900 font-bold uppercase tracking-wider border-b border-amber-200/60">
+                            <tr>
+                                <th class="p-3 w-16 text-center">Rank</th>
+                                <th class="p-3">Nama Divisi</th>
+                                <th class="p-3 text-center">Jumlah Karyawan</th>
+                                <th class="p-3 text-right">Total THP</th>
+                                <th class="p-3 text-right">Kontribusi (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top5-thp-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data peringkat THP...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- BARIS 6: TOP 5 DIVISI DENGAN LEMBUR TERBANYAK & TOP 5 KARYAWAN LEMBUR PALING BANYAK -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl p-5 card-shadow flex flex-col justify-between">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-bar text-indigo-600"></i> Top 5 Divisi dengan Lembur Terbanyak
+                    </h2>
+                    <div class="relative w-full h-[320px]"><canvas id="chartOvertimeDivision"></canvas></div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow flex flex-col justify-between">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-business-time text-purple-600"></i> Top 5 Karyawan Lembur Paling Banyak
+                    </h2>
+                    <div class="relative w-full h-[320px]"><canvas id="chartOvertime"></canvas></div>
+                </div>
+            </div>
+
+            <!-- BARIS 7: TREN PINJAMAN PER BULAN -->
+            <div class="bg-white rounded-2xl p-5 card-shadow flex flex-col justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-orange-500"></i> Tren Pinjaman per Bulan
+                    </h2>
+                </div>
+                <div class="relative w-full h-[320px]"><canvas id="chartLoanTrendLine"></canvas></div>
+            </div>
+
+            <!-- BARIS 8: RINCIAN BENEFIT / TUNJANGAN & TOTAL BIAYA -->
+            <div class="bg-white rounded-2xl p-5 card-shadow">
+                <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-gift text-emerald-500"></i> Rincian Benefit / Tunjangan & Total Biaya
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="relative w-full h-[300px] md:col-span-2"><canvas id="chartBenefit"></canvas></div>
+                    <div class="bg-emerald-50/30 p-4 rounded-xl border border-emerald-200/30 space-y-3" id="benefit-list"></div>
+                </div>
+            </div>
+
+            <!-- BARIS 9: RINCIAN KEWAJIBAN & TOTAL BIAYA -->
+            <div class="bg-white rounded-2xl p-5 card-shadow">
+                <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-rose-500"></i> Rincian Kewajiban & Total Biaya
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="relative w-full h-[300px] md:col-span-2"><canvas id="chartKewajiban"></canvas></div>
+                    <div class="bg-rose-50/30 p-4 rounded-xl border border-rose-200/30 space-y-3" id="kewajiban-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 2: PAYROLL SUMMARY ================= -->
+        <div id="tab-content-summary" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-amber-500">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Payroll (Bulan Ini)</p>
+                    <h3 id="summary-current-total" class="text-2xl font-bold text-amber-700 mt-2">Rp 0</h3>
+                    <p class="text-[10px] text-amber-600 mt-1 italic font-medium"><i class="fa-solid fa-circle-info mr-1"></i>Sesuai Periode Bulan Aktif</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-slate-400">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Payroll (Bulan Lalu)</p>
+                    <h3 id="summary-prev-total" class="text-2xl font-bold text-slate-700 mt-2">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-indigo-500 flex flex-col justify-between">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tren vs Periode Lalu</p>
+                    <div id="summary-trend-badge" class="mt-2 text-sm font-bold">-</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice-dollar text-amber-500"></i> Ringkasan Penggajian per Karyawan
+                    </h2>
+                    <span id="summary-count" class="text-xs bg-amber-50 text-amber-700 px-3 py-1 rounded-full font-semibold border border-amber-200/50">0 Records</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-700">
+                        <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">ID Karyawan</th>
+                                <th class="p-3">Nama Karyawan</th>
+                                <th class="p-3">Perusahaan</th>
+                                <th class="p-3">Divisi </th>
+                                <th class="p-3">Posisi </th>
+                                <th class="p-3">Cabang</th>
+                                <th class="p-3 text-right">Total Salary/Gapok</th>
+                                <th class="p-3 text-right">Total Lembur</th>
+                                <th class="p-3 text-right">Total Tunjangan</th>
+                                <th class="p-3 text-right">Total Kewajiban</th>
+                                <th class="p-3 text-right">Total Gross</th>
+                                <th class="p-3 text-right">THP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="12" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 3: ALLOWANCE & BENEFIT ================= -->
+        <div id="tab-content-allowance" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-emerald-500">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Benefit (Bulan Ini)</p>
+                    <h3 id="allowance-current-total" class="text-2xl font-bold text-emerald-700 mt-2">Rp 0</h3>
+                    <p class="text-[10px] text-emerald-600 mt-1 italic font-medium"><i class="fa-solid fa-circle-info mr-1"></i>Sesuai Periode Bulan Aktif</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-slate-400">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Benefit (Bulan Lalu)</p>
+                    <h3 id="allowance-prev-total" class="text-2xl font-bold text-slate-700 mt-2">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-indigo-500 flex flex-col justify-between">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tren vs Periode Lalu</p>
+                    <div id="allowance-trend-badge" class="mt-2 text-sm font-bold">-</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-gift text-emerald-600"></i> Rincian Allowance & Benefit Karyawan
+                    </h2>
+                    <span id="allowance-count" class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-semibold border border-emerald-200/50">0 Records</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-700 whitespace-nowrap">
+                        <thead id="allowance-table-head" class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200"></thead>
+                        <tbody id="allowance-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="17" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 4: KEWAJIBAN ================= -->
+        <div id="tab-content-kewajiban" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-rose-500">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Kewajiban (Bulan Ini)</p>
+                    <h3 id="kewajiban-current-total" class="text-2xl font-bold text-rose-700 mt-2">Rp 0</h3>
+                    <p class="text-[10px] text-rose-600 mt-1 italic font-medium"><i class="fa-solid fa-circle-info mr-1"></i>Sesuai Periode Bulan Aktif</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-slate-400">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Kewajiban (Bulan Lalu)</p>
+                    <h3 id="kewajiban-prev-total" class="text-2xl font-bold text-slate-700 mt-2">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-indigo-500 flex flex-col justify-between">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tren vs Periode Lalu</p>
+                    <div id="kewajiban-trend-badge" class="mt-2 text-sm font-bold">-</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice text-rose-600"></i> Rincian Kewajiban & Potongan Karyawan
+                    </h2>
+                    <span id="kewajiban-count" class="text-xs bg-rose-50 text-rose-700 px-3 py-1.5 rounded-full font-semibold border border-rose-200/50">0 Records</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-700 whitespace-nowrap">
+                        <thead id="kewajiban-table-head" class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200"></thead>
+                        <tbody id="kewajiban-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="12" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU: LOAN (PINJAMAN) ================= -->
+        <div id="tab-content-loan" class="hidden space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-orange-500">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Kewajiban / Pinjaman </p>
+                    <h3 id="loan-total-pinjaman" class="text-xl font-bold text-slate-800 mt-2">Rp 0</h3>
+                    <p class="text-[10px] text-orange-600 mt-1 italic font-medium"><i class="fa-solid fa-circle-info mr-1"></i>Sesuai Filter Bulan Aktif</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-rose-500">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Sisa Pinjaman</p>
+                    <h3 id="loan-sisa-pinjaman" class="text-xl font-bold text-rose-700 mt-2">Rp 0</h3>
+                    <p class="text-[10px] text-rose-600 mt-1 italic font-medium"><i class="fa-solid fa-circle-info mr-1"></i>Sesuai Filter Bulan Aktif</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-emerald-500">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Sudah Dibayar </p>
+                    <h3 id="loan-sudah-dibayar" class="text-xl font-bold text-emerald-700 mt-2">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-indigo-500 flex flex-col justify-between">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tren Pinjaman vs Bln Lalu</p>
+                    <div id="loan-trend-badge" class="mt-2 text-sm font-bold">-</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-dollar text-orange-500"></i> Database Pinjaman Karyawan (Loan)
+                    </h2>
+                    <div class="flex items-center gap-2">
+                        <span id="loan-count" class="text-xs bg-orange-50 text-orange-700 px-3 py-1.5 rounded-full font-semibold border border-orange-200/50">0 Records</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-[550px]">
+                    <table class="w-full text-left text-xs text-slate-700 whitespace-nowrap">
+                        <thead class="sticky top-0 bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200 z-10">
+                            <tr>
+                                <th class="p-3">Nomor</th>
+                                <th class="p-3">Nama Karyawan</th>
+                                <th class="p-3">NIP </th>
+                                <th class="p-3">Divisi </th>
+                                <th class="p-3">Posisi </th>
+                                <th class="p-3 text-center">Bulan / Periode</th>
+                                <th class="p-3 text-right">Total Kewajiban / Pinjaman </th>
+                                <th class="p-3 text-right">Total Pembayaran Setahun </th>
+                                <th class="p-3 text-center">Total Tenor</th>
+                                <th class="p-3 text-right">Angsuran / Bulan</th>
+                                <th class="p-3 text-center">Sisa Tenor</th>
+                                <th class="p-3 text-right">Sisa Pinjaman</th>
+                                <th class="p-3 text-center">Status </th>
+                            </tr>
+                        </thead>
+                        <tbody id="loan-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="13" class="p-4 text-center text-slate-400">Memuat data loan...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 5: OVERTIME COST ================= -->
+        <div id="tab-content-overtime" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-purple-500">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Biaya Lembur (Bulan Ini)</p>
+                    <h3 id="ot-current-total" class="text-2xl font-bold text-purple-700 mt-2">Rp 0</h3>
+                    <p class="text-[10px] text-purple-600 mt-1 italic font-medium"><i class="fa-solid fa-circle-info mr-1"></i>Sesuai Periode Bulan Aktif</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-slate-400">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Biaya Lembur (Bulan Lalu)</p>
+                    <h3 id="ot-prev-total" class="text-2xl font-bold text-slate-700 mt-2">Rp 0</h3>
+                </div>
+                <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-amber-500 flex flex-col justify-between">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tren vs Periode Lalu</p>
+                    <div id="ot-trend-badge" class="mt-2 text-sm font-bold">-</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-business-time text-purple-600"></i> Daftar Karyawan Lembur
+                    </h2>
+                    <span id="ot-employee-count" class="text-xs bg-purple-50 text-purple-700 px-3 py-1 rounded-full font-semibold border border-purple-200/50">0 Karyawan</span>
+                </div>
+                <div class="overflow-x-auto max-h-[550px]">
+                    <table class="w-full text-left text-xs text-slate-700">
+                        <thead class="sticky top-0 bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200 z-10">
+                            <tr>
+                                <th class="p-3">ID Karyawan</th>
+                                <th class="p-3">Nama Karyawan</th>
+                                <th class="p-3">Perusahaan</th>
+                                <th class="p-3">Posisi</th>
+                                <th class="p-3">Divisi </th>
+                                <th class="p-3 text-right">Nominal Lembur</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ot-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 6: DATABASE PAYROLL ================= -->
+        <div id="tab-content-database" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-database text-amber-600"></i> Database Mentah Penggajian
+                    </h2>
+                </div>
+                <div class="overflow-x-auto max-h-[550px]">
+                    <table class="w-full text-left text-xs text-slate-700 whitespace-nowrap">
+                        <thead id="database-table-head" class="sticky top-0 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-300"></thead>
+                        <tbody id="database-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 7: COST ANALYSIS ================= -->
+        <div id="tab-content-cost-analysis" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-4">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-amber-500"></i> Analisis Biaya Penggajian per Divisi 
+                        </h2>
+                        <p class="text-xs text-slate-500">Analisis total gapok, tunjangan, kewajiban, lembur, dan THP per divisi.</p>
+                    </div>
+                    <div class="w-full md:w-72">
+                        <div class="relative flex items-center">
+                            <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
+                            <input type="text" id="cost-search-filter" onkeyup="filterCostAnalysisTable()" placeholder="Cari nama divisi..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-700">
+                        <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Nama Divisi </th>
+                                <th class="p-3 text-center">Jumlah Karyawan</th>
+                                <th class="p-3 text-right">Total Gapok </th>
+                                <th class="p-3 text-right">Total Tunjangan</th>
+                                <th class="p-3 text-right">Total Kewajiban</th>
+                                <th class="p-3 text-right">Total Lemburan</th>
+                                <th class="p-3 text-right">Total THP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cost-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 8: PAYROLL TIMELINE ================= -->
+        <div id="tab-content-timeline" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-4">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-cyan-600"></i> Laporan Payroll Timeline
+                        </h2>
+                        <p class="text-xs text-slate-500">Data realtime tahapan timeline payroll dan status SLA dari Google Sheets.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="timeline-record-count" class="text-xs bg-cyan-50 text-cyan-700 px-3 py-1.5 rounded-full font-semibold border border-cyan-200/50">0 Data</span>
+                        <button onclick="loadTimelineRecords()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+                        </button>
+                        <button onclick="exportTimelineToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="relative flex items-center">
+                        <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
+                        <input type="text" id="timeline-search-filter" onkeyup="filterTimelineTable()" placeholder="Cari kegiatan, divisi, PIC, atau kata kunci..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+                    <div>
+                        <select id="timeline-status-filter" onchange="filterTimelineTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs p-2.5">
+                            <option value="">-- Semua Status SLA --</option>
+                            <option value="sla">SLA</option>
+                            <option value="oversla">OverSLA</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-[550px]">
+                    <table class="w-full text-left text-xs text-slate-700 whitespace-nowrap">
+                        <thead id="timeline-table-head" class="sticky top-0 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-300"></thead>
+                        <tbody id="timeline-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data payroll timeline...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 9: PAYROLL COMPLAINAN ================= -->
+        <div id="tab-content-adjustment" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-4">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-comments text-amber-500"></i> Laporan Payroll Complainan
+                        </h2>
+                        <p class="text-xs text-slate-500">Data realtime komplain dan penyesuaian penggajian dari Google Sheets.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="adj-record-count" class="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full font-semibold border border-amber-200/50">0 Data</span>
+                        <button onclick="loadAdjustmentRecords()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+                        </button>
+                        <button onclick="exportAdjustmentToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="relative flex items-center">
+                        <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
+                        <input type="text" id="adj-search-filter" onkeyup="filterAdjustmentTable()" placeholder="Cari NIP, Nama Karyawan, atau PIC..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+                    <div>
+                        <select id="adj-status-filter" onchange="filterAdjustmentTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs p-2.5">
+                            <option value="">-- Semua Status --</option>
+                            <option value="open">Open</option>
+                            <option value="proses">Proses</option>
+                            <option value="selesai">Selesai</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-[550px]">
+                    <table class="w-full text-left text-xs text-slate-700 whitespace-nowrap">
+                        <thead id="adj-table-head" class="sticky top-0 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-300"></thead>
+                        <tbody id="adj-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data complainan...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 10: LAPORAN EXCEL ================= -->
+        <div id="tab-content-laporan" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-6">
+                <div class="pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel text-emerald-600"></i> Pusat Download Laporan Excel (.xlsx)
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Pilih laporan di bawah ini untuk mengunduh data langsung ke format Excel sesuai filter aktif.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-amber-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-file-invoice-dollar text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Payroll Summary</h3>
+                            <p class="text-xs text-slate-500 mt-1">Ringkasan lengkap penggajian seluruh karyawan sesuai filter aktif.</p>
+                        </div>
+                        <button onclick="downloadReportExcel('summary')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-emerald-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-gift text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Allowance & Benefit (H - Q)</h3>
+                            <p class="text-xs text-slate-500 mt-1">Rincian detail tunjangan dan benefit karyawan .</p>
+                        </div>
+                        <button onclick="downloadReportExcel('allowance')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-rose-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-file-invoice text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Kewajiban & Potongan</h3>
+                            <p class="text-xs text-slate-500 mt-1">Rincian potongan dan kewajiban pembayaran karyawan.</p>
+                        </div>
+                        <button onclick="downloadReportExcel('kewajiban')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-orange-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-hand-holding-dollar text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Laporan Loan (Pinjaman)</h3>
+                            <p class="text-xs text-slate-500 mt-1">Daftar pinjaman , total pembayaran , sisa pinjaman, divisi, posisi, dan status .</p>
+                        </div>
+                        <button onclick="downloadReportExcel('loan')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-purple-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-business-time text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Overtime Cost</h3>
+                            <p class="text-xs text-slate-500 mt-1">Daftar biaya lembur karyawan sesuai bulan aktif.</p>
+                        </div>
+                        <button onclick="downloadReportExcel('overtime')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-indigo-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-chart-column text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Cost Analysis per Divisi </h3>
+                            <p class="text-xs text-slate-500 mt-1">Analisis total gapok, tunjangan, kewajiban, lembur, dan THP per divisi.</p>
+                        </div>
+                        <button onclick="downloadReportExcel('cost')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-cyan-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-clock-rotate-left text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Payroll Timeline</h3>
+                            <p class="text-xs text-slate-500 mt-1">Laporan data tahapan timeline payroll dan status SLA.</p>
+                        </div>
+                        <button onclick="exportTimelineToExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-amber-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-comments text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Payroll Complainan / Adjustment</h3>
+                            <p class="text-xs text-slate-500 mt-1">Laporan data tiket komplain dan penyesuaian gaji.</p>
+                        </div>
+                        <button onclick="exportAdjustmentToExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                    <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-sky-400 transition-all">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-database text-lg"></i></div>
+                            <h3 class="font-bold text-slate-900 text-sm">Database Payroll Lengkap</h3>
+                            <p class="text-xs text-slate-500 mt-1">Seluruh data mentah penggajian dari Google Sheets.</p>
+                        </div>
+                        <button onclick="downloadReportExcel('database')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU 11: LAPORAN PPT BULANAN ================= -->
+        <div id="tab-content-ppt" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-6">
+                <div class="pb-3 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-file-powerpoint text-indigo-600"></i> Laporan PPT Bulanan & Presentasi Eksekutif
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Generate otomatis slide presentasi sesuai filter bulan aktif (Standar Korporat).</p>
+                    </div>
+                    <button type="button" onclick="downloadPPTX()" class="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold text-xs py-3 px-5 rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer z-20 relative">
+                        <i class="fa-solid fa-download"></i> Download PowerPoint (.pptx)
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="bg-indigo-50/40 border border-indigo-100 rounded-2xl p-5 space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">1</div>
+                        <h3 class="font-bold text-slate-900 text-sm">Sinkronisasi Filter Bulanan</h3>
+                        <p class="text-xs text-slate-600">Data pada slide PPT akan otomatis menarik nilai dari Periode Bulan yang dipilih di filter atas.</p>
+                    </div>
+                    <div class="bg-amber-50/40 border border-amber-100 rounded-2xl p-5 space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold">2</div>
+                        <h3 class="font-bold text-slate-900 text-sm">10 Bagian Eksekutif Lengkap</h3>
+                        <p class="text-xs text-slate-600">Mencakup Ringkasan, Demografi Perusahaan, Pendapatan, Potongan, Pinjaman (Loan), Analisis Lembur, Rekonsiliasi, dan Complainan.</p>
+                    </div>
+                    <div class="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-5 space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">3</div>
+                        <h3 class="font-bold text-slate-900 text-sm">Langsung Format .pptx</h3>
+                        <p class="text-xs text-slate-600">File diunduh dalam format asli Microsoft PowerPoint sehingga siap dipresentasikan ke Direksi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+    const VALID_USER = "hr payroll";
+    const VALID_PASS = "Rajaemas123";
+    
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpsZAJ9yP0vM6MJgNO_osGuXcTF-UJferbQ4Q6XNI3-UoM22o1IuozuiNrH8FR9TZvE3N7tvQ2YCil/pub?gid=1295374531&single=true&output=csv';
+    const LOAN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpsZAJ9yP0vM6MJgNO_osGuXcTF-UJferbQ4Q6XNI3-UoM22o1IuozuiNrH8FR9TZvE3N7tvQ2YCil/pub?gid=66273530&single=true&output=csv';
+    const COMPLAIN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpsZAJ9yP0vM6MJgNO_osGuXcTF-UJferbQ4Q6XNI3-UoM22o1IuozuiNrH8FR9TZvE3N7tvQ2YCil/pub?gid=1338364058&single=true&output=csv';
+    const TIMELINE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3MWeMMB3bGSEE46J_u-DEJ5sO1h07SqSv0nVLtxkgu-oUouO1KKV_oQ6Ha5wWqlYCPgyQD3hplgsR/pub?gid=1178281567&single=true&output=csv';
+
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+    }
+
+    let rawData = [];
+    let headerRow = [];
+    let rawLoanData = [];
+    let rawLoanHeaders = [];
+    
+    let allowanceIndices = [];
+    let allowanceHeaders = [];
+
+    let kewajibanIndices = [17, 18, 19, 20, 21, 22, 23];
+    let kewajibanHeaders = [];
+    
+    let rawComplainHeaders = [];
+    let localAdjustmentRecords = [];
+    let rawTimelineHeaders = [];
+    let localTimelineRecords = [];
+
+    let chartOvertimeInstance = null;
+    let chartOvertimeDivisionInstance = null;
+    let chartBenefitInstance = null;
+    let chartKewajibanInstance = null;
+    let chartLoanTrendLineInstance = null;
+    let cachedCostMap = {};
+
+    const monthsNameList = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
+    const standardMonthsOrder = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+    document.addEventListener("DOMContentLoaded", function() {
+        try {
+            localStorage.removeItem('isLoggedIn');
+            showLogin();
+        } catch (e) {
+            console.error("Initialization error:", e);
+            showLogin();
+        }
+    });
+
+    function switchSubMenu(tabName) {
+        try {
+            const tabs = ['dashboard', 'summary', 'allowance', 'kewajiban', 'loan', 'overtime', 'database', 'cost-analysis', 'timeline', 'adjustment', 'laporan', 'ppt'];
+            
+            tabs.forEach(tab => {
+                const contentEl = document.getElementById('tab-content-' + tab);
+                const btnEl = document.getElementById('btn-tab-' + tab);
+                if(!contentEl || !btnEl) return;
+
+                if (tab === tabName) {
+                    contentEl.classList.remove('hidden');
+                    if(tab === 'ppt') {
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all bg-indigo-600 text-white shadow-md";
+                    } else if(tab === 'laporan') {
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all bg-emerald-600 text-white shadow-md";
+                    } else {
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md";
+                    }
+                } else {
+                    contentEl.classList.add('hidden');
+                    if(tab === 'ppt') {
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-indigo-500/30";
+                    } else if(tab === 'laporan') {
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-amber-500/20";
+                    } else {
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white";
+                    }
+                }
+            });
+            updateDashboard();
+        } catch (err) {
+            console.error("switchSubMenu error:", err);
+        }
+    }
+
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggle-icon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+
+    function handleLogin(event) {
+        if (event) event.preventDefault();
+        try {
+            const usernameInput = document.getElementById('username').value.trim().toLowerCase();
+            const passwordInput = document.getElementById('password').value;
+            const errorAlert = document.getElementById('error-alert');
+
+            if (usernameInput === VALID_USER && passwordInput === VALID_PASS) {
+                if (errorAlert) errorAlert.classList.add('hidden');
+                localStorage.setItem('isLoggedIn', 'true');
+                showDashboard();
+            } else {
+                if (errorAlert) errorAlert.classList.remove('hidden');
+            }
+        } catch (err) {
+            console.error("Login error:", err);
+            alert("Terjadi kesalahan saat proses login.");
+        }
+    }
+
+    function handleLogout() {
+        try {
+            localStorage.removeItem('isLoggedIn');
+        } catch (e) {}
+        showLogin();
+    }
+
+    function showLogin() {
+        const loginSec = document.getElementById('login-section');
+        const dashSec = document.getElementById('dashboard-section');
+        if (loginSec) loginSec.classList.remove('hidden');
+        if (dashSec) dashSec.classList.add('hidden');
+    }
+
+    function showDashboard() {
+        const loginSec = document.getElementById('login-section');
+        const dashSec = document.getElementById('dashboard-section');
+        if (loginSec) loginSec.classList.add('hidden');
+        if (dashSec) dashSec.classList.remove('hidden');
+        loadAllData();
+    }
+
+    function loadAllData() {
+        loadData();
+        loadLoanData();
+        loadAdjustmentRecords();
+        loadTimelineRecords();
+    }
+
+    const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
+    const formatCompact = (num) => {
+        if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + ' M';
+        if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + ' Jt';
+        if (num >= 1e3) return (num / 1e3).toFixed(0) + ' Rb';
+        return num;
+    };
+
+    const parseNum = (val) => {
+        if (val === undefined || val === null) return 0;
+        let str = val.toString().trim();
+        if (str === '' || str === '-') return 0;
+        str = str.replace(/[^0-9.,-]/g, '');
+        if (!str) return 0;
+
+        if (/,\d{1,2}$/.test(str)) {
+            str = str.replace(/,\d{1,2}$/, '').replace(/\./g, '');
+        } else if (str.includes('.') && str.includes(',')) {
+            if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+                str = str.replace(/\./g, '').replace(',', '.');
+            } else {
+                str = str.replace(/,/g, '');
+            }
+        } else if ((str.match(/\./g) || []).length > 1) {
+            str = str.replace(/\./g, '');
+        } else if (str.match(/\.\d{3}$/)) {
+            str = str.replace(/\./g, '');
+        } else if ((str.match(/,/g) || []).length > 1) {
+            str = str.replace(/,/g, '');
+        } else if (str.match(/,\d{3}$/)) {
+            str = str.replace(/,/g, '');
+        } else if (str.includes(',')) {
+            str = str.replace(',', '.');
+        }
+        let n = parseFloat(str);
+        return isNaN(n) ? 0 : n;
+    };
+
+    function getEmployeeMetaMap() {
+        const empMetaMap = {};
+        rawData.forEach(r => {
+            const nip = r[3] ? r[3].trim().toLowerCase() : '';
+            if (nip && !empMetaMap[nip]) {
+                empMetaMap[nip] = {
+                    perusahaan: r[4] ? r[4].trim() : '-',
+                    divisi: r[27] ? r[27].trim() : (r[5] ? r[5].trim() : '-'),
+                    posisi: r[5] ? r[5].trim() : '-'
+                };
+            }
+        });
+        return empMetaMap;
+    }
+
+    function detectMonthIndexFromText(rawText) {
+        if (!rawText) return -1;
+        const text = rawText.toString().trim().toLowerCase();
+        if (!text || text === '-') return -1;
+
+        const monthPatterns = [
+            ['januari', 'january', 'jan'],
+            ['februari', 'february', 'feb'],
+            ['maret', 'march', 'mar'],
+            ['april', 'apr'],
+            ['mei', 'may'],
+            ['juni', 'june', 'jun'],
+            ['juli', 'july', 'jul'],
+            ['agustus', 'august', 'agu', 'aug', 'agt'],
+            ['september', 'sep', 'sept'],
+            ['oktober', 'october', 'okt', 'oct'],
+            ['november', 'nov'],
+            ['desember', 'december', 'des', 'dec']
+        ];
+
+        for (let idx = 0; idx < monthPatterns.length; idx++) {
+            for (const pat of monthPatterns[idx]) {
+                const regex = new RegExp(`(^|[^a-z])${pat}([^a-z]|$)`, 'i');
+                if (regex.test(text)) return idx;
+            }
+        }
+
+        const isoMatch = text.match(/\b20\d{2}[-/.](\d{1,2})[-/.]\d{1,2}\b/);
+        if (isoMatch) {
+            const m = parseInt(isoMatch[1], 10);
+            if (m >= 1 && m <= 12) return m - 1;
+        }
+
+        const dmyMatch = text.match(/\b\d{1,2}[-/.](\d{1,2})[-/.]20\d{2}\b/);
+        if (dmyMatch) {
+            const m = parseInt(dmyMatch[1], 10);
+            if (m >= 1 && m <= 12) return m - 1;
+        }
+
+        if (/^\d{1,2}$/.test(text)) {
+            const m = parseInt(text, 10);
+            if (m >= 1 && m <= 12) return m - 1;
+        }
+
+        return -1;
+    }
+
+    function getLoanRowMonthIndex(row) {
+        if (row && row[16] !== undefined && row[16] !== null) {
+            return detectMonthIndexFromText(row[16]);
+        }
+        return -1;
+    }
+
+    function getLoanRowPeriodLabel(row) {
+        if (row && row[16] !== undefined && row[16] !== null && row[16].toString().trim() !== '') {
+            const mIdx = detectMonthIndexFromText(row[16]);
+            if (mIdx !== -1) return standardMonthsOrder[mIdx];
+            return row[16].toString().trim();
+        }
+        const mIdxFallback = getLoanRowMonthIndex(row);
+        if (mIdxFallback !== -1) return standardMonthsOrder[mIdxFallback];
+        return '-';
+    }
+
+    function calcRowGross(row) {
+        let sum = 0;
+        for (let i = 7; i <= 16; i++) {
+            sum += parseNum(row[i]);
+        }
+        return sum;
+    }
+
+    function calcRowGapok(row) {
+        return parseNum(row[7]);
+    }
+
+    function calcRowTunjangan(row) {
+        let sum = 0;
+        for (let i = 8; i <= 16; i++) {
+            if (i === 9 || i === 10 || i === 11) continue;
+            sum += parseNum(row[i]);
+        }
+        return sum;
+    }
+
+    function calcRowKewajiban(row) {
+        let sum = 0;
+        for (let i = 17; i <= 23; i++) {
+            sum += parseNum(row[i]);
+        }
+        return sum;
+    }
+
+    function loadData() {
+        const updateEl = document.getElementById('last-update');
+        if (updateEl) updateEl.innerText = 'Memuat Data...';
+        
+        Papa.parse(CSV_URL, {
+            download: true,
+            header: false,
+            skipEmptyLines: true,
+            complete: function (results) { 
+                try {
+                    processResults(results); 
+                } catch (e) {
+                    console.error("Error processing CSV results:", e);
+                }
+            },
+            error: function () { 
+                if (updateEl) updateEl.innerText = 'Gagal memuat data'; 
+            }
+        });
+    }
+
+    function processResults(results) {
+        if (results.data && results.data.length > 1) {
+            headerRow = results.data[0];
+            
+            allowanceIndices = [];
+            allowanceHeaders = [];
+            for(let i = 7; i <= 16; i++) {
+                allowanceIndices.push(i);
+                allowanceHeaders.push(headerRow[i] ? headerRow[i].trim() : `Kolom ${i}`);
+            }
+
+            kewajibanHeaders = kewajibanIndices.map(idx => headerRow[idx] ? headerRow[idx].trim() : `Kewajiban ${idx}`);
+
+            rawData = results.data.slice(1);
+            populateFilters(rawData);
+            updateDashboard();
+            const updateEl = document.getElementById('last-update');
+            if (updateEl) updateEl.innerText = 'Updated: ' + new Date().toLocaleTimeString('id-ID');
+        }
+    }
+
+    function populateFilters(data) {
+        const tahunSet = new Set(), periodeMap = new Map(), perusahaanSet = new Set(), divisiSet = new Set();
+        data.forEach(row => {
+            const kolomB = row[1] ? row[1].trim() : '';
+            if (kolomB) {
+                const matchTahun = kolomB.match(/\b(20\d{2})\b/);
+                if (matchTahun) tahunSet.add(matchTahun[1]);
+
+                let namaBulan = kolomB.replace(/\b(20\d{2})\b/g, '').replace(/[0-9]/g, '').trim();
+                namaBulan = namaBulan.replace(/[-/]/g, '').trim();
+                
+                if (namaBulan) {
+                    periodeMap.set(kolomB, capitalizeFirstLetter(namaBulan));
+                } else {
+                    const parts = kolomB.split(/[-/]/);
+                    if (parts.length >= 2) {
+                        const monthNum = parseInt(parts[1], 10);
+                        const monthsName = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                        if (monthNum >= 1 && monthNum <= 12) {
+                            periodeMap.set(kolomB, monthsName[monthNum - 1]);
+                        } else {
+                            periodeMap.set(kolomB, kolomB);
+                        }
+                    } else {
+                        periodeMap.set(kolomB, kolomB);
+                    }
+                }
+            }
+            if (row[4]) perusahaanSet.add(row[4].trim());   
+            if (row[27]) divisiSet.add(row[27].trim());       
+        });
+
+        rawLoanData.forEach(row => {
+            const mIdx = getLoanRowMonthIndex(row);
+            if (mIdx !== -1) {
+                const mName = standardMonthsOrder[mIdx];
+                let exists = false;
+                for (const label of periodeMap.values()) {
+                    if (label.toLowerCase() === mName.toLowerCase()) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    periodeMap.set(mName, mName);
+                }
+            }
+        });
+
+        standardMonthsOrder.forEach(mName => {
+            let exists = false;
+            for (const label of periodeMap.values()) {
+                if (label.toLowerCase() === mName.toLowerCase()) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                periodeMap.set(mName, mName);
+            }
+        });
+
+        fillSelectOptions('filter-tahun', Array.from(tahunSet).sort(), 'Semua Tahun');
+        fillPeriodeSelect('filter-periode', periodeMap, 'Semua Bulan');
+        fillSelectOptions('filter-perusahaan', Array.from(perusahaanSet).sort(), 'Semua Perusahaan');
+        fillSelectOptions('filter-divisi', Array.from(divisiSet).sort(), 'Semua Divisi');
+    }
+
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+    }
+
+    function fillSelectOptions(elementId, optionsArray, labelName) {
+        const select = document.getElementById(elementId);
+        if(!select) return;
+        const currentValue = select.value;
+        select.innerHTML = `<option value="ALL">${labelName}</option>`;
+        optionsArray.forEach(opt => {
+            if (opt) {
+                const el = document.createElement('option');
+                el.value = opt;
+                el.textContent = opt;
+                select.appendChild(el);
+            }
+        });
+        if (optionsArray.includes(currentValue)) select.value = currentValue;
+    }
+
+    function fillPeriodeSelect(elementId, mapData, labelName) {
+        const select = document.getElementById(elementId);
+        if(!select) return;
+        const currentValue = select.value;
+        select.innerHTML = `<option value="ALL">${labelName}</option>`;
+        const sortedEntries = Array.from(mapData.entries()).sort((a, b) => {
+            const idxA = detectMonthIndexFromText(a[1]);
+            const idxB = detectMonthIndexFromText(b[1]);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            return a[0].localeCompare(b[0]);
+        });
+        sortedEntries.forEach(([val, label]) => {
+            const el = document.createElement('option');
+            el.value = val;
+            el.textContent = label;
+            select.appendChild(el);
+        });
+        if (mapData.has(currentValue)) select.value = currentValue;
+    }
+
+    function getFilteredData() {
+        const fTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'ALL';
+        const fPeriode = document.getElementById('filter-periode') ? document.getElementById('filter-periode').value : 'ALL';
+        const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
+        const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
+        const searchQuery = document.getElementById('search-query') ? document.getElementById('search-query').value.toLowerCase().trim() : '';
+
+        return rawData.filter(row => {
+            const kolomBVal = row[1] ? row[1].trim() : '';
+            const matchTahun = fTahun === 'ALL' || kolomBVal.includes(fTahun);
+            const matchPeriode = fPeriode === 'ALL' || kolomBVal === fPeriode;
+            const matchPerusahaan = fPerusahaan === 'ALL' || (row[4] && row[4].trim() === fPerusahaan);
+            const matchDivisi = fDivisi === 'ALL' || (row[27] && row[27].trim() === fDivisi);
+
+            const idKaryawan = row[3] ? row[3].toString().toLowerCase() : '';
+            const namaKaryawan = row[2] ? row[2].toString().toLowerCase() : '';
+            const matchSearch = searchQuery === '' || idKaryawan.includes(searchQuery) || namaKaryawan.includes(searchQuery);
+
+            return matchTahun && matchPeriode && matchPerusahaan && matchDivisi && matchSearch;
+        });
+    }
+
+    function resetFilters() {
+        if(document.getElementById('filter-tahun')) document.getElementById('filter-tahun').value = 'ALL';
+        if(document.getElementById('filter-periode')) document.getElementById('filter-periode').value = 'ALL';
+        if(document.getElementById('filter-perusahaan')) document.getElementById('filter-perusahaan').value = 'ALL';
+        if(document.getElementById('filter-divisi')) document.getElementById('filter-divisi').value = 'ALL';
+        if(document.getElementById('search-query')) document.getElementById('search-query').value = '';
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        try {
+            const filtered = getFilteredData();
+
+            let totalGapok = 0, totalGross = 0, totalTunjangan = 0, totalKekurangan = 0, totalLemburan = 0, totalKewajiban = 0, totalTHP = 0;
+            const karyawanSet = new Set(), perusahaanSet = new Set(), divisiSet = new Set(), cabangSet = new Set();
+            const thpPerDivisi = {}, overtimePerKaryawan = {}, overtimePerDivisi = {}, costPerDivisi = {};
+            const benefitTotals = [0, 0, 0, 0, 0, 0, 0, 0, 0], kewajibanTotals = [0, 0, 0, 0, 0, 0, 0];
+
+            filtered.forEach(row => {
+                const idKaryawan = row[3] ? row[3].trim() : '';
+                const namaKaryawan = row[2] ? row[2].trim() : 'Tanpa Nama';
+                if (idKaryawan) karyawanSet.add(idKaryawan);
+
+                const perusahaan = row[4] ? row[4].trim() : 'Unassigned';
+                const divisi = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Unassigned');
+                const cabang = row[6] ? row[6].trim() : 'Unassigned';
+
+                if (row[4]) perusahaanSet.add(perusahaan);
+                if (row[27]) divisiSet.add(divisi);
+                if (row[6]) cabangSet.add(cabang);
+
+                const gapok = calcRowGapok(row);
+                const gross = calcRowGross(row); 
+                let rowTunjangan = 0;
+                for(let i=8; i<=16; i++) {
+                    const val = parseNum(row[i]);
+                    benefitTotals[i-8] += val;
+                    if (i !== 9 && i !== 10 && i !== 11) {
+                        rowTunjangan += val;
+                    }
+                }
+
+                const kekurangan = parseNum(row[9]); 
+                const lembur = parseNum(row[10]) + parseNum(row[11]);
+
+                let kewajibanRow = calcRowKewajiban(row);
+                kewajibanIndices.forEach((kIdx, kPos) => {
+                    const val = parseNum(row[kIdx]);
+                    kewajibanTotals[kPos] += val;
+                });
+
+                const thp = parseNum(row[26]); 
+
+                totalGapok += gapok;
+                totalGross += gross;
+                totalTunjangan += rowTunjangan;
+                totalKekurangan += kekurangan;
+                totalLemburan += lembur;
+                totalKewajiban += kewajibanRow;
+                totalTHP += thp;
+
+                const divNorm = divisi.toLowerCase();
+                const mergedDivisiGroup = (divNorm === 'content creator' || divNorm === 'conten creator' || divNorm === 'customer service')
+                    ? 'Content Creator & Customer Service'
+                    : divisi;
+                
+                if (!thpPerDivisi[mergedDivisiGroup]) {
+                    thpPerDivisi[mergedDivisiGroup] = { thp: 0, karyawan: new Set() };
+                }
+                thpPerDivisi[mergedDivisiGroup].thp += thp;
+                if (idKaryawan) thpPerDivisi[mergedDivisiGroup].karyawan.add(idKaryawan);
+                
+                if (lembur > 0) {
+                    const empKey = `${idKaryawan || 'NO-NIP'}||${namaKaryawan}||${divisi}`;
+                    if (!overtimePerKaryawan[empKey]) {
+                        overtimePerKaryawan[empKey] = {
+                            nip: idKaryawan || '-',
+                            nama: namaKaryawan,
+                            divisi: divisi,
+                            total: 0
+                        };
+                    }
+                    overtimePerKaryawan[empKey].total += lembur;
+                    overtimePerDivisi[mergedDivisiGroup] = (overtimePerDivisi[mergedDivisiGroup] || 0) + lembur;
+                }
+
+                if (!costPerDivisi[divisi]) {
+                    costPerDivisi[divisi] = { karyawan: new Set(), gapok: 0, tunjangan: 0, kewajiban: 0, lembur: 0, thp: 0 };
+                }
+                if (idKaryawan) costPerDivisi[divisi].karyawan.add(idKaryawan);
+                
+                costPerDivisi[divisi].gapok += gapok;
+                costPerDivisi[divisi].tunjangan += calcRowTunjangan(row);
+                costPerDivisi[divisi].kewajiban += kewajibanRow;
+                costPerDivisi[divisi].lembur += lembur;
+                costPerDivisi[divisi].thp += thp;
+            });
+
+            cachedCostMap = costPerDivisi;
+
+            if(document.getElementById('metric-karyawan')) document.getElementById('metric-karyawan').innerText = `${karyawanSet.size} Orang`;
+            if(document.getElementById('metric-total-perusahaan')) document.getElementById('metric-total-perusahaan').innerText = perusahaanSet.size;
+            if(document.getElementById('metric-total-divisi')) document.getElementById('metric-total-divisi').innerText = divisiSet.size;
+            if(document.getElementById('metric-total-cabang')) document.getElementById('metric-total-cabang').innerText = cabangSet.size;
+
+            if(document.getElementById('metric-gapok')) document.getElementById('metric-gapok').innerText = formatIDR(totalGapok);
+            if(document.getElementById('metric-tunjangan')) document.getElementById('metric-tunjangan').innerText = formatIDR(totalTunjangan);
+            if(document.getElementById('metric-lemburan')) document.getElementById('metric-lemburan').innerText = formatIDR(totalLemburan);
+            if(document.getElementById('metric-kekurangan')) document.getElementById('metric-kekurangan').innerText = formatIDR(totalKekurangan);
+
+            if(document.getElementById('metric-gross')) document.getElementById('metric-gross').innerText = formatIDR(totalGross);
+            if(document.getElementById('metric-kewajiban')) document.getElementById('metric-kewajiban').innerText = formatIDR(totalKewajiban);
+            if(document.getElementById('metric-thp')) document.getElementById('metric-thp').innerText = formatIDR(totalTHP);
+
+            const filteredLoanForDashboard = getFilteredLoanData();
+            let sumDashboardLoan = 0;
+            const uniqueLoanBorrowers = new Set();
+            filteredLoanForDashboard.forEach(row => {
+                sumDashboardLoan += parseNum(row[8]);
+                const nipColD = row[3] ? row[3].toString().trim().toLowerCase() : '';
+                if (nipColD && nipColD !== '-') {
+                    uniqueLoanBorrowers.add(nipColD);
+                }
+            });
+            if(document.getElementById('metric-total-loan-dashboard')) document.getElementById('metric-total-loan-dashboard').innerText = formatIDR(sumDashboardLoan);
+            if(document.getElementById('metric-total-loan-employees')) document.getElementById('metric-total-loan-employees').innerText = `${uniqueLoanBorrowers.size} Orang`;
+
+            let benefitChartLabels = [];
+            for(let i=8; i<=16; i++) {
+                benefitChartLabels.push(headerRow[i] ? headerRow[i].trim() : `Col ${i}`);
+            }
+
+            renderTableTop5THP(thpPerDivisi, totalTHP);
+            renderChartOvertimeDivision(overtimePerDivisi);
+            renderChartOvertime(overtimePerKaryawan);
+            renderChartLoanTrendLine();
+            renderChartBenefit(benefitChartLabels, benefitTotals);
+            renderChartKewajiban(kewajibanHeaders, kewajibanTotals);
+
+            renderSummaryTable(filtered);
+            renderSummaryComparisonCards(filtered);
+            renderAllowanceTable(filtered);
+            renderAllowanceComparisonCards(filtered);
+            renderKewajibanTable(filtered);
+            renderKewajibanComparisonCards(filtered);
+            renderLoanSection();
+            renderOvertimeCostSection(filtered);
+            renderDatabaseTable(headerRow, filtered);
+            renderCostAnalysisTable(cachedCostMap);
+
+            filterTimelineTable();
+            filterAdjustmentTable();
+        } catch (err) {
+            console.error("updateDashboard error:", err);
+        }
+    }
+
+    function renderTableTop5THP(dataMap, grandTotalTHP) {
+        const tbody = document.getElementById('top5-thp-table-body');
+        if (!tbody) return;
+
+        const sorted = Object.entries(dataMap)
+            .sort((a, b) => b[1].thp - a[1].thp)
+            .slice(0, 5);
+
+        tbody.innerHTML = '';
+        if (sorted.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada data THP per divisi pada filter saat ini.</td></tr>';
+            return;
+        }
+
+        sorted.forEach(([divisi, info], idx) => {
+            const pct = grandTotalTHP > 0 ? ((info.thp / grandTotalTHP) * 100).toFixed(1) : '0.0';
+            const rankBadge = idx === 0 
+                ? '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-white font-bold text-xs shadow-sm">1</span>'
+                : `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">${idx + 1}</span>`;
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-amber-50/40 transition-colors";
+            tr.innerHTML = `
+                <td class="p-3 text-center">${rankBadge}</td>
+                <td class="p-3 font-semibold text-slate-900">${divisi}</td>
+                <td class="p-3 text-center font-medium text-slate-600">${info.karyawan.size} Orang</td>
+                <td class="p-3 text-right font-bold text-amber-800">${formatIDR(info.thp)}</td>
+                <td class="p-3 text-right font-semibold text-slate-600">${pct}%</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function loadLoanData() {
+        const tbody = document.getElementById('loan-table-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-slate-400">Memuat data loan...</td></tr>';
+
+        Papa.parse(LOAN_CSV_URL, {
+            download: true,
+            header: false,
+            skipEmptyLines: true,
+            complete: function (results) {
+                if (results.data && results.data.length > 0) {
+                    rawLoanHeaders = results.data[0];
+                    rawLoanData = results.data.slice(1).filter(row => {
+                        const colA = (row[0] || '').toString().trim().toLowerCase();
+                        const colD = (row[3] || '').toString().trim().toLowerCase();
+                        const colE = (row[4] || '').toString().trim().toLowerCase();
+                        if (colA === 'total' || colA === 'grand total' || colD === 'total' || colE === 'total' || colE === 'grand total') {
+                            return false;
+                        }
+                        return true;
+                    });
+                    if (rawData.length > 0) {
+                        populateFilters(rawData);
+                    }
+                    updateDashboard();
+                }
+            },
+            error: function () {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-rose-500">Gagal memuat data Loan.</td></tr>';
+            }
+        });
+    }
+
+    function getFilteredLoanData(overridePeriodeVal = null, ignoreMonthFilter = false) {
+        const fTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'ALL';
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const fPeriode = overridePeriodeVal !== null ? overridePeriodeVal : (fPeriodeSelect ? fPeriodeSelect.value : 'ALL');
+        const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
+        const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
+        const searchQuery = document.getElementById('search-query') ? document.getElementById('search-query').value.toLowerCase().trim() : '';
+
+        const empMetaMap = getEmployeeMetaMap();
+
+        let targetMonthIdx = -1;
+        if (!ignoreMonthFilter && fPeriode !== 'ALL') {
+            let targetMonthText = '';
+            if (overridePeriodeVal !== null && fPeriodeSelect) {
+                for (let i = 0; i < fPeriodeSelect.options.length; i++) {
+                    if (fPeriodeSelect.options[i].value === overridePeriodeVal) {
+                        targetMonthText = fPeriodeSelect.options[i].text.toLowerCase().trim();
+                        break;
+                    }
+                }
+            } else if (fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0) {
+                targetMonthText = fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text.toLowerCase().trim();
+            }
+            targetMonthIdx = detectMonthIndexFromText(targetMonthText);
+            if (targetMonthIdx === -1) {
+                targetMonthIdx = detectMonthIndexFromText(fPeriode);
+            }
+        }
+
+        return rawLoanData.filter(row => {
+            const nip = row[3] ? row[3].toString().trim() : '';
+            const nama = row[4] ? row[4].toString().trim() : '';
+            const pinjamanVal = parseNum(row[8]);
+            const colQText = row[16] ? row[16].toString().trim() : '';
+            if (!nip && !nama && pinjamanVal === 0 && !colQText) return false;
+
+            const rowStr = row.join(' ').toLowerCase();
+            const matchSearch = searchQuery === '' || nip.toLowerCase().includes(searchQuery) || nama.toLowerCase().includes(searchQuery);
+
+            let matchTahun = true;
+            if (fTahun !== 'ALL') {
+                const yearCols = `${row[16] || ''} ${row[1] || ''} ${row[2] || ''} ${row[11] || ''} ${row[13] || ''}`;
+                if (/\b20\d{2}\b/.test(yearCols)) {
+                    matchTahun = yearCols.includes(fTahun);
+                } else {
+                    matchTahun = rowStr.includes(fTahun.toLowerCase());
+                }
+            }
+
+            let matchPeriode = true;
+            if (!ignoreMonthFilter && fPeriode !== 'ALL') {
+                const rowMonthIdx = getLoanRowMonthIndex(row);
+                if (targetMonthIdx !== -1) {
+                    matchPeriode = (rowMonthIdx === targetMonthIdx);
+                } else {
+                    matchPeriode = colQText.toLowerCase().includes(fPeriode.toLowerCase());
+                }
+            }
+
+            const meta = empMetaMap[nip.toLowerCase()] || { perusahaan: '', divisi: '' };
+            const matchPerusahaan = fPerusahaan === 'ALL' ||
+                rowStr.includes(fPerusahaan.toLowerCase()) ||
+                (meta.perusahaan && meta.perusahaan.toLowerCase() === fPerusahaan.toLowerCase());
+
+            const matchDivisi = fDivisi === 'ALL' ||
+                rowStr.includes(fDivisi.toLowerCase()) ||
+                (meta.divisi && meta.divisi.toLowerCase() === fDivisi.toLowerCase());
+
+            return matchSearch && matchTahun && matchPeriode && matchPerusahaan && matchDivisi;
+        });
+    }
+
+    function renderChartLoanTrendLine() {
+        const canvas = document.getElementById('chartLoanTrendLine');
+        if(!canvas || typeof Chart === 'undefined') return;
+        
+        const monthlyTotals = new Array(12).fill(0);
+        const baseLoanRows = getFilteredLoanData(null, true);
+
+        baseLoanRows.forEach(row => {
+            const monthIdx = getLoanRowMonthIndex(row);
+            const pinjamanVal = parseNum(row[8]);
+
+            if (monthIdx !== -1) {
+                monthlyTotals[monthIdx] += pinjamanVal;
+            }
+        });
+
+        const ctx = canvas.getContext('2d');
+        if (chartLoanTrendLineInstance) chartLoanTrendLineInstance.destroy();
+        chartLoanTrendLineInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: standardMonthsOrder,
+                datasets: [{
+                    label: 'Total Pinjaman Kolom I (Rp)',
+                    data: monthlyTotals,
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#f97316'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                layout: { padding: { top: 25, right: 15 } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (item) => `Total Pinjaman: ${formatIDR(item.raw)}`
+                        }
+                    },
+                    datalabels: {
+                        anchor: 'end', align: 'top',
+                        formatter: (val) => val > 0 ? formatCompact(val) : '',
+                        font: { weight: 'bold', size: 10 },
+                        color: '#c2410c'
+                    }
+                },
+                scales: {
+                    y: { grace: '18%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    function renderLoanSection() {
+        const tbody = document.getElementById('loan-table-body');
+        const filtered = getFilteredLoanData();
+        const countEl = document.getElementById('loan-count');
+        if (countEl) countEl.innerText = `${filtered.length} Records`;
+
+        const empMetaMap = getEmployeeMetaMap();
+
+        let totalPinjaman = 0;
+        let totalSisaPinjaman = 0;
+        let totalSudahDibayarSetahun = 0;
+
+        if (tbody) tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+            if (tbody) tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-slate-400">Tidak ada data pinjaman (loan) pada filter saat ini.</td></tr>';
+        } else {
+            filtered.forEach((row, index) => {
+                const nama = row[4] ? row[4].trim() : '-';
+                const nip = row[3] ? row[3].trim() : '-';
+                const meta = empMetaMap[nip.toLowerCase()] || { divisi: '-', posisi: '-' };
+                const divisiVal = meta.divisi || '-';
+                const posisiVal = meta.posisi || '-';
+
+                const periodeBulan = getLoanRowPeriodLabel(row);
+                const pinjamanVal = parseNum(row[8]);
+                const totalBayarSetahun = parseNum(row[9]);
+                const totalTenor = row[6] ? row[6].trim() : '-';
+                const angsuranVal = parseNum(row[9]);
+                const sisaTenor = row[7] ? row[7].trim() : '-';
+                const sisaPinjamanVal = parseNum(row[10]);
+                const statusLoan = row[14] ? row[14].trim() : '-';
+
+                totalPinjaman += pinjamanVal;
+                totalSisaPinjaman += sisaPinjamanVal;
+                totalSudahDibayarSetahun += totalBayarSetahun;
+
+                if (tbody) {
+                    const statusBadge = statusLoan.toLowerCase() === 'lunas' || statusLoan.toLowerCase() === 'active' || statusLoan.toLowerCase() === 'selesai'
+                        ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">${statusLoan}</span>`
+                        : `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">${statusLoan}</span>`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-orange-50/40 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-3 font-medium text-slate-600">${index + 1}</td>
+                        <td class="p-3 font-semibold text-slate-900">${nama}</td>
+                        <td class="p-3 font-medium text-slate-700">${nip}</td>
+                        <td class="p-3 font-medium text-indigo-700">${divisiVal}</td>
+                        <td class="p-3 text-slate-700">${posisiVal}</td>
+                        <td class="p-3 text-center font-medium text-orange-700">${periodeBulan}</td>
+                        <td class="p-3 text-right font-semibold text-slate-900">${formatIDR(pinjamanVal)}</td>
+                        <td class="p-3 text-right font-semibold text-emerald-700">${formatIDR(totalBayarSetahun)}</td>
+                        <td class="p-3 text-center font-medium">${totalTenor}</td>
+                        <td class="p-3 text-right font-semibold text-orange-600">${formatIDR(angsuranVal)}</td>
+                        <td class="p-3 text-center font-medium">${sisaTenor}</td>
+                        <td class="p-3 text-right font-bold text-rose-700">${formatIDR(sisaPinjamanVal)}</td>
+                        <td class="p-3 text-center">${statusBadge}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        }
+
+        if (document.getElementById('loan-total-pinjaman')) document.getElementById('loan-total-pinjaman').innerText = formatIDR(totalPinjaman);
+        if (document.getElementById('loan-sisa-pinjaman')) document.getElementById('loan-sisa-pinjaman').innerText = formatIDR(totalSisaPinjaman);
+        if (document.getElementById('loan-sudah-dibayar')) document.getElementById('loan-sudah-dibayar').innerText = formatIDR(totalSudahDibayarSetahun);
+
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const fPeriode = fPeriodeSelect ? fPeriodeSelect.value : 'ALL';
+        let prevTotalPinjaman = 0;
+
+        if (fPeriode !== 'ALL' && fPeriodeSelect && fPeriodeSelect.selectedIndex > 1) {
+            const prevOptionValue = fPeriodeSelect.options[fPeriodeSelect.selectedIndex - 1].value;
+            const prevFiltered = getFilteredLoanData(prevOptionValue);
+            prevFiltered.forEach(row => {
+                prevTotalPinjaman += parseNum(row[8]);
+            });
+        }
+
+        const badgeEl = document.getElementById('loan-trend-badge');
+        if (badgeEl) {
+            if (prevTotalPinjaman === 0) {
+                badgeEl.innerHTML = `<span class="text-slate-400 font-normal italic">Tidak ada data bulan lalu</span>`;
+            } else {
+                const diffPercent = ((totalPinjaman - prevTotalPinjaman) / prevTotalPinjaman) * 100;
+                if (diffPercent >= 0) {
+                    badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}% (${formatCompact(prevTotalPinjaman)})</span>`;
+                } else {
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}% (${formatCompact(prevTotalPinjaman)})</span>`;
+                }
+            }
+        }
+    }
+
+    function exportLoanToExcel() {
+        const filtered = getFilteredLoanData();
+        if (filtered.length === 0) {
+            alert('Tidak ada data loan untuk diunduh pada filter saat ini.');
+            return;
+        }
+        const empMetaMap = getEmployeeMetaMap();
+        const exportArray = filtered.map((row, idx) => {
+            const nip = row[3] ? row[3].trim() : '';
+            const meta = empMetaMap[nip.toLowerCase()] || { divisi: '', posisi: '' };
+            const pinj = parseNum(row[8]);
+            const sisa = parseNum(row[10]);
+            return {
+                "Nomor": idx + 1,
+                "Nama Karyawan": row[4] ? row[4].trim() : '',
+                "NIP (Kolom D)": nip,
+                "Divisi ": meta.divisi || '',
+                "Posisi ": meta.posisi || '',
+                "Bulan / Periode ": getLoanRowPeriodLabel(row),
+                "Total Kewajiban / Pinjaman (Rp)": pinj,
+                "Total Pembayaran Setahun  (Rp)": parseNum(row[9]),
+                "Total Tenor": row[6] ? row[6].trim() : '',
+                "Angsuran per Bulan (Rp)": parseNum(row[9]),
+                "Sisa Tenor": row[7] ? row[7].trim() : '',
+                "Sisa Pinjaman (Rp)": sisa,
+                "Status Kolom O": row[14] ? row[14].trim() : ''
+            };
+        });
+        const worksheet = XLSX.utils.json_to_sheet(exportArray);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Data Loan Karyawan");
+        XLSX.writeFile(workbook, `Laporan_Loan_Karyawan_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function renderSummaryComparisonCards(filteredData) {
+        const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
+        const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const fPeriode = fPeriodeSelect ? fPeriodeSelect.value : 'ALL';
+        const searchQuery = document.getElementById('search-query') ? document.getElementById('search-query').value.toLowerCase().trim() : '';
+
+        let currentTotal = 0;
+        filteredData.forEach(row => {
+            currentTotal += parseNum(row[26]);
+        });
+        if(document.getElementById('summary-current-total')) document.getElementById('summary-current-total').innerText = formatIDR(currentTotal);
+
+        let prevTotal = 0;
+        if (fPeriode !== 'ALL' && fPeriodeSelect && fPeriodeSelect.selectedIndex > 1) {
+            const prevOptionValue = fPeriodeSelect.options[fPeriodeSelect.selectedIndex - 1].value;
+            rawData.forEach(row => {
+                const kolomBVal = row[1] ? row[1].trim() : '';
+                const matchPeriodePrev = kolomBVal === prevOptionValue;
+                const matchPerusahaan = fPerusahaan === 'ALL' || (row[4] && row[4].trim() === fPerusahaan);
+                const matchDivisi = fDivisi === 'ALL' || ((row[27] ? row[27].trim() : row[5]) === fDivisi);
+
+                const idKaryawan = row[3] ? row[3].toString().toLowerCase() : '';
+                const namaKaryawan = row[2] ? row[2].toString().toLowerCase() : '';
+                const matchSearch = searchQuery === '' || idKaryawan.includes(searchQuery) || namaKaryawan.includes(searchQuery);
+
+                if (matchPeriodePrev && matchPerusahaan && matchDivisi && matchSearch) {
+                    prevTotal += parseNum(row[26]);
+                }
+            });
+        }
+        if(document.getElementById('summary-prev-total')) document.getElementById('summary-prev-total').innerText = formatIDR(prevTotal);
+
+        const badgeEl = document.getElementById('summary-trend-badge');
+        if(badgeEl) {
+            if (prevTotal === 0) {
+                badgeEl.innerHTML = `<span class="text-slate-400 font-normal italic">Tidak ada data bulan lalu</span>`;
+            } else {
+                const diffPercent = ((currentTotal - prevTotal) / prevTotal) * 100;
+                if (diffPercent >= 0) {
+                    badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}%</span>`;
+                } else {
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
+                }
+            }
+        }
+    }
+
+    function renderAllowanceComparisonCards(filteredData) {
+        const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
+        const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const fPeriode = fPeriodeSelect ? fPeriodeSelect.value : 'ALL';
+        const searchQuery = document.getElementById('search-query') ? document.getElementById('search-query').value.toLowerCase().trim() : '';
+
+        let currentTotal = 0;
+        filteredData.forEach(row => {
+            currentTotal += calcRowTunjangan(row);
+        });
+        if(document.getElementById('allowance-current-total')) document.getElementById('allowance-current-total').innerText = formatIDR(currentTotal);
+
+        let prevTotal = 0;
+        if (fPeriode !== 'ALL' && fPeriodeSelect && fPeriodeSelect.selectedIndex > 1) {
+            const prevOptionValue = fPeriodeSelect.options[fPeriodeSelect.selectedIndex - 1].value;
+            rawData.forEach(row => {
+                const kolomBVal = row[1] ? row[1].trim() : '';
+                const matchPeriodePrev = kolomBVal === prevOptionValue;
+                const matchPerusahaan = fPerusahaan === 'ALL' || (row[4] && row[4].trim() === fPerusahaan);
+                const matchDivisi = fDivisi === 'ALL' || ((row[27] ? row[27].trim() : row[5]) === fDivisi);
+
+                const idKaryawan = row[3] ? row[3].toString().toLowerCase() : '';
+                const namaKaryawan = row[2] ? row[2].toString().toLowerCase() : '';
+                const matchSearch = searchQuery === '' || idKaryawan.includes(searchQuery) || namaKaryawan.includes(searchQuery);
+
+                if (matchPeriodePrev && matchPerusahaan && matchDivisi && matchSearch) {
+                    prevTotal += calcRowTunjangan(row);
+                }
+            });
+        }
+        if(document.getElementById('allowance-prev-total')) document.getElementById('allowance-prev-total').innerText = formatIDR(prevTotal);
+
+        const badgeEl = document.getElementById('allowance-trend-badge');
+        if(badgeEl) {
+            if (prevTotal === 0) {
+                badgeEl.innerHTML = `<span class="text-slate-400 font-normal italic">Tidak ada data bulan lalu</span>`;
+            } else {
+                const diffPercent = ((currentTotal - prevTotal) / prevTotal) * 100;
+                if (diffPercent >= 0) {
+                    badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}%</span>`;
+                } else {
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
+                }
+            }
+        }
+    }
+
+    function renderKewajibanComparisonCards(filteredData) {
+        const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
+        const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const fPeriode = fPeriodeSelect ? fPeriodeSelect.value : 'ALL';
+        const searchQuery = document.getElementById('search-query') ? document.getElementById('search-query').value.toLowerCase().trim() : '';
+
+        let currentTotal = 0;
+        filteredData.forEach(row => {
+            currentTotal += calcRowKewajiban(row);
+        });
+        if(document.getElementById('kewajiban-current-total')) document.getElementById('kewajiban-current-total').innerText = formatIDR(currentTotal);
+
+        let prevTotal = 0;
+        if (fPeriode !== 'ALL' && fPeriodeSelect && fPeriodeSelect.selectedIndex > 1) {
+            const prevOptionValue = fPeriodeSelect.options[fPeriodeSelect.selectedIndex - 1].value;
+            rawData.forEach(row => {
+                const kolomBVal = row[1] ? row[1].trim() : '';
+                const matchPeriodePrev = kolomBVal === prevOptionValue;
+                const matchPerusahaan = fPerusahaan === 'ALL' || (row[4] && row[4].trim() === fPerusahaan);
+                const matchDivisi = fDivisi === 'ALL' || ((row[27] ? row[27].trim() : row[5]) === fDivisi);
+
+                const idKaryawan = row[3] ? row[3].toString().toLowerCase() : '';
+                const namaKaryawan = row[2] ? row[2].toString().toLowerCase() : '';
+                const matchSearch = searchQuery === '' || idKaryawan.includes(searchQuery) || namaKaryawan.includes(searchQuery);
+
+                if (matchPeriodePrev && matchPerusahaan && matchDivisi && matchSearch) {
+                    prevTotal += calcRowKewajiban(row);
+                }
+            });
+        }
+        if(document.getElementById('kewajiban-prev-total')) document.getElementById('kewajiban-prev-total').innerText = formatIDR(prevTotal);
+
+        const badgeEl = document.getElementById('kewajiban-trend-badge');
+        if(badgeEl) {
+            if (prevTotal === 0) {
+                badgeEl.innerHTML = `<span class="text-slate-400 font-normal italic">Tidak ada data bulan lalu</span>`;
+            } else {
+                const diffPercent = ((currentTotal - prevTotal) / prevTotal) * 100;
+                if (diffPercent >= 0) {
+                    badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}%</span>`;
+                } else {
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
+                }
+            }
+        }
+    }
+
+    function renderSummaryTable(data) {
+        const tbody = document.getElementById('summary-table-body');
+        const countEl = document.getElementById('summary-count');
+        if(countEl) countEl.innerText = `${data.length} Records`;
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="12" class="p-4 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>';
+            return;
+        }
+        data.slice(0, 100).forEach(row => {
+            const gapokVal = calcRowGapok(row);
+            const lemburVal = parseNum(row[10]) + parseNum(row[11]);
+            const tunjanganVal = calcRowTunjangan(row);
+            const kewajibanVal = calcRowKewajiban(row);
+            const grossVal = calcRowGross(row);
+            const thpVal = parseNum(row[26]);
+            const divisiVal = row[27] ? row[27].trim() : '-';
+            const posisiVal = row[5] ? row[5].trim() : '-';
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-amber-50/40 transition-colors";
+            tr.innerHTML = `
+                <td class="p-3 font-medium text-slate-900">${row[3] || '-'}</td>
+                <td class="p-3 font-semibold text-slate-900">${row[2] || '-'}</td>
+                <td class="p-3">${row[4] || '-'}</td>
+                <td class="p-3 font-medium text-indigo-700">${divisiVal}</td>
+                <td class="p-3 text-slate-700">${posisiVal}</td>
+                <td class="p-3">${row[6] || '-'}</td>
+                <td class="p-3 text-right font-semibold">${formatIDR(gapokVal)}</td>
+                <td class="p-3 text-right font-semibold text-purple-600">${formatIDR(lemburVal)}</td>
+                <td class="p-3 text-right font-semibold text-emerald-600">${formatIDR(tunjanganVal)}</td>
+                <td class="p-3 text-right font-semibold text-rose-600">${formatIDR(kewajibanVal)}</td>
+                <td class="p-3 text-right font-semibold text-slate-900">${formatIDR(grossVal)}</td>
+                <td class="p-3 text-right font-bold text-amber-900">${formatIDR(thpVal)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderAllowanceTable(data) {
+        const thead = document.getElementById('allowance-table-head');
+        const tbody = document.getElementById('allowance-table-body');
+        const countEl = document.getElementById('allowance-count');
+        if(countEl) countEl.innerText = `${data.length} Records`;
+        if(!thead || !tbody) return;
+
+        let headHTML = `<tr><th class="p-3">ID</th><th class="p-3">Nama Karyawan</th><th class="p-3">Divisi </th><th class="p-3">Posisi </th>`;
+        allowanceHeaders.forEach(h => headHTML += `<th class="p-3 text-right">${h}</th>`);
+        headHTML += `<th class="p-3 text-right font-bold">Total Gross (H-Q)</th></tr>`;
+        thead.innerHTML = headHTML;
+
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="17" class="p-4 text-center text-slate-400">Tidak ada data.</td></tr>';
+            return;
+        }
+
+        data.slice(0, 100).forEach(row => {
+            let rowTotal = 0;
+            const divisiVal = row[27] ? row[27].trim() : '-';
+            const posisiVal = row[5] ? row[5].trim() : '-';
+            let trHTML = `<tr class="hover:bg-emerald-50/30 transition-colors"><td class="p-3 font-medium">${row[3] || '-'}</td><td class="p-3 font-semibold">${row[2] || '-'}</td><td class="p-3 font-medium text-indigo-700">${divisiVal}</td><td class="p-3 text-slate-700">${posisiVal}</td>`;
+            allowanceIndices.forEach(idx => {
+                const val = parseNum(row[idx]);
+                rowTotal += val;
+                trHTML += `<td class="p-3 text-right">${formatIDR(val)}</td>`;
+            });
+            trHTML += `<td class="p-3 text-right font-bold text-emerald-700">${formatIDR(rowTotal)}</td></tr>`;
+            tbody.innerHTML += trHTML;
+        });
+    }
+
+    function renderKewajibanTable(data) {
+        const thead = document.getElementById('kewajiban-table-head');
+        const tbody = document.getElementById('kewajiban-table-body');
+        const countEl = document.getElementById('kewajiban-count');
+        if(countEl) countEl.innerText = `${data.length} Records`;
+        if(!thead || !tbody) return;
+
+        let headHTML = `<tr><th class="p-3">ID</th><th class="p-3">Nama Karyawan</th><th class="p-3">Divisi </th><th class="p-3">Posisi </th>`;
+        kewajibanHeaders.forEach(h => headHTML += `<th class="p-3 text-right">${h}</th>`);
+        headHTML += `<th class="p-3 text-right font-bold">Total Kewajiban</th></tr>`;
+        thead.innerHTML = headHTML;
+
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="12" class="p-4 text-center text-slate-400">Tidak ada data.</td></tr>';
+            return;
+        }
+
+        data.slice(0, 100).forEach(row => {
+            let rowTotal = 0;
+            const divisiVal = row[27] ? row[27].trim() : '-';
+            const posisiVal = row[5] ? row[5].trim() : '-';
+            let trHTML = `<tr class="hover:bg-rose-50/30 transition-colors"><td class="p-3 font-medium">${row[3] || '-'}</td><td class="p-3 font-semibold">${row[2] || '-'}</td><td class="p-3 font-medium text-indigo-700">${divisiVal}</td><td class="p-3 text-slate-700">${posisiVal}</td>`;
+            kewajibanIndices.forEach(idx => {
+                const val = parseNum(row[idx]);
+                rowTotal += val;
+                trHTML += `<td class="p-3 text-right">${formatIDR(val)}</td>`;
+            });
+            trHTML += `<td class="p-3 text-right font-bold text-rose-700">${formatIDR(rowTotal)}</td></tr>`;
+            tbody.innerHTML += trHTML;
+        });
+    }
+
+    function renderOvertimeCostSection(filteredData) {
+        const tbody = document.getElementById('ot-table-body');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const fPeriode = fPeriodeSelect ? fPeriodeSelect.value : 'ALL';
+        const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
+        const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
+        const searchQuery = document.getElementById('search-query') ? document.getElementById('search-query').value.toLowerCase().trim() : '';
+
+        const overtimeEmployees = filteredData.filter(row => (parseNum(row[10]) + parseNum(row[11])) > 0);
+        const countEl = document.getElementById('ot-employee-count');
+        if(countEl) countEl.innerText = `${overtimeEmployees.length} Karyawan`;
+
+        let currentTotalLembur = 0;
+        overtimeEmployees.forEach(row => {
+            const lemburVal = parseNum(row[10]) + parseNum(row[11]);
+            currentTotalLembur += lemburVal;
+
+            const posisiVal = row[5] ? row[5].trim() : '-';
+            const divisiVal = row[27] ? row[27].trim() : '-';
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-purple-50/40 transition-colors";
+            tr.innerHTML = `
+                <td class="p-3 font-medium text-slate-900">${row[3] || '-'}</td>
+                <td class="p-3 font-semibold text-slate-900">${row[2] || '-'}</td>
+                <td class="p-3">${row[4] || '-'}</td>
+                <td class="p-3">${posisiVal}</td>
+                <td class="p-3 font-medium text-indigo-700">${divisiVal}</td>
+                <td class="p-3 text-right font-bold text-purple-700">${formatIDR(lemburVal)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        if (overtimeEmployees.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada data lembur pada periode bulan ini.</td></tr>';
+        }
+        if(document.getElementById('ot-current-total')) document.getElementById('ot-current-total').innerText = formatIDR(currentTotalLembur);
+
+        let prevTotalLembur = 0;
+        if (fPeriode !== 'ALL' && fPeriodeSelect && fPeriodeSelect.selectedIndex > 1) {
+            const prevOptionValue = fPeriodeSelect.options[fPeriodeSelect.selectedIndex - 1].value;
+            rawData.forEach(row => {
+                const kolomBVal = row[1] ? row[1].trim() : '';
+                const matchPeriodePrev = kolomBVal === prevOptionValue;
+                const matchPerusahaan = fPerusahaan === 'ALL' || (row[4] && row[4].trim() === fPerusahaan);
+                const matchDivisi = fDivisi === 'ALL' || ((row[27] ? row[27].trim() : row[5]) === fDivisi);
+
+                const idKaryawan = row[3] ? row[3].toString().toLowerCase() : '';
+                const namaKaryawan = row[2] ? row[2].toString().toLowerCase() : '';
+                const matchSearch = searchQuery === '' || idKaryawan.includes(searchQuery) || namaKaryawan.includes(searchQuery);
+
+                if (matchPeriodePrev && matchPerusahaan && matchDivisi && matchSearch) {
+                    const lemburVal = parseNum(row[10]) + parseNum(row[11]);
+                    if (lemburVal > 0) {
+                        prevTotalLembur += lemburVal;
+                    }
+                }
+            });
+        }
+        if(document.getElementById('ot-prev-total')) document.getElementById('ot-prev-total').innerText = formatIDR(prevTotalLembur);
+        
+        const badgeEl = document.getElementById('ot-trend-badge');
+        if(badgeEl) {
+            if (prevTotalLembur === 0) {
+                badgeEl.innerHTML = `<span class="text-slate-400 font-normal italic">Tidak ada data bulan lalu</span>`;
+            } else {
+                const diffPercent = ((currentTotalLembur - prevTotalLembur) / prevTotalLembur) * 100;
+                if (diffPercent >= 0) {
+                    badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}%</span>`;
+                } else {
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
+                }
+            }
+        }
+    }
+
+    function renderDatabaseTable(headers, data) {
+        const thead = document.getElementById('database-table-head');
+        const tbody = document.getElementById('database-table-body');
+        if(!thead || !tbody) return;
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+
+        if (headers.length > 0) {
+            let trHead = '<tr>';
+            headers.forEach(h => trHead += `<th class="p-3 border-b border-slate-200">${h}</th>`);
+            trHead += '</tr>';
+            thead.innerHTML = trHead;
+        }
+
+        data.slice(0, 50).forEach(row => {
+            let trBody = '<tr class="hover:bg-slate-50 transition-colors">';
+            row.forEach(val => trBody += `<td class="p-3 border-b border-slate-100">${val || '-'}</td>`);
+            trBody += '</tr>';
+            tbody.innerHTML += trBody;
+        });
+    }
+
+    function renderCostAnalysisTable(costMap) {
+        const tbody = document.getElementById('cost-table-body');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        
+        const searchInput = document.getElementById('cost-search-filter');
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+        const sorted = Object.entries(costMap).filter(([divisi]) => {
+            return query === '' || divisi.toLowerCase().includes(query);
+        }).sort((a, b) => b[1].thp - a[1].thp);
+
+        if (sorted.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Divisi tidak ditemukan.</td></tr>';
+            return;
+        }
+
+        sorted.forEach(([divisi, info]) => {
+            const count = info.karyawan.size || 1;
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-amber-50/40 transition-colors";
+            tr.innerHTML = `
+                <td class="p-3 font-semibold text-slate-900">${divisi}</td>
+                <td class="p-3 text-center font-medium">${count} Orang</td>
+                <td class="p-3 text-right font-semibold text-slate-800">${formatIDR(info.gapok)}</td>
+                <td class="p-3 text-right font-semibold text-emerald-600">${formatIDR(info.tunjangan)}</td>
+                <td class="p-3 text-right font-semibold text-rose-600">${formatIDR(info.kewajiban)}</td>
+                <td class="p-3 text-right font-semibold text-purple-600">${formatIDR(info.lembur)}</td>
+                <td class="p-3 text-right font-bold text-amber-900">${formatIDR(info.thp)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterCostAnalysisTable() {
+        renderCostAnalysisTable(cachedCostMap);
+    }
+
+    function renderChartOvertime(dataMap) {
+        const canvas = document.getElementById('chartOvertime');
+        if(!canvas || typeof Chart === 'undefined') return;
+        const sorted = Object.values(dataMap).sort((a, b) => b.total - a.total).slice(0, 5);
+        const ctx = canvas.getContext('2d');
+        if (chartOvertimeInstance) chartOvertimeInstance.destroy();
+        chartOvertimeInstance = new Chart(ctx, {
+            type: 'bar',
+            data: { 
+                labels: sorted.map(i => [i.nama, `(${i.nip} - ${i.divisi})`]), 
+                datasets: [{ data: sorted.map(i => i.total), backgroundColor: '#9333ea', borderRadius: 8 }] 
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                layout: { padding: { top: 25 } },
+                plugins: { 
+                    legend: { display: false }, 
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const item = sorted[items[0].dataIndex];
+                                return `${item.nama} (NIP: ${item.nip})`;
+                            },
+                            afterTitle: (items) => {
+                                const item = sorted[items[0].dataIndex];
+                                return `Divisi: ${item.divisi}`;
+                            },
+                            label: (item) => `Total Lembur: ${formatIDR(item.raw)}`
+                        }
+                    },
+                    datalabels: { anchor: 'end', align: 'top', formatter: (val) => formatCompact(val), font: { weight: 'bold', size: 11 }, color: '#6b21a8' } 
+                },
+                scales: { 
+                    y: { grace: '15%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } }, 
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } } 
+                }
+            }
+        });
+    }
+
+    function renderChartOvertimeDivision(dataMap) {
+        const canvas = document.getElementById('chartOvertimeDivision');
+        if(!canvas || typeof Chart === 'undefined') return;
+        const sorted = Object.entries(dataMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const ctx = canvas.getContext('2d');
+        if (chartOvertimeDivisionInstance) chartOvertimeDivisionInstance.destroy();
+        chartOvertimeDivisionInstance = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: sorted.map(i => i[0]), datasets: [{ data: sorted.map(i => i[1]), backgroundColor: '#4f46e5', borderRadius: 8 }] },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                layout: { padding: { right: 35 } },
+                plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: (val) => formatCompact(val), font: { weight: 'bold', size: 11 }, color: '#312e81' } },
+                scales: { x: { grace: '15%', grid: { display: false }, ticks: { callback: (val) => formatCompact(val) } }, y: { grid: { display: false } } }
+            }
+        });
+    }
+
+    function renderChartBenefit(labels, values) {
+        const canvas = document.getElementById('chartBenefit');
+        if(!canvas || typeof Chart === 'undefined') return;
+        const ctx = canvas.getContext('2d');
+        if (chartBenefitInstance) chartBenefitInstance.destroy();
+        const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#14b8a6', '#6366f1', '#f43f5e', '#84cc16'];
+        chartBenefitInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12 } },
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            if (sum === 0 || value === 0) return '';
+                            return (value * 100 / sum).toFixed(1) + "%";
+                        }, color: '#fff', font: { weight: 'bold', size: 10 }
+                    }
+                }, cutout: '65%'
+            }
+        });
+
+        const listContainer = document.getElementById('benefit-list');
+        if(listContainer) {
+            listContainer.innerHTML = '<h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">Rincian Allowance & Benefit</h4>';
+            labels.forEach((label, idx) => {
+                listContainer.innerHTML += `<div class="flex justify-between items-center text-xs"><span class="flex items-center gap-2 text-slate-700 truncate"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${colors[idx % colors.length]}"></span><span class="truncate">${label}</span></span><span class="font-semibold text-slate-900 shrink-0 ml-2">${formatIDR(values[idx])}</span></div>`;
+            });
+        }
+    }
+
+    function renderChartKewajiban(labels, values) {
+        const canvas = document.getElementById('chartKewajiban');
+        if(!canvas || typeof Chart === 'undefined') return;
+        const ctx = canvas.getContext('2d');
+        if (chartKewajibanInstance) chartKewajibanInstance.destroy();
+        const colors = ['#e11d48', '#9333ea', '#2563eb', '#0891b2', '#d97706', '#4f46e5', '#db2777'];
+        chartKewajibanInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12 } },
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            if (sum === 0 || value === 0) return '';
+                            return (value * 100 / sum).toFixed(1) + "%";
+                        }, color: '#fff', font: { weight: 'bold', size: 10 }
+                    }
+                }, cutout: '65%'
+            }
+        });
+
+        const listContainer = document.getElementById('kewajiban-list');
+        if(listContainer) {
+            listContainer.innerHTML = '<h4 class="text-xs font-bold text-rose-800 uppercase tracking-wider mb-2">Rincian Nominal Kewajiban</h4>';
+            labels.forEach((label, idx) => {
+                listContainer.innerHTML += `<div class="flex justify-between items-center text-xs"><span class="flex items-center gap-2 text-slate-700"><span class="w-2.5 h-2.5 rounded-full" style="background-color: ${colors[idx]}"></span>${label}</span><span class="font-semibold text-slate-900">${formatIDR(values[idx])}</span></div>`;
+            });
+        }
+    }
+
+    function loadTimelineRecords() {
+        const tbody = document.getElementById('timeline-table-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data payroll timeline...</td></tr>';
+
+        fetch(TIMELINE_CSV_URL)
+            .then(response => { if (!response.ok) throw new Error('Network error'); return response.text(); })
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: false, skipEmptyLines: true,
+                    complete: function (results) {
+                        if (results.data && results.data.length > 0) {
+                            rawTimelineHeaders = results.data[0];
+                            localTimelineRecords = results.data.slice(1);
+                            renderTimelineTable();
+                        }
+                    }
+                });
+            })
+            .catch(() => { if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-rose-500">Gagal memuat data Payroll Timeline.</td></tr>'; });
+    }
+
+    function renderTimelineTable() { filterTimelineTable(); }
+
+    function getFilteredTimelineData() {
+        const searchText = (document.getElementById('timeline-search-filter') ? document.getElementById('timeline-search-filter').value : "").toLowerCase();
+        const statusVal = (document.getElementById('timeline-status-filter') ? document.getElementById('timeline-status-filter').value : "").toLowerCase();
+        const fTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'ALL';
+        const fPeriode = document.getElementById('filter-periode') ? document.getElementById('filter-periode').value : 'ALL';
+        
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const selectedPeriodeText = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text.toLowerCase() : '';
+
+        return localTimelineRecords.filter(row => {
+            const rowStr = row.join(" ").toLowerCase();
+            const matchTahun = fTahun === 'ALL' || rowStr.includes(fTahun.toLowerCase());
+            
+            let matchPeriode = true;
+            if (fPeriode !== 'ALL') {
+                let monthNumberStr = "";
+                const monthIndex = monthsNameList.findIndex(m => selectedPeriodeText.includes(m));
+                if (monthIndex !== -1) {
+                    monthNumberStr = String(monthIndex + 1).padStart(2, '0');
+                }
+                
+                matchPeriode = rowStr.includes(fPeriode.toLowerCase()) || 
+                               (selectedPeriodeText !== 'semua bulan' && rowStr.includes(selectedPeriodeText)) ||
+                               (monthNumberStr !== "" && (rowStr.includes(`-${monthNumberStr}-`) || rowStr.includes(`/${monthNumberStr}/`) || rowStr.includes(`2026.${monthNumberStr}`)));
+            }
+
+            const matchSearch = searchText === "" || rowStr.includes(searchText);
+            let matchStatus = true;
+            if (statusVal !== "") {
+                if (statusVal === 'sla') matchStatus = rowStr.includes('sla') && !rowStr.includes('oversla');
+                else if (statusVal === 'oversla') matchStatus = rowStr.includes('oversla');
+            }
+            return matchTahun && matchPeriode && matchSearch && matchStatus;
+        });
+    }
+
+    function filterTimelineTable() {
+        const thead = document.getElementById('timeline-table-head');
+        if (thead && rawTimelineHeaders.length > 0) {
+            let headHTML = '<tr>';
+            rawTimelineHeaders.forEach(h => headHTML += `<th class="p-3 border-b border-slate-200">${h}</th>`);
+            headHTML += '</tr>';
+            thead.innerHTML = headHTML;
+        }
+
+        const filtered = getFilteredTimelineData();
+        const tbody = document.getElementById('timeline-table-body');
+        const countEl = document.getElementById('timeline-record-count');
+        if (countEl) countEl.innerText = `${filtered.length} Data`;
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Data tidak ditemukan.</td></tr>';
+            return;
+        }
+
+        filtered.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-cyan-50/40 transition-colors";
+            let rowHTML = '';
+            row.forEach(val => {
+                const cellValStr = (val !== undefined && val !== null) ? val.toString().trim() : '';
+                const lowerVal = cellValStr.toLowerCase();
+                
+                if (lowerVal === 'sla' || lowerVal === 'oversla') {
+                    let badgeClass = "px-2.5 py-1 rounded-full text-[11px] font-semibold border ";
+                    if (lowerVal === 'sla') {
+                        badgeClass += "bg-blue-50 text-blue-700 border-blue-200"; // Biru untuk SLA
+                    } else if (lowerVal === 'oversla') {
+                        badgeClass += "bg-rose-50 text-rose-700 border-rose-200"; // Merah untuk OverSLA
+                    }
+                    rowHTML += `<td class="p-3 border-b border-slate-100"><span class="${badgeClass}">${cellValStr}</span></td>`;
+                } else {
+                    rowHTML += `<td class="p-3 border-b border-slate-100">${cellValStr || '-'}</td>`;
+                }
+            });
+            tr.innerHTML = rowHTML;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function loadAdjustmentRecords() {
+        const tbody = document.getElementById('adj-table-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data complainan...</td></tr>';
+
+        fetch(COMPLAIN_CSV_URL)
+            .then(response => { if (!response.ok) throw new Error('Network error'); return response.text(); })
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: false, skipEmptyLines: true,
+                    complete: function (results) {
+                        if (results.data && results.data.length > 0) {
+                            rawComplainHeaders = results.data[0];
+                            localAdjustmentRecords = results.data.slice(1);
+                            renderAdjustmentTable();
+                        }
+                    }
+                });
+            })
+            .catch(() => { if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-rose-500">Gagal memuat data komplainan.</td></tr>'; });
+    }
+
+    function renderAdjustmentTable() { filterAdjustmentTable(); }
+
+    function getFilteredComplainanData() {
+        const searchText = (document.getElementById('adj-search-filter') ? document.getElementById('adj-search-filter').value : "").toLowerCase();
+        const statusVal = (document.getElementById('adj-status-filter') ? document.getElementById('adj-status-filter').value : "").toLowerCase();
+        const fTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'ALL';
+        const fPeriode = document.getElementById('filter-periode') ? document.getElementById('filter-periode').value : 'ALL';
+        
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const selectedPeriodeText = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text.toLowerCase() : '';
+
+        return localAdjustmentRecords.filter(row => {
+            const rowStr = row.join(" ").toLowerCase();
+            const tgl = row[1] ? row[1].trim() : '';
+            const matchTahun = fTahun === 'ALL' || tgl.includes(fTahun) || rowStr.includes(fTahun);
+            
+            let matchPeriode = true;
+            if (fPeriode !== 'ALL') {
+                let monthNumberStr = "";
+                const monthIndex = monthsNameList.findIndex(m => selectedPeriodeText.includes(m));
+                if (monthIndex !== -1) {
+                    monthNumberStr = String(monthIndex + 1).padStart(2, '0');
+                }
+
+                const shortMonthName = monthIndex !== -1 ? monthsNameList[monthIndex].substring(0, 3) : '';
+
+                matchPeriode = tgl.toLowerCase().includes(fPeriode.toLowerCase()) || 
+                               tgl.toLowerCase().includes(selectedPeriodeText) || 
+                               rowStr.includes(selectedPeriodeText) ||
+                               (shortMonthName !== "" && (tgl.toLowerCase().includes(shortMonthName) || rowStr.includes(shortMonthName))) ||
+                               (monthNumberStr !== "" && (tgl.includes(`-${monthNumberStr}-`) || tgl.includes(`/${monthNumberStr}/`) || tgl.includes(`.${monthNumberStr}.`) || rowStr.includes(`-${monthNumberStr}-`) || rowStr.includes(`/${monthNumberStr}/`)));
+            }
+
+            const matchSearch = searchText === "" || rowStr.includes(searchText);
+            const matchStatus = statusVal === "" || rowStr.includes(statusVal);
+            return matchTahun && matchPeriode && matchSearch && matchStatus;
+        });
+    }
+
+    function filterAdjustmentTable() {
+        const thead = document.getElementById('adj-table-head');
+        if (thead && rawComplainHeaders.length > 0) {
+            let headHTML = '<tr>';
+            rawComplainHeaders.forEach(h => headHTML += `<th class="p-3 border-b border-slate-200">${h}</th>`);
+            headHTML += '</tr>';
+            thead.innerHTML = headHTML;
+        }
+
+        const filtered = getFilteredComplainanData();
+        const tbody = document.getElementById('adj-table-body');
+        const countEl = document.getElementById('adj-record-count');
+        if (countEl) countEl.innerText = `${filtered.length} Data`;
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Data komplainan tidak ditemukan.</td></tr>';
+            return;
+        }
+
+        filtered.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-amber-50/40 transition-colors";
+            let rowHTML = '';
+            row.forEach((val, colIdx) => {
+                const cellValStr = (val !== undefined && val !== null) ? val.toString().trim() : '';
+                const lowerVal = cellValStr.toLowerCase();
+                
+                // Cek apakah kolom ini berisi status (open, proses, selesai)
+                if (lowerVal === 'open' || lowerVal === 'proses' || lowerVal === 'selesai') {
+                    let badgeClass = "px-2.5 py-1 rounded-full text-[11px] font-semibold border ";
+                    if (lowerVal === 'open') {
+                        badgeClass += "bg-rose-50 text-rose-700 border-rose-200"; // Merah
+                    } else if (lowerVal === 'proses') {
+                        badgeClass += "bg-orange-50 text-orange-700 border-orange-200"; // Oren
+                    } else if (lowerVal === 'selesai') {
+                        badgeClass += "bg-blue-50 text-blue-700 border-blue-200"; // Biru
+                    }
+                    rowHTML += `<td class="p-3 border-b border-slate-100"><span class="${badgeClass}">${cellValStr}</span></td>`;
+                } else {
+                    rowHTML += `<td class="p-3 border-b border-slate-100">${cellValStr || '-'}</td>`;
+                }
+            });
+            tr.innerHTML = rowHTML;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function exportTimelineToExcel() {
+        const filtered = getFilteredTimelineData();
+        if (filtered.length === 0) {
+            alert('Tidak ada data timeline untuk diunduh.');
+            return;
+        }
+        let exportArray = filtered.map(row => {
+            let obj = {};
+            rawTimelineHeaders.forEach((h, idx) => {
+                obj[h || `Col_${idx}`] = row[idx] || '';
+            });
+            return obj;
+        });
+        const worksheet = XLSX.utils.json_to_sheet(exportArray);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Timeline");
+        XLSX.writeFile(workbook, `Laporan_Payroll_Timeline_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function exportAdjustmentToExcel() {
+        const filtered = getFilteredComplainanData();
+        if (filtered.length === 0) {
+            alert('Tidak ada data komplainan untuk diunduh.');
+            return;
+        }
+        let exportArray = filtered.map(row => {
+            let obj = {};
+            rawComplainHeaders.forEach((h, idx) => {
+                obj[h || `Col_${idx}`] = row[idx] || '';
+            });
+            return obj;
+        });
+        const worksheet = XLSX.utils.json_to_sheet(exportArray);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Complainan");
+        XLSX.writeFile(workbook, `Laporan_Payroll_Complainan_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function downloadPPTX() {
+        try {
+            const filtered = getFilteredData();
+            const fPeriodeSelect = document.getElementById('filter-periode');
+            const selectedPeriode = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text : 'Semua Bulan';
+            const selectedTahun = document.getElementById('filter-tahun').value;
+            const periodeText = selectedPeriode !== 'Semua Bulan' ? selectedPeriode : (selectedTahun !== 'ALL' ? selectedTahun : 'Oktober 2026');
+
+            let totalGross = 0, totalTHP = 0, totalPotongan = 0;
+            let totalKekuranganBlnLalu = 0, totalLemburan = 0, totalTunjanganBenefit = 0;
+            let totalKomponenSlide4 = 0;
+            let totalKomponenSlide5 = 0;
+            
+            const karyawanSet = new Set();
+            const perusahaanSet = new Set();
+            const divisiSet = new Set();
+            const cabangSet = new Set();
+
+            const companyMap = {};
+            const divisiLemburMap = {};
+            const karyawanLemburMap = {};
+            
+            let colTotals = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            const kewajibanTotalsArr = [0, 0, 0, 0, 0, 0, 0];
+
+            filtered.forEach(row => {
+                const karId = row[3] ? row[3].trim() : '';
+                const karNama = row[2] ? row[2].trim() : 'Tanpa Nama';
+                const comp = row[4] ? row[4].trim() : 'Lainnya';
+                const div = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Lainnya');
+                const cabang = row[6] ? row[6].trim() : 'Lainnya';
+
+                if (karId) karyawanSet.add(karId);
+                if (row[4]) perusahaanSet.add(comp);
+                if (row[27]) divisiSet.add(div);
+                if (row[6]) cabangSet.add(cabang);
+
+                if (!companyMap[comp]) {
+                    companyMap[comp] = { 
+                        karyawanSet: new Set(), 
+                        divisiSet: new Set(), 
+                        cabangSet: new Set(),
+                        gross: 0,
+                        thp: 0
+                    };
+                }
+                if (karId) companyMap[comp].karyawanSet.add(karId);
+                companyMap[comp].divisiSet.add(div);
+                companyMap[comp].cabangSet.add(cabang);
+
+                const gross = calcRowGross(row);
+                const thp = parseNum(row[26]);
+                const kekurangan = parseNum(row[9]);
+                const lemburFullday = parseNum(row[10]);
+                const lemburLongshift = parseNum(row[11]);
+                const lemburTotal = lemburFullday + lemburLongshift;
+
+                totalGross += gross;
+                totalTHP += thp;
+                totalKekuranganBlnLalu += kekurangan;
+                totalLemburan += lemburTotal;
+
+                totalKomponenSlide4 += gross;
+
+                for(let i = 7; i <= 16; i++) {
+                    const val = parseNum(row[i]);
+                    colTotals[i - 7] += val;
+                    totalTunjanganBenefit += val;
+                }
+
+                for(let i = 17; i <= 23; i++) {
+                    totalKomponenSlide5 += parseNum(row[i]);
+                }
+
+                companyMap[comp].gross += gross;
+                companyMap[comp].thp += thp;
+
+                if (lemburTotal > 0) {
+                    divisiLemburMap[div] = (divisiLemburMap[div] || 0) + lemburTotal;
+                    karyawanLemburMap[karNama] = (karyawanLemburMap[karNama] || 0) + lemburTotal;
+                }
+
+                let pin1 = parseNum(row[17]);
+                let pin2 = parseNum(row[18]);
+                let pnl = parseNum(row[19]);
+                let pAbsen = parseNum(row[20]);
+                let pSakit = parseNum(row[21]);
+                let bpjsK = parseNum(row[22]);
+                let jhtK = parseNum(row[23]);
+
+                kewajibanTotalsArr[0] += pin1;
+                kewajibanTotalsArr[1] += pin2;
+                kewajibanTotalsArr[2] += pnl;
+                kewajibanTotalsArr[3] += pAbsen;
+                kewajibanTotalsArr[4] += pSakit;
+                kewajibanTotalsArr[5] += bpjsK;
+                kewajibanTotalsArr[6] += jhtK;
+
+                totalPotongan += (pin1 + pin2 + pnl + pAbsen + pSakit + bpjsK + jhtK);
+            });
+
+            let prevMonthGross = 0;
+            let prevMonthBranchesCount = 122;
+            const currentBranchesCount = cabangSet.size > 0 ? cabangSet.size : 136;
+            const branchDiffCount = currentBranchesCount - prevMonthBranchesCount;
+
+            const fPeriodeSelectObj = document.getElementById('filter-periode');
+            if (fPeriodeSelectObj && fPeriodeSelectObj.selectedIndex > 1) {
+                const prevPeriodeVal = fPeriodeSelectObj.options[fPeriodeSelectObj.selectedIndex - 1].value;
+                rawData.forEach(row => {
+                    if (row[1] && row[1].trim() === prevPeriodeVal) {
+                        prevMonthGross += calcRowGross(row);
+                    }
+                });
+            } else {
+                prevMonthGross = totalGross * 0.95;
+            }
+
+            const diffGrossAmt = totalGross - prevMonthGross;
+            const diffGrossPct = prevMonthGross > 0 ? ((diffGrossAmt / prevMonthGross) * 100).toFixed(1) : "0.0";
+            const diffSign = diffGrossAmt >= 0 ? "+" : "";
+
+            const filteredLoan = getFilteredLoanData();
+            let pptTotalLoan = 0;
+            let pptTotalSisaLoan = 0;
+            let pptTotalBayarLoan = 0;
+            const pptLoanBorrowers = new Set();
+
+            filteredLoan.forEach(row => {
+                const nip = row[3] ? row[3].toString().trim() : '';
+                if (nip && nip !== '-') pptLoanBorrowers.add(nip.toLowerCase());
+                pptTotalLoan += parseNum(row[8]);
+                pptTotalBayarLoan += parseNum(row[9]);
+                pptTotalSisaLoan += parseNum(row[10]);
+            });
+
+            const pptMonthlyLoanTotals = new Array(12).fill(0);
+            const baseYearlyLoanRows = getFilteredLoanData(null, true);
+            baseYearlyLoanRows.forEach(row => {
+                const mIdx = getLoanRowMonthIndex(row);
+                if (mIdx !== -1) {
+                    pptMonthlyLoanTotals[mIdx] += parseNum(row[8]);
+                }
+            });
+
+            let totalKomplain = localAdjustmentRecords.length;
+            let openKomplain = localAdjustmentRecords.filter(r => r.join(" ").toLowerCase().includes('open')).length;
+            let prosesKomplain = localAdjustmentRecords.filter(r => r.join(" ").toLowerCase().includes('proses')).length;
+            let selesaiKomplain = localAdjustmentRecords.filter(r => r.join(" ").toLowerCase().includes('selesai')).length;
+
+            if (typeof PptxGenJS === 'undefined') {
+                alert('Library PptxGenJS belum termuat. Periksa koneksi internet Anda.');
+                return;
+            }
+
+            let pptx = new PptxGenJS();
+            pptx.defineLayout({ name: 'CUSTOM', width: 13.333, height: 7.5 });
+            pptx.layout = 'CUSTOM';
+
+            const BG_DARK = "0F172A";
+            const AMBER = "F59E0B";
+            const WHITE = "FFFFFF";
+            const SLATE_LIGHT = "F8FAFC";
+            const SLATE_DARK = "1E293B";
+            const SLATE_MUTED = "64748B";
+
+            let slide1 = pptx.addSlide();
+            slide1.background = { color: BG_DARK };
+            slide1.addText("👑 PT RAJA EMAS INDONESIA", { x: 1.2, y: 1.8, w: 10, h: 0.5, fontSize: 16, bold: true, color: AMBER });
+            slide1.addText("Laporan Payroll Raja Emas Indonesia", { x: 1.2, y: 2.5, w: 11, h: 1.0, fontSize: 32, bold: true, color: WHITE });
+            slide1.addText(`Periode: ${periodeText}\nDisusun Oleh: Tim HR / Payroll & Finance\nKepada: Direksi & Manajemen PT Raja Emas Indonesia`, { x: 1.2, y: 3.9, w: 10, h: 1.5, fontSize: 14, color: "CBD5E1" });
+
+            let slide2 = pptx.addSlide();
+            slide2.addText("2. Ringkasan Finansial & Demografi Utama", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide2.addText(`Akumulasi finansial dan demografi karyawan periode ${periodeText}`, { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+
+            slide2.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 1.5, w: 5.7, h: 1.6, fill: { color: "FEF3C7" }, line: { color: "FCD34D" } });
+            slide2.addText("TOTAL GROSS & THP", { x: 1.0, y: 1.65, w: 5.3, h: 0.3, fontSize: 11, bold: true, color: "92400E" });
+            slide2.addText(`Gross: ${formatIDR(totalGross)}`, { x: 1.0, y: 1.95, w: 5.3, h: 0.4, fontSize: 15, bold: true, color: SLATE_DARK });
+            slide2.addText(`THP: ${formatIDR(totalTHP)}`, { x: 1.0, y: 2.35, w: 5.3, h: 0.4, fontSize: 15, bold: true, color: "047857" });
+
+            slide2.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 6.8, y: 1.5, w: 5.7, h: 1.6, fill: { color: "FFE4E6" }, line: { color: "FDA4AF" } });
+            slide2.addText("TOTAL POTONGAN (DEDUCTIONS)", { x: 7.0, y: 1.65, w: 5.3, h: 0.3, fontSize: 11, bold: true, color: "9F1239" });
+            slide2.addText(formatIDR(totalPotongan), { x: 7.0, y: 2.05, w: 5.3, h: 0.6, fontSize: 22, bold: true, color: "E11D48" });
+
+            let tableSlide2 = [
+                [{ text: "Parameter Laporan", options: { fill: SLATE_DARK, color: WHITE, bold: true } }, { text: "Total Nilai / Jumlah", options: { fill: SLATE_DARK, color: WHITE, bold: true, align: "right" } }],
+                [{ text: "Total Keseluruhan Karyawan" }, { text: `${karyawanSet.size} Karyawan`, options: { bold: true, align: "right" } }],
+                [{ text: "Total Perusahaan Terdaftar" }, { text: `${perusahaanSet.size} Perusahaan`, options: { bold: true, align: "right" } }],
+                [{ text: "Total Divisi Operasional " }, { text: `${divisiSet.size} Divisi`, options: { bold: true, align: "right" } }],
+                [{ text: "Total Cabang / Store" }, { text: `${cabangSet.size} Cabang`, options: { bold: true, align: "right" } }]
+            ];
+            slide2.addTable(tableSlide2, { x: 0.8, y: 3.4, w: 11.7, h: 3.5, border: { pt: 1, color: "E2E8F0" } });
+
+            let slide3 = pptx.addSlide();
+            slide3.addText("3. Pendetailan Demografi & Total THP per Perusahaan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide3.addText("Rincian keseluruhan karyawan, divisi, cabang, dan total THP dikelompokkan berdasarkan entitas perusahaan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+
+            let tableCompRows = [
+                [
+                    { text: "Nama Perusahaan", options: { fill: "1E293B", color: WHITE, bold: true } },
+                    { text: "Total Karyawan", options: { fill: "1E293B", color: WHITE, bold: true, align: "center" } },
+                    { text: "Total Divisi", options: { fill: "1E293B", color: WHITE, bold: true, align: "center" } },
+                    { text: "Total Cabang", options: { fill: "1E293B", color: WHITE, bold: true, align: "center" } },
+                    { text: "Total THP", options: { fill: "1E293B", color: WHITE, bold: true, align: "right" } }
+                ]
+            ];
+
+            Object.entries(companyMap).forEach(([compName, dataObj]) => {
+                tableCompRows.push([
+                    { text: compName, options: { bold: true } },
+                    { text: `${dataObj.karyawanSet.size} Orang`, options: { align: "center" } },
+                    { text: `${dataObj.divisiSet.size} Divisi`, options: { align: "center" } },
+                    { text: `${dataObj.cabangSet.size} Cabang`, options: { align: "center" } },
+                    { text: formatIDR(dataObj.thp), options: { align: "right", bold: true, color: "047857" } }
+                ]);
+            });
+
+            slide3.addTable(tableCompRows, { x: 0.8, y: 1.6, w: 11.7, h: 5.0, border: { pt: 1, color: "E2E8F0" } });
+
+            let slide4 = pptx.addSlide();
+            slide4.addText("4. Rincian / Komponen Pendapatan Karyawan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide4.addText("Komponen pendapatan dari kolom H (Salary) sampai Q (Uang Transport)", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+
+            let tablePenghasilan = [
+                [{ text: "Komponen Pendapatan & Benefit", options: { fill: "047857", color: WHITE, bold: true } }, { text: "Total Nominal", options: { fill: "047857", color: WHITE, bold: true, align: "right" } }]
+            ];
+            
+            for(let i = 0; i < allowanceHeaders.length; i++) {
+                tablePenghasilan.push([{ text: allowanceHeaders[i] }, { text: formatIDR(colTotals[i]), options: { align: "right", bold: true } }]);
+            }
+            
+            tablePenghasilan.push([{ text: "Total Keseluruhan (Total Komponen H-Q)", options: { bold: true, fill: "ECFDF5" } }, { text: formatIDR(totalKomponenSlide4), options: { align: "right", bold: true, fill: "ECFDF5", color: "047857" } }]);
+
+            slide4.addTable(tablePenghasilan, { x: 0.8, y: 1.5, w: 6.2, h: 5.5, border: { pt: 1, color: "E2E8F0" } });
+
+            let chartBenefitData = [{
+                name: "Pendapatan",
+                labels: allowanceHeaders,
+                values: colTotals
+            }];
+            slide4.addChart(pptx.charts.BAR, chartBenefitData, { x: 7.3, y: 1.5, w: 5.2, h: 5.5, barDir: "col", chartColors: ["047857", "10B981", "34D399", "6EE7B7"], showValue: true });
+
+            let slide5 = pptx.addSlide();
+            slide5.addText("5. Komponen Potongan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide5.addText("Rincian kewajiban, cicilan, pinalti, dan BPJS", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+
+            let tablePotongan = [
+                [{ text: "Jenis Potongan", options: { fill: "E11D48", color: WHITE, bold: true } }, { text: "Total Nominal", options: { fill: "E11D48", color: WHITE, bold: true, align: "right" } }]
+            ];
+            kewajibanHeaders.forEach((h, idx) => {
+                tablePotongan.push([{ text: h }, { text: formatIDR(kewajibanTotalsArr[idx]), options: { align: "right", bold: true } }]);
+            });
+            tablePotongan.push([{ text: "Total Seluruh Komponen Potongan ", options: { bold: true, fill: "FFF1F2" } }, { text: formatIDR(totalKomponenSlide5), options: { align: "right", bold: true, fill: "FFF1F2", color: "E11D48" } }]);
+
+            slide5.addTable(tablePotongan, { x: 0.8, y: 1.6, w: 6.0, h: 5.2, border: { pt: 1, color: "E2E8F0" } });
+
+            let chartPotonganData = [{
+                name: "Potongan",
+                labels: kewajibanHeaders,
+                values: kewajibanTotalsArr
+            }];
+            slide5.addChart(pptx.charts.BAR, chartPotonganData, { x: 7.1, y: 1.6, w: 5.4, h: 5.2, barDir: "col", chartColors: ["E11D48", "F43F5E", "FB7185", "FDA4AF"], showValue: true });
+
+            let slideLoan = pptx.addSlide();
+            slideLoan.addText("6. Laporan Pinjaman Karyawan (Loan)", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slideLoan.addText(`Ringkasan kewajiban pinjaman periode ${periodeText} dan grafik tren pinjaman (loan) setahun`, { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+
+            const loanBoxes = [
+                { title: "TOTAL PINJAMAN ", val: formatIDR(pptTotalLoan), bg: "FFF7ED", line: "F97316", txtColor: "C2410C" },
+                { title: "SUDAH DIBAYAR ", val: formatIDR(pptTotalBayarLoan), bg: "ECFDF5", line: "10B981", txtColor: "047857" },
+                { title: "SISA PINJAMAN", val: formatIDR(pptTotalSisaLoan), bg: "FFF1F2", line: "E11D48", txtColor: "BE123C" },
+                { title: "PEMINJAM AKTIF", val: `${pptLoanBorrowers.size} Orang`, bg: "FEF3C7", line: "F59E0B", txtColor: "B45309" }
+            ];
+
+            loanBoxes.forEach((lb, idx) => {
+                let x = 0.8 + idx * 3.0;
+                slideLoan.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: x, y: 1.5, w: 2.75, h: 1.35, fill: { color: lb.bg }, line: { color: lb.line } });
+                slideLoan.addText(lb.title, { x: x + 0.15, y: 1.65, w: 2.45, h: 0.3, fontSize: 9.5, bold: true, color: lb.txtColor });
+                slideLoan.addText(lb.val, { x: x + 0.15, y: 2.0, w: 2.45, h: 0.65, fontSize: 14, bold: true, color: SLATE_DARK });
+            });
+
+            slideLoan.addText("Grafik Tren Garis Total Pinjaman (Loan) per Bulan dalam Setahun (Rp)", { x: 0.8, y: 3.05, w: 11.7, h: 0.35, fontSize: 13, bold: true, color: SLATE_DARK });
+
+            let chartLoanYearLineData = [{
+                name: "Total Pinjaman ",
+                labels: standardMonthsOrder,
+                values: pptMonthlyLoanTotals
+            }];
+
+            slideLoan.addChart(pptx.charts.LINE, chartLoanYearLineData, {
+                x: 0.8,
+                y: 3.45,
+                w: 11.7,
+                h: 3.65,
+                chartColors: ["F97316"],
+                lineSize: 3,
+                showValue: true,
+                valAxisLabelFormatCode: "#,##0"
+            });
+
+            let slide6 = pptx.addSlide();
+            slide6.addText("7. Analisis Rinci Biaya & Jam Lembur", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide6.addText("Divisi dengan akumulasi lembur terbanyak dan karyawan dengan nominal lembur tertinggi", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+
+            let sortedDivLembur = Object.entries(divisiLemburMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            let sortedKarLembur = Object.entries(karyawanLemburMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            let tableDivLemburRows = [
+                [{ text: "Divisi (Top Lembur)", options: { fill: "7C3AED", color: WHITE, bold: true } }, { text: "Total Nominal", options: { fill: "7C3AED", color: WHITE, bold: true, align: "right" } }]
+            ];
+            sortedDivLembur.forEach(([divName, val]) => {
+                tableDivLemburRows.push([{ text: divName }, { text: formatIDR(val), options: { align: "right", bold: true } }]);
+            });
+
+            let tableKarLemburRows = [
+                [{ text: "Karyawan (Top Lembur)", options: { fill: "9333EA", color: WHITE, bold: true } }, { text: "Total Nominal", options: { fill: "9333EA", color: WHITE, bold: true, align: "right" } }]
+            ];
+            sortedKarLembur.forEach(([karName, val]) => {
+                tableKarLemburRows.push([{ text: karName }, { text: formatIDR(val), options: { align: "right", bold: true } }]);
+            });
+
+            slide6.addTable(tableDivLemburRows, { x: 0.8, y: 1.6, w: 5.7, h: 5.0, border: { pt: 1, color: "E2E8F0" } });
+            slide6.addTable(tableKarLemburRows, { x: 6.8, y: 1.6, w: 5.7, h: 5.0, border: { pt: 1, color: "E2E8F0" } });
+
+            let slide7 = pptx.addSlide();
+            slide7.addText("8. Rekonsiliasi & Analisis Variansi (Payroll)", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide7.addText("Analisis perbandingan gaji, penambahan cabang, dan penyesuaian periode berjalan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+
+            slide7.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 1.5, w: 11.7, h: 5.4, fill: { color: SLATE_LIGHT }, line: { color: "E2E8F0" } });
+            
+            let rekonsiliasiText = 
+                `• Perbandingan Gaji Bulan Lalu:\n` +
+                `  Total pengeluaran gross bulan ini adalah ${formatIDR(totalGross)}, mengalami selisih sebesar ${diffSign}${formatIDR(diffGrossAmt)} (${diffSign}${diffGrossPct}%) dibandingkan total gross bulan lalu (${formatIDR(prevMonthGross)}).\n\n` +
+                `• Data Penambahan Cabang:\n` +
+                `  Jumlah cabang / store aktif pada periode ini tercatat sebanyak ${currentBranchesCount} cabang, bertambah ${branchDiffCount} cabang dari bulan lalu (${prevMonthBranchesCount} cabang menjadi ${currentBranchesCount} cabang).\n\n` +
+                `• Penyesuaian Gaji & Kekurangan Bulan Lalu:\n` +
+                `  Total kekurangan gaji bulan lalu sebesar ${formatIDR(totalKekuranganBlnLalu)} telah diverifikasi dan dimasukkan ke dalam komponen pembayaran periode berjalan.\n\n` +
+                `• Catatan Audit & Rekonsiliasi Finansial:\n` +
+                `  Seluruh perhitungan iuran BPJS, cicilan pinjaman (loan), lembur, dan potongan telah terekonsiliasi secara akurat dengan database pusat PT Raja Emas Indonesia.`;
+            
+            slide7.addText(rekonsiliasiText, { x: 1.2, y: 1.8, w: 11.0, h: 4.8, fontSize: 13, color: SLATE_DARK });
+
+            let slide8 = pptx.addSlide();
+            slide8.addText("9. Laporan Komplain dan Penyesuaian Laporan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide8.addText("Monitoring status tiket komplain dan kendala penggajian karyawan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+
+            let boxWidth = 3.6;
+            let komplainStats = [
+                { title: "TOTAL TIKET KOMPLAIN", val: `${totalKomplain} Tiket`, color: "3B82F6", bg: "EFF6FF" },
+                { title: "STATUS SELESAI", val: `${selesaiKomplain} Selesai`, color: "10B981", bg: "ECFDF5" },
+                { title: "STATUS OPEN & PROSES", val: `${openKomplain + prosesKomplain} Aktif`, color: "F59E0B", bg: "FEF3C7" }
+            ];
+
+            komplainStats.forEach((ks, idx) => {
+                let x = 0.8 + idx * 4.05;
+                slide8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: x, y: 1.6, w: boxWidth, h: 1.7, fill: { color: ks.bg }, line: { color: ks.color } });
+                slide8.addText(ks.title, { x: x + 0.2, y: 1.8, w: boxWidth - 0.4, h: 0.3, fontSize: 11, bold: true, color: ks.color });
+                slide8.addText(ks.val, { x: x + 0.2, y: 2.2, w: boxWidth - 0.4, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            });
+
+            slide8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 3.5, w: 11.7, h: 3.4, fill: { color: SLATE_LIGHT }, line: { color: "E2E8F0" } });
+            let komplainSummaryText = 
+                `• Monitoring Kendala & Complainan Penggajian:\n` +
+                `  - Total Tiket Masuk: ${totalKomplain} laporan.\n` +
+                `  - Selesai Ditangani: ${selesaiKomplain} tiket (${totalKomplain > 0 ? ((selesaiKomplain/totalKomplain)*100).toFixed(1) : 0}% resolusi).\n` +
+                `  - Dalam Proses & Open: ${openKomplain + prosesKomplain} tiket sedang ditindaklanjuti oleh tim HR Payroll.\n\n` +
+                `• Tindak Lanjut Penyesuaian:\n  Seluruh komplain terkait selisih nominal, absensi, dan tunjangan telah diverifikasi dengan data presensi cabang masing-masing untuk memastikan akurasi laporan payroll.`;
+            slide8.addText(komplainSummaryText, { x: 1.2, y: 3.8, w: 11.0, h: 2.8, fontSize: 13, color: SLATE_DARK });
+
+            let slide9 = pptx.addSlide();
+            slide9.background = { color: BG_DARK };
+            slide9.addText("TERIMA KASIH", { x: 1.5, y: 2.2, w: 10, h: 0.8, fontSize: 36, bold: true, color: AMBER });
+            slide9.addText("Sesi Tanya Jawab & Diskusi (Q&A)", { x: 1.5, y: 3.0, w: 10, h: 0.8, fontSize: 22, bold: true, color: WHITE });
+            slide9.addText("PT Raja Emas Indonesia • Portal Report Payroll & Finance", { x: 1.5, y: 4.2, w: 10, h: 0.5, fontSize: 14, color: "CBD5E1" });
+
+            pptx.writeFile({ fileName: `Laporan_Payroll_Raja_Emas_${periodeText.replace(/\s+/g, '_')}.pptx` });
+        } catch (err) {
+            console.error(err);
+            alert('Terjadi kesalahan saat membuat file PowerPoint: ' + err.message);
+        }
+    }
+
+    function downloadReportExcel(reportType) {
+        const filteredData = getFilteredData();
+        
+        const fPeriodeSelect = document.getElementById('filter-periode');
+        const selectedPeriode = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text : 'Semua Bulan';
+        const selectedTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'Semua Tahun';
+        const activePeriodeText = selectedPeriode !== 'Semua Bulan' ? selectedPeriode : 'Semua Bulan';
+        const activeTahunText = selectedTahun !== 'ALL' ? selectedTahun : 'Semua Tahun';
+
+        let rawRowsForSheet = [];
+        let fileName = `Laporan_${reportType}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+        if (reportType === 'summary') {
+            rawRowsForSheet = filteredData.map(row => ({
+                "ID Karyawan": row[3] || '',
+                "Nama Karyawan": row[2] || '',
+                "Perusahaan": row[4] || '',
+                "Divisi ": row[27] || '',
+                "Posisi ": row[5] || '',
+                "Cabang": row[6] || '',
+                "Gapok (Rp)": calcRowGapok(row),
+                "Gross (Rp)": calcRowGross(row),
+                "Lembur (Rp)": parseNum(row[10]) + parseNum(row[11]),
+                "THP (Rp)": parseNum(row[26])
+            }));
+            fileName = `Payroll_Summary_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
+        } else if (reportType === 'allowance') {
+            rawRowsForSheet = filteredData.map(row => {
+                let obj = { 
+                    "ID Karyawan": row[3] || '', 
+                    "Nama Karyawan": row[2] || '',
+                    "Divisi ": row[27] || '',
+                    "Posisi ": row[5] || ''
+                };
+                let total = 0;
+                allowanceIndices.forEach((idx, i) => {
+                    let val = parseNum(row[idx]);
+                    obj[allowanceHeaders[i] || `Col_${idx}`] = val;
+                    total += val;
+                });
+                obj["Total Gross (H-Q) (Rp)"] = total;
+                return obj;
+            });
+            fileName = `Allowance_Benefit_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
+        } else if (reportType === 'kewajiban') {
+            rawRowsForSheet = filteredData.map(row => {
+                let obj = { 
+                    "ID Karyawan": row[3] || '', 
+                    "Nama Karyawan": row[2] || '',
+                    "Divisi ": row[27] || '',
+                    "Posisi ": row[5] || ''
+                };
+                let total = 0;
+                kewajibanHeaders.forEach((h, idx) => {
+                    let val = parseNum(row[kewajibanIndices[idx]]);
+                    obj[h] = val;
+                    total += val;
+                });
+                obj["Total Kewajiban (Rp)"] = total;
+                return obj;
+            });
+            fileName = `Kewajiban_Potongan_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
+        } else if (reportType === 'loan') {
+            const filteredLoan = getFilteredLoanData();
+            const empMetaMap = getEmployeeMetaMap();
+            rawRowsForSheet = filteredLoan.map((row, idx) => {
+                const nip = row[3] ? row[3].trim() : '';
+                const meta = empMetaMap[nip.toLowerCase()] || { divisi: '', posisi: '' };
+                return {
+                    "Nomor": idx + 1,
+                    "Nama Karyawan": row[4] ? row[4].trim() : '',
+                    "NIP (Kolom D)": nip,
+                    "Divisi ": meta.divisi || '',
+                    "Posisi ": meta.posisi || '',
+                    "Bulan / Periode ": getLoanRowPeriodLabel(row),
+                    "Total Kewajiban / Pinjaman(Rp)": parseNum(row[8]),
+                    "Total Pembayaran Setahun  (Rp)": parseNum(row[9]),
+                    "Total Tenor": row[6] ? row[6].trim() : '',
+                    "Angsuran per Bulan (Rp)": parseNum(row[9]),
+                    "Sisa Tenor": row[7] ? row[7].trim() : '',
+                    "Sisa Pinjaman (Rp)": parseNum(row[10]),
+                    "Status Kolom O": row[14] ? row[14].trim() : ''
+                };
+            });
+            fileName = `Laporan_Loan_Karyawan_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
+        } else if (reportType === 'overtime') {
+            const otFiltered = filteredData.filter(row => (parseNum(row[10]) + parseNum(row[11])) > 0);
+            rawRowsForSheet = otFiltered.map(row => ({
+                "ID Karyawan": row[3] || '',
+                "Nama Karyawan": row[2] || '',
+                "Perusahaan": row[4] || '',
+                "Posisi": row[5] || '',
+                "Divisi ": row[27] || '',
+                "Nominal Lembur (Rp)": parseNum(row[10]) + parseNum(row[11])
+            }));
+            fileName = `Overtime_Cost_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
+        } else if (reportType === 'cost') {
+            let costMap = {};
+            filteredData.forEach(row => {
+                const divisi = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Unassigned');
+                const id = row[3] ? row[3].trim() : '';
+                if (!costMap[divisi]) costMap[divisi] = { karyawan: new Set(), gapok: 0, tunjangan: 0, kewajiban: 0, lembur: 0, thp: 0 };
+                if (id) costMap[divisi].karyawan.add(id);
+                costMap[divisi].gapok += calcRowGapok(row);
+                costMap[divisi].tunjangan += calcRowTunjangan(row);
+                costMap[divisi].kewajiban += calcRowKewajiban(row);
+                costMap[divisi].lembur += (parseNum(row[10]) + parseNum(row[11]));
+                costMap[divisi].thp += parseNum(row[26]);
+            });
+            rawRowsForSheet = Object.entries(costMap).map(([div, info]) => ({
+                "Nama Divisi ": div,
+                "Jumlah Karyawan": info.karyawan.size,
+                "Total Gapok (Rp)": info.gapok,
+                "Total Tunjangan (Rp)": info.tunjangan,
+                "Total Kewajiban (Rp)": info.kewajiban,
+                "Total Lemburan (Rp)": info.lembur,
+                "Total THP (Rp)": info.thp
+            }));
+            fileName = `Cost_Analysis_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
+        } else if (reportType === 'database') {
+            rawRowsForSheet = filteredData.map(row => {
+                let obj = {};
+                headerRow.forEach((h, idx) => {
+                    obj[h || `Col_${idx}`] = row[idx] || '';
+                });
+                return obj;
+            });
+            fileName = `Database_Payroll_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}_${Date.now()}.xlsx`;
+        }
+
+        if (reportType === 'timeline') {
+            exportTimelineToExcel();
+            return;
+        }
+        if (reportType === 'adjustment') {
+            exportAdjustmentToExcel();
+            return;
+        }
+
+        if (rawRowsForSheet.length === 0) {
+            alert('Tidak ada data untuk diunduh pada filter saat ini.');
+            return;
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet([]);
+        
+        XLSX.utils.sheet_add_aoa(worksheet, [
+            ["PT RAJA EMAS INDONESIA - LAPORAN PAYROLL"],
+            [`Periode Bulan: ${activePeriodeText} | Tahun: ${activeTahunText}`],
+            []
+        ], { origin: "A1" });
+
+        XLSX.utils.sheet_add_json(worksheet, rawRowsForSheet, { origin: "A4", skipHeader: false });
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Payroll");
+        XLSX.writeFile(workbook, fileName);
+    }
+</script>
+</body>
+</html>
