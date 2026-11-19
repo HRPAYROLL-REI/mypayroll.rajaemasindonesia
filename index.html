@@ -16,10 +16,12 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- PptxGenJS CDN for PowerPoint Export -->
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <!-- html2pdf.js CDN untuk Download Slip Gaji PDF Langsung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Font Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
     body {
@@ -49,9 +51,33 @@
         0%, 100% { opacity: 1; }
         50% { opacity: .4; }
     }
+    /* Custom Print Styles untuk Cetak Slip Gaji */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #payslip-printable-area, #payslip-printable-area * {
+            visibility: visible;
+        }
+        #payslip-printable-area {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            background: white !important;
+            padding: 20px;
+            box-shadow: none !important;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
 </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 antialiased">
+
+<!-- TOAST NOTIFICATION CONTAINER (Pengganti alert() standar) -->
+<div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
 <!-- ================= SECTION 1: FORM LOGIN ================= -->
 <div id="login-section" class="min-h-screen login-bg pt-12 md:pt-16 pb-12 px-4 flex justify-center">
@@ -72,7 +98,7 @@
 
         <div id="error-alert" class="hidden mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/40 text-rose-400 text-xs text-center flex items-center justify-center gap-2">
             <i class="fa-solid fa-circle-exclamation"></i>
-            <span>Username atau Password salah!</span>
+            <span id="error-alert-text">Username atau Password salah!</span>
         </div>
 
         <form onsubmit="handleLogin(event)" class="space-y-5">
@@ -99,7 +125,7 @@
 
             <button type="submit" 
                 class="w-full mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-amber-500/25 transition-all duration-200 flex items-center justify-center gap-2">
-                <span>MASUK</span>
+                <span>MASUK PORTAL</span>
                 <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
             </button>
         </form>
@@ -111,99 +137,132 @@
 </div>
 
 <!-- ================= SECTION 2: AREA DASHBOARD FULL LAYAR ================= -->
-<div id="dashboard-section" class="hidden min-h-screen flex flex-col md:flex-row">
+<div id="dashboard-section" class="hidden min-h-screen flex flex-col md:flex-row relative">
     
-    <!-- SIDEBAR MENU -->
-    <aside class="w-full md:w-72 bg-slate-900 border-r border-slate-800 p-4 md:p-6 flex flex-col justify-between shrink-0 shadow-xl">
-        <div class="space-y-6">
+    <!-- MOBILE HEADER BAR -->
+    <div class="md:hidden bg-slate-900 text-white px-4 py-3 flex items-center justify-between border-b border-slate-800 sticky top-0 z-40">
+        <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-crown text-amber-400 text-lg"></i>
+            <div>
+                <span class="font-extrabold tracking-wider text-xs block">RAJA EMAS<span class="text-amber-400"> INDONESIA</span></span>
+                <span class="text-[9px] text-slate-400 block">Portal Report Payroll</span>
+            </div>
+        </div>
+        <button onclick="toggleMobileSidebar()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition-colors">
+            <i id="mobile-menu-icon" class="fa-solid fa-bars text-base"></i>
+        </button>
+    </div>
+
+    <!-- OVERLAY BACKDROP FOR MOBILE SIDEBAR -->
+    <div id="mobile-sidebar-backdrop" onclick="toggleMobileSidebar()" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 md:hidden"></div>
+
+    <!-- SIDEBAR MENU (Responsive Drawer on Mobile, Fixed Sidebar on Desktop) -->
+    <aside id="main-sidebar" class="fixed md:sticky top-0 left-0 z-50 h-screen w-72 bg-slate-900 border-r border-slate-800 p-4 md:p-5 flex flex-col justify-between shrink-0 shadow-2xl md:shadow-xl transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out overflow-y-auto">
+        <div class="space-y-5">
             <!-- Brand Header -->
-            <div class="p-3 bg-slate-950 border border-amber-500/30 rounded-2xl shadow-inner flex items-center gap-3">
-                <i class="fa-solid fa-crown text-amber-400 text-xl"></i>
-                <div>
-                    <span class="text-white font-extrabold tracking-wider text-sm block">RAJA EMAS<span class="text-amber-400"> INDONESIA</span></span>
-                    <span class="text-[9px] text-amber-200 tracking-wider block italic">"Terima Emas Harga Tinggi"</span>
+            <div class="p-3 bg-slate-950 border border-amber-500/30 rounded-2xl shadow-inner flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-crown text-amber-400 text-xl"></i>
+                    <div>
+                        <span class="text-white font-extrabold tracking-wider text-sm block">RAJA EMAS<span class="text-amber-400"> INDONESIA</span></span>
+                        <span class="text-[9px] text-amber-200 tracking-wider block italic">"Terima Emas Harga Tinggi"</span>
+                    </div>
                 </div>
+                <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
             </div>
 
             <!-- Navigation Links -->
-            <nav class="space-y-1.5">
+            <nav class="space-y-1">
                 <button onclick="switchSubMenu('dashboard')" id="btn-tab-dashboard" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md">
-                    <i class="fa-solid fa-chart-pie text-sm text-slate-950"></i> Dashboard Utama
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md">
+                    <i class="fa-solid fa-chart-pie text-sm text-slate-950 w-4 text-center"></i> Dashboard Utama
                 </button>
                 <button onclick="switchSubMenu('summary')" id="btn-tab-summary" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-file-invoice-dollar text-sm text-amber-400"></i> Payroll Summary
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-file-invoice-dollar text-sm text-amber-400 w-4 text-center"></i> Payroll Summary
+                </button>
+                <button onclick="switchSubMenu('payslip')" id="btn-tab-payslip" 
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-receipt text-sm text-teal-400 w-4 text-center"></i> Slip Gaji Karyawan
                 </button>
                 <button onclick="switchSubMenu('allowance')" id="btn-tab-allowance" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-gift text-sm text-emerald-400"></i> Allowance & Benefit
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-gift text-sm text-emerald-400 w-4 text-center"></i> Allowance & Benefit
                 </button>
                 <button onclick="switchSubMenu('kewajiban')" id="btn-tab-kewajiban" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-file-invoice text-sm text-rose-400"></i> Kewajiban (Potongan)
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-file-invoice text-sm text-rose-400 w-4 text-center"></i> Kewajiban (Potongan)
                 </button>
                 <button onclick="switchSubMenu('loan')" id="btn-tab-loan" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-hand-holding-dollar text-sm text-orange-400"></i> Loan (Pinjaman)
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-hand-holding-dollar text-sm text-orange-400 w-4 text-center"></i> Loan (Pinjaman)
                 </button>
                 <button onclick="switchSubMenu('overtime')" id="btn-tab-overtime" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-business-time text-sm text-purple-400"></i> Overtime Cost
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-business-time text-sm text-purple-400 w-4 text-center"></i> Overtime Cost
                 </button>
                 <button onclick="switchSubMenu('cost-analysis')" id="btn-tab-cost-analysis" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-chart-column text-sm text-indigo-400"></i> Cost Analysis
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-chart-column text-sm text-indigo-400 w-4 text-center"></i> Cost Analysis
                 </button>
                 <button onclick="switchSubMenu('timeline')" id="btn-tab-timeline" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-clock-rotate-left text-sm text-cyan-400"></i> Payroll Timeline
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-clock-rotate-left text-sm text-cyan-400 w-4 text-center"></i> Payroll Timeline
                 </button>
                 <button onclick="switchSubMenu('adjustment')" id="btn-tab-adjustment" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-comments text-sm text-amber-400"></i> Payroll Complainan
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-comments text-sm text-amber-400 w-4 text-center"></i> Payroll Complaint
                 </button>
                 <button onclick="switchSubMenu('database')" id="btn-tab-database" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-database text-sm text-sky-400"></i> Database Payroll
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-database text-sm text-sky-400 w-4 text-center"></i> Database Payroll
                 </button>
-                <button onclick="switchSubMenu('laporan')" id="btn-tab-laporan" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-amber-500/20">
-                    <i class="fa-solid fa-file-excel text-sm text-emerald-400"></i> Sub Menu Laporan (Excel)
-                </button>
-                <button onclick="switchSubMenu('ppt')" id="btn-tab-ppt" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-indigo-500/30">
-                    <i class="fa-solid fa-file-powerpoint text-sm text-indigo-400"></i> Laporan PPT Bulanan
-                </button>
+                <div class="pt-2 mt-2 border-t border-slate-800/80 space-y-1.5">
+                    <button onclick="switchSubMenu('laporan')" id="btn-tab-laporan" 
+                        class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-amber-500/20">
+                        <i class="fa-solid fa-file-excel text-sm text-emerald-400 w-4 text-center"></i> Sub Menu Laporan (Excel)
+                    </button>
+                    <button onclick="switchSubMenu('ppt')" id="btn-tab-ppt" 
+                        class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-indigo-500/30">
+                        <i class="fa-solid fa-file-powerpoint text-sm text-indigo-400 w-4 text-center"></i> Laporan PPT Bulanan
+                    </button>
+                </div>
             </nav>
         </div>
 
         <!-- Sidebar Footer / Logout -->
-        <div class="pt-6 border-t border-slate-800">
-            <button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/40 text-rose-400 hover:bg-rose-500 hover:text-white px-4 py-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout & Kembali ke Login
+        <div class="pt-4 mt-4 border-t border-slate-800 space-y-2">
+            <div class="px-3 py-2 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                <span><i class="fa-solid fa-shield-halved text-emerald-400 mr-1.5"></i>Sesi Aktif</span>
+                <span id="session-timer" class="font-mono text-amber-400 font-semibold">30:00</span>
+            </div>
+            <button onclick="handleLogout()" class="w-full bg-rose-500/10 border border-rose-500/40 text-rose-400 hover:bg-rose-500 hover:text-white px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout & Keluar
             </button>
         </div>
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto">
+    <main class="flex-1 p-4 md:p-7 space-y-6 overflow-x-hidden">
         
         <!-- TOP BAR -->
         <div class="bg-white rounded-2xl p-5 md:p-6 card-shadow space-y-4">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-amber-100">
                 <div>
                     <h1 class="text-xl md:text-2xl font-bold text-slate-900">Portal Report Payroll</h1>
-                    <p class="text-xs md:text-sm text-slate-500 mt-0.5">PT Raja Emas Indonesia &bull; Laporan Realtime Penggajian</p>
+                    <p class="text-xs md:text-sm text-slate-500 mt-0.5">PT Raja Emas Indonesia &bull; Laporan Realtime Penggajian & Analisis Eksekutif</p>
                 </div>
 
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 bg-amber-50/50 border border-amber-200/60 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-live"></span>
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <div id="sync-status-badge" class="flex items-center gap-2 bg-amber-50/50 border border-amber-200/60 text-slate-600 px-3 py-2 rounded-xl text-xs font-medium">
+                        <span id="sync-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 pulse-live"></span>
                         <span id="last-update">Memuat Data...</span>
                     </div>
-                    <button id="btn-refresh" onclick="loadAllData()" title="Refresh Data" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition-colors border border-amber-200/50">
-                        <i class="fa-solid fa-arrows-rotate"></i>
+                    <button id="btn-refresh" onclick="loadAllData(true)" title="Refresh Data" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl transition-colors border border-amber-200/60 text-xs font-semibold flex items-center gap-1.5">
+                        <i id="refresh-icon" class="fa-solid fa-arrows-rotate"></i>
+                        <span class="hidden sm:inline">Sinkronisasi</span>
                     </button>
                 </div>
             </div>
@@ -214,36 +273,36 @@
                     <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Cari Karyawan</label>
                     <div class="relative flex items-center">
                         <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                        <input type="text" id="search-query" oninput="updateDashboard()" placeholder="Nama atau ID..." 
-                            class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
+                        <input type="text" id="search-query" oninput="resetAllPagesAndUpdate()" placeholder="Nama atau NIP..." 
+                            class="w-full bg-slate-50/70 border border-amber-200/50 text-slate-700 text-xs rounded-xl pl-8 p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-500">
                     </div>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Tahun</label>
-                    <select id="filter-tahun" onchange="updateDashboard()" class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl p-2.5">
+                    <select id="filter-tahun" onchange="resetAllPagesAndUpdate()" class="w-full bg-slate-50/70 border border-amber-200/50 text-slate-700 text-xs rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400/50">
                         <option value="ALL">Semua Tahun</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Periode Bulan</label>
-                    <select id="filter-periode" onchange="updateDashboard()" class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl p-2.5">
+                    <select id="filter-periode" onchange="resetAllPagesAndUpdate()" class="w-full bg-slate-50/70 border border-amber-200/50 text-slate-700 text-xs rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400/50">
                         <option value="ALL">Semua Bulan</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Perusahaan</label>
-                    <select id="filter-perusahaan" onchange="updateDashboard()" class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl p-2.5">
+                    <select id="filter-perusahaan" onchange="resetAllPagesAndUpdate()" class="w-full bg-slate-50/70 border border-amber-200/50 text-slate-700 text-xs rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400/50">
                         <option value="ALL">Semua Perusahaan</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Divisi</label>
-                    <select id="filter-divisi" onchange="updateDashboard()" class="w-full bg-slate-50/70 border border-amber-200/40 text-slate-700 text-xs rounded-xl p-2.5">
+                    <select id="filter-divisi" onchange="resetAllPagesAndUpdate()" class="w-full bg-slate-50/70 border border-amber-200/50 text-slate-700 text-xs rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400/50">
                         <option value="ALL">Semua Divisi</option>
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button onclick="resetFilters()" class="w-full bg-amber-50/60 hover:bg-amber-100 text-amber-800 font-medium text-xs p-2.5 rounded-xl transition-colors border border-amber-200/60 flex items-center justify-center gap-1.5">
+                    <button onclick="resetFilters()" class="w-full bg-amber-50/70 hover:bg-amber-100 text-amber-800 font-semibold text-xs p-2.5 rounded-xl transition-colors border border-amber-200/70 flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-rotate-left"></i> Reset Filter
                     </button>
                 </div>
@@ -252,6 +311,24 @@
 
         <!-- ================= SUB MENU 1: DASHBOARD UTAMA ================= -->
         <div id="tab-content-dashboard" class="space-y-6">
+            
+            <!-- SMART ANOMALY ALERT BANNER (Fitur Audit Otomatis HR) -->
+            <div id="anomaly-alert-box" class="hidden bg-white rounded-2xl p-4 sm:p-5 card-shadow border-l-4 border-l-rose-500">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">Deteksi Anomali & Audit Payroll Otomatis</h3>
+                            <p class="text-[11px] text-slate-500">Peringatan dini untuk pengecekan sebelum pencairan gaji</p>
+                        </div>
+                    </div>
+                    <span id="anomaly-total-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 self-start sm:self-center">0 Temuan</span>
+                </div>
+                <div id="anomaly-list-container" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3"></div>
+            </div>
+
             <!-- BARIS 1: DEMOGRAFI -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white rounded-2xl p-4 card-shadow flex items-center gap-4">
@@ -302,10 +379,24 @@
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Kewajiban</p>
                     <h3 id="metric-kewajiban" class="text-base sm:text-xl font-bold text-rose-600 mt-2 truncate">Rp 0</h3>
                 </div>
-                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-amber-600 bg-amber-50/10 overflow-hidden">
-                    <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">Total THP</p>
+                <div class="bg-white rounded-2xl p-4 card-shadow border-l-4 border-l-amber-600 bg-amber-50/20 overflow-hidden">
+                    <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">Total THP (Take Home Pay)</p>
                     <h3 id="metric-thp" class="text-base sm:text-xl font-bold text-amber-900 mt-2 truncate">Rp 0</h3>
                 </div>
+            </div>
+
+            <!-- BARIS 3.5: GRAFIK TREN PENGELUARAN GAJI BULANAN (GROSS VS THP) -->
+            <div class="bg-white rounded-2xl p-5 card-shadow flex flex-col justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-area text-amber-500"></i> Tren Pengeluaran Gaji Bulanan (Total Gross vs Total THP)
+                        </h2>
+                        <p class="text-xs text-slate-500">Perbandingan pergerakan biaya kotor (Gross) dan gaji bersih (THP) sepanjang bulan</p>
+                    </div>
+                    <span class="text-[11px] bg-amber-50 text-amber-700 px-3 py-1 rounded-full font-semibold border border-amber-200/60 self-start">Evaluasi Tahunan</span>
+                </div>
+                <div class="relative w-full h-[320px]"><canvas id="chartPayrollTrendLine"></canvas></div>
             </div>
 
             <!-- BARIS 4: KOLOM KHUSUS DATA LOAN -->
@@ -321,7 +412,6 @@
                         <div>
                             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Pinjaman</p>
                             <h3 id="metric-total-loan-dashboard" class="text-xl sm:text-2xl font-bold text-orange-600 mt-1">Rp 0</h3>
-                            <p class="text-[10px] text-slate-500 mt-1 italic"></p>
                         </div>
                         <div class="p-3 bg-orange-100 text-orange-600 rounded-xl"><i class="fa-solid fa-money-bill-wave text-xl"></i></div>
                     </div>
@@ -329,7 +419,6 @@
                         <div>
                             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Karyawan yang Meminjam</p>
                             <h3 id="metric-total-loan-employees" class="text-xl sm:text-2xl font-bold text-slate-800 mt-1">0 Orang</h3>
-                            <p class="text-[10px] text-slate-500 mt-1 italic"></p>
                         </div>
                         <div class="p-3 bg-amber-100 text-amber-600 rounded-xl"><i class="fa-solid fa-user-check text-xl"></i></div>
                     </div>
@@ -429,12 +518,15 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-6 card-shadow">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-file-invoice-dollar text-amber-500"></i> Ringkasan Penggajian per Karyawan
-                    </h2>
-                    <span id="summary-count" class="text-xs bg-amber-50 text-amber-700 px-3 py-1 rounded-full font-semibold border border-amber-200/50">0 Records</span>
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice-dollar text-amber-500"></i> Ringkasan Penggajian per Karyawan
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-hand-pointer text-amber-500 mr-1"></i>Klik baris karyawan untuk melihat detail & mencetak Slip Gaji</p>
+                    </div>
+                    <span id="summary-count" class="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full font-semibold border border-amber-200/50 self-start sm:self-center">0 Records</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-700">
@@ -443,8 +535,8 @@
                                 <th class="p-3">ID Karyawan</th>
                                 <th class="p-3">Nama Karyawan</th>
                                 <th class="p-3">Perusahaan</th>
-                                <th class="p-3">Divisi </th>
-                                <th class="p-3">Posisi </th>
+                                <th class="p-3">Divisi</th>
+                                <th class="p-3">Posisi</th>
                                 <th class="p-3">Cabang</th>
                                 <th class="p-3 text-right">Total Salary/Gapok</th>
                                 <th class="p-3 text-right">Total Lembur</th>
@@ -452,13 +544,73 @@
                                 <th class="p-3 text-right">Total Kewajiban</th>
                                 <th class="p-3 text-right">Total Gross</th>
                                 <th class="p-3 text-right">THP</th>
+                                <th class="p-3 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="summary-table-body" class="divide-y divide-slate-100">
-                            <tr><td colspan="12" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                            <tr><td colspan="13" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
                         </tbody>
                     </table>
                 </div>
+                <!-- PAGINATION SUMMARY -->
+                <div id="summary-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600"></div>
+            </div>
+        </div>
+
+        <!-- ================= SUB MENU BARU: SLIP GAJI KARYAWAN ================= -->
+        <div id="tab-content-payslip" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-receipt text-teal-600"></i> Pembuatan & Cetak Slip Gaji Karyawan
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Pilih karyawan dari daftar di bawah atau gunakan filter periode/pencarian di atas untuk menerbitkan Slip Gaji.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span id="payslip-tab-count" class="text-xs bg-teal-50 text-teal-700 px-3 py-1.5 rounded-full font-semibold border border-teal-200/60">0 Karyawan</span>
+                    </div>
+                </div>
+
+                <!-- Pencarian Cepat Khusus Slip Gaji -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50/80 p-4 rounded-xl border border-slate-200/70">
+                    <div class="md:col-span-2">
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Pilih / Cari Karyawan untuk Slip Gaji</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-user-tag text-xs"></i></span>
+                            <input type="text" id="payslip-quick-search" oninput="renderPayslipDirectoryTable()" placeholder="Ketik Nama Karyawan, NIP, Divisi, atau Cabang..." 
+                                class="w-full bg-white border border-slate-300 text-slate-700 text-xs rounded-xl pl-8 p-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500">
+                        </div>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="button" onclick="openFirstFilteredPayslip()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs p-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Buka Slip Teratas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabel Daftar Karyawan Siap Cetak Slip -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-700">
+                        <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Periode</th>
+                                <th class="p-3">NIP</th>
+                                <th class="p-3">Nama Karyawan</th>
+                                <th class="p-3">Divisi / Posisi</th>
+                                <th class="p-3">Cabang</th>
+                                <th class="p-3 text-right">Total Gross</th>
+                                <th class="p-3 text-right">Total Potongan</th>
+                                <th class="p-3 text-right">Take Home Pay</th>
+                                <th class="p-3 text-center">Buat Slip Gaji</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payslip-directory-tbody" class="divide-y divide-slate-100">
+                            <tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat daftar karyawan...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="payslip-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600"></div>
             </div>
         </div>
 
@@ -480,8 +632,8 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-6 card-shadow">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                     <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         <i class="fa-solid fa-gift text-emerald-600"></i> Rincian Allowance & Benefit Karyawan
                     </h2>
@@ -495,6 +647,8 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- PAGINATION ALLOWANCE -->
+                <div id="allowance-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600"></div>
             </div>
         </div>
 
@@ -516,8 +670,8 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl p-6 card-shadow">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                     <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         <i class="fa-solid fa-file-invoice text-rose-600"></i> Rincian Kewajiban & Potongan Karyawan
                     </h2>
@@ -531,6 +685,8 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- PAGINATION KEWAJIBAN -->
+                <div id="kewajiban-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600"></div>
             </div>
         </div>
 
@@ -538,7 +694,7 @@
         <div id="tab-content-loan" class="hidden space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-orange-500">
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Kewajiban / Pinjaman </p>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Kewajiban / Pinjaman</p>
                     <h3 id="loan-total-pinjaman" class="text-xl font-bold text-slate-800 mt-2">Rp 0</h3>
                     <p class="text-[10px] text-orange-600 mt-1 italic font-medium"><i class="fa-solid fa-circle-info mr-1"></i>Sesuai Filter Bulan Aktif</p>
                 </div>
@@ -548,7 +704,7 @@
                     <p class="text-[10px] text-rose-600 mt-1 italic font-medium"><i class="fa-solid fa-circle-info mr-1"></i>Sesuai Filter Bulan Aktif</p>
                 </div>
                 <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-emerald-500">
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Sudah Dibayar </p>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Sudah Dibayar</p>
                     <h3 id="loan-sudah-dibayar" class="text-xl font-bold text-emerald-700 mt-2">Rp 0</h3>
                 </div>
                 <div class="bg-white rounded-2xl p-5 card-shadow border-l-4 border-l-indigo-500 flex flex-col justify-between">
@@ -564,6 +720,9 @@
                     </h2>
                     <div class="flex items-center gap-2">
                         <span id="loan-count" class="text-xs bg-orange-50 text-orange-700 px-3 py-1.5 rounded-full font-semibold border border-orange-200/50">0 Records</span>
+                        <button onclick="exportLoanToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> Export Excel
+                        </button>
                     </div>
                 </div>
                 <div class="overflow-x-auto max-h-[550px]">
@@ -572,17 +731,17 @@
                             <tr>
                                 <th class="p-3">Nomor</th>
                                 <th class="p-3">Nama Karyawan</th>
-                                <th class="p-3">NIP </th>
-                                <th class="p-3">Divisi </th>
-                                <th class="p-3">Posisi </th>
+                                <th class="p-3">NIP</th>
+                                <th class="p-3">Divisi</th>
+                                <th class="p-3">Posisi</th>
                                 <th class="p-3 text-center">Bulan / Periode</th>
-                                <th class="p-3 text-right">Total Kewajiban / Pinjaman </th>
-                                <th class="p-3 text-right">Total Pembayaran Setahun </th>
+                                <th class="p-3 text-right">Total Kewajiban / Pinjaman</th>
+                                <th class="p-3 text-right">Total Pembayaran Setahun</th>
                                 <th class="p-3 text-center">Total Tenor</th>
                                 <th class="p-3 text-right">Angsuran / Bulan</th>
                                 <th class="p-3 text-center">Sisa Tenor</th>
                                 <th class="p-3 text-right">Sisa Pinjaman</th>
-                                <th class="p-3 text-center">Status </th>
+                                <th class="p-3 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody id="loan-table-body" class="divide-y divide-slate-100">
@@ -626,7 +785,7 @@
                                 <th class="p-3">Nama Karyawan</th>
                                 <th class="p-3">Perusahaan</th>
                                 <th class="p-3">Posisi</th>
-                                <th class="p-3">Divisi </th>
+                                <th class="p-3">Divisi</th>
                                 <th class="p-3 text-right">Nominal Lembur</th>
                             </tr>
                         </thead>
@@ -640,11 +799,12 @@
 
         <!-- ================= SUB MENU 6: DATABASE PAYROLL ================= -->
         <div id="tab-content-database" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 card-shadow">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <div class="bg-white rounded-2xl p-6 card-shadow space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                     <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         <i class="fa-solid fa-database text-amber-600"></i> Database Mentah Penggajian
                     </h2>
+                    <span id="database-count" class="text-xs bg-sky-50 text-sky-700 px-3 py-1 rounded-full font-semibold border border-sky-200/50">0 Records</span>
                 </div>
                 <div class="overflow-x-auto max-h-[550px]">
                     <table class="w-full text-left text-xs text-slate-700 whitespace-nowrap">
@@ -654,6 +814,8 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- PAGINATION DATABASE -->
+                <div id="database-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600"></div>
             </div>
         </div>
 
@@ -663,7 +825,7 @@
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-column text-amber-500"></i> Analisis Biaya Penggajian per Divisi 
+                            <i class="fa-solid fa-chart-column text-amber-500"></i> Analisis Biaya Penggajian per Divisi
                         </h2>
                         <p class="text-xs text-slate-500">Analisis total gapok, tunjangan, kewajiban, lembur, dan THP per divisi.</p>
                     </div>
@@ -678,9 +840,9 @@
                     <table class="w-full text-left text-xs text-slate-700">
                         <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
                             <tr>
-                                <th class="p-3">Nama Divisi </th>
+                                <th class="p-3">Nama Divisi</th>
                                 <th class="p-3 text-center">Jumlah Karyawan</th>
-                                <th class="p-3 text-right">Total Gapok </th>
+                                <th class="p-3 text-right">Total Gapok</th>
                                 <th class="p-3 text-right">Total Tunjangan</th>
                                 <th class="p-3 text-right">Total Kewajiban</th>
                                 <th class="p-3 text-right">Total Lemburan</th>
@@ -705,9 +867,9 @@
                         </h2>
                         <p class="text-xs text-slate-500">Data realtime tahapan timeline payroll dan status SLA dari Google Sheets.</p>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-2.5">
                         <span id="timeline-record-count" class="text-xs bg-cyan-50 text-cyan-700 px-3 py-1.5 rounded-full font-semibold border border-cyan-200/50">0 Data</span>
-                        <button onclick="loadTimelineRecords()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5">
+                        <button onclick="loadTimelineRecords(true)" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5">
                             <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
                         </button>
                         <button onclick="exportTimelineToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-1.5">
@@ -741,19 +903,19 @@
             </div>
         </div>
 
-        <!-- ================= SUB MENU 9: PAYROLL COMPLAINAN ================= -->
+        <!-- ================= SUB MENU 9: PAYROLL COMPLAINT ================= -->
         <div id="tab-content-adjustment" class="hidden space-y-6">
             <div class="bg-white rounded-2xl p-6 card-shadow space-y-4">
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-comments text-amber-500"></i> Laporan Payroll Complainan
+                            <i class="fa-solid fa-comments text-amber-500"></i> Laporan Payroll Complaint & Penyesuaian
                         </h2>
-                        <p class="text-xs text-slate-500">Data realtime komplain dan penyesuaian penggajian dari Google Sheets.</p>
+                        <p class="text-xs text-slate-500">Data realtime tiket komplain dan penyesuaian penggajian dari Google Sheets.</p>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-2.5">
                         <span id="adj-record-count" class="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full font-semibold border border-amber-200/50">0 Data</span>
-                        <button onclick="loadAdjustmentRecords()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5">
+                        <button onclick="loadAdjustmentRecords(true)" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5">
                             <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
                         </button>
                         <button onclick="exportAdjustmentToExcel()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-1.5">
@@ -781,7 +943,7 @@
                     <table class="w-full text-left text-xs text-slate-700 whitespace-nowrap">
                         <thead id="adj-table-head" class="sticky top-0 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-300"></thead>
                         <tbody id="adj-table-body" class="divide-y divide-slate-100">
-                            <tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data complainan...</td></tr>
+                            <tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data komplain...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -811,7 +973,7 @@
                         <div>
                             <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-gift text-lg"></i></div>
                             <h3 class="font-bold text-slate-900 text-sm">Allowance & Benefit (H - Q)</h3>
-                            <p class="text-xs text-slate-500 mt-1">Rincian detail tunjangan dan benefit karyawan .</p>
+                            <p class="text-xs text-slate-500 mt-1">Rincian detail tunjangan dan benefit karyawan.</p>
                         </div>
                         <button onclick="downloadReportExcel('allowance')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
                     </div>
@@ -827,7 +989,7 @@
                         <div>
                             <div class="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-hand-holding-dollar text-lg"></i></div>
                             <h3 class="font-bold text-slate-900 text-sm">Laporan Loan (Pinjaman)</h3>
-                            <p class="text-xs text-slate-500 mt-1">Daftar pinjaman , total pembayaran , sisa pinjaman, divisi, posisi, dan status .</p>
+                            <p class="text-xs text-slate-500 mt-1">Daftar pinjaman, total pembayaran, sisa pinjaman, divisi, posisi, dan status.</p>
                         </div>
                         <button onclick="downloadReportExcel('loan')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
                     </div>
@@ -842,7 +1004,7 @@
                     <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-indigo-400 transition-all">
                         <div>
                             <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-chart-column text-lg"></i></div>
-                            <h3 class="font-bold text-slate-900 text-sm">Cost Analysis per Divisi </h3>
+                            <h3 class="font-bold text-slate-900 text-sm">Cost Analysis per Divisi</h3>
                             <p class="text-xs text-slate-500 mt-1">Analisis total gapok, tunjangan, kewajiban, lembur, dan THP per divisi.</p>
                         </div>
                         <button onclick="downloadReportExcel('cost')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
@@ -858,7 +1020,7 @@
                     <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-amber-400 transition-all">
                         <div>
                             <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold mb-3"><i class="fa-solid fa-comments text-lg"></i></div>
-                            <h3 class="font-bold text-slate-900 text-sm">Payroll Complainan / Adjustment</h3>
+                            <h3 class="font-bold text-slate-900 text-sm">Payroll Complaint / Adjustment</h3>
                             <p class="text-xs text-slate-500 mt-1">Laporan data tiket komplain dan penyesuaian gaji.</p>
                         </div>
                         <button onclick="exportAdjustmentToExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel</button>
@@ -885,7 +1047,7 @@
                         </h2>
                         <p class="text-xs text-slate-500 mt-0.5">Generate otomatis slide presentasi sesuai filter bulan aktif (Standar Korporat).</p>
                     </div>
-                    <button type="button" onclick="downloadPPTX()" class="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold text-xs py-3 px-5 rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer z-20 relative">
+                    <button type="button" onclick="downloadPPTX()" class="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold text-xs py-3 px-5 rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-download"></i> Download PowerPoint (.pptx)
                     </button>
                 </div>
@@ -898,8 +1060,8 @@
                     </div>
                     <div class="bg-amber-50/40 border border-amber-100 rounded-2xl p-5 space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold">2</div>
-                        <h3 class="font-bold text-slate-900 text-sm">10 Bagian Eksekutif Lengkap</h3>
-                        <p class="text-xs text-slate-600">Mencakup Ringkasan, Demografi Perusahaan, Pendapatan, Potongan, Pinjaman (Loan), Analisis Lembur, Rekonsiliasi, dan Complainan.</p>
+                        <h3 class="font-bold text-slate-900 text-sm">9 Slide Eksekutif Dinamis</h3>
+                        <p class="text-xs text-slate-600">Mencakup Ringkasan, Demografi Perusahaan, Pendapatan, Potongan, Pinjaman (Loan), Analisis Lembur, Rekonsiliasi Dinamis, dan Complaint.</p>
                     </div>
                     <div class="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-5 space-y-3">
                         <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">3</div>
@@ -913,11 +1075,169 @@
     </main>
 </div>
 
+<!-- ================= MODAL DETAIL SLIP GAJI KARYAWAN ================= -->
+<div id="payslip-modal" class="hidden fixed inset-0 z-[90] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <div id="payslip-printable-area" class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-amber-200 overflow-hidden my-8">
+        <!-- Header Modal -->
+        <div class="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-amber-500/40">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-400">
+                    <i class="fa-solid fa-crown text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-sm tracking-wider">PT RAJA EMAS <span class="text-amber-400">INDONESIA</span></h3>
+                    <p class="text-[11px] text-slate-300">Rincian Slip Gaji Karyawan (Confidential)</p>
+                </div>
+            </div>
+            <button onclick="closePayslipModal()" class="no-print text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Identitas Karyawan -->
+        <div class="p-5 bg-amber-50/40 border-b border-amber-100 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Nama Karyawan</span>
+                <span id="slip-nama" class="font-bold text-slate-900 text-sm">-</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-semibold">ID / NIP</span>
+                <span id="slip-nip" class="font-semibold text-slate-800">-</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Periode Gaji</span>
+                <span id="slip-periode" class="font-semibold text-amber-700">-</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Perusahaan</span>
+                <span id="slip-perusahaan" class="font-medium text-slate-700">-</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Divisi / Posisi</span>
+                <span id="slip-divisi-posisi" class="font-medium text-slate-700">-</span>
+            </div>
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Cabang / Store</span>
+                <span id="slip-cabang" class="font-medium text-slate-700">-</span>
+            </div>
+        </div>
+
+        <!-- Rincian Pendapatan & Potongan -->
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+            <!-- Kolom Pendapatan -->
+            <div class="space-y-2">
+                <h4 class="font-bold text-emerald-700 uppercase tracking-wider pb-1.5 border-b border-emerald-200 flex items-center justify-between">
+                    <span><i class="fa-solid fa-circle-plus mr-1.5"></i>Penerimaan / Gross</span>
+                </h4>
+                <div id="slip-income-list" class="space-y-1.5"></div>
+                <div class="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
+                    <span>Total Gross</span>
+                    <span id="slip-total-gross" class="text-emerald-700">Rp 0</span>
+                </div>
+            </div>
+
+            <!-- Kolom Potongan -->
+            <div class="space-y-2">
+                <h4 class="font-bold text-rose-700 uppercase tracking-wider pb-1.5 border-b border-rose-200 flex items-center justify-between">
+                    <span><i class="fa-solid fa-circle-minus mr-1.5"></i>Kewajiban / Potongan</span>
+                </h4>
+                <div id="slip-deduction-list" class="space-y-1.5"></div>
+                <div class="pt-2 border-t border-slate-200 flex justify-between font-bold text-slate-900">
+                    <span>Total Potongan</span>
+                    <span id="slip-total-deduction" class="text-rose-600">Rp 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Take Home Pay -->
+        <div class="mx-5 mb-5 p-4 rounded-xl bg-gradient-to-r from-amber-500/15 to-amber-500/5 border border-amber-300 flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider block">Take Home Pay (THP Diterima)</span>
+                <span class="text-[10px] text-slate-500">Gaji bersih setelah dikurangi seluruh kewajiban</span>
+            </div>
+            <span id="slip-thp" class="text-lg sm:text-xl font-extrabold text-amber-900">Rp 0</span>
+        </div>
+
+        <!-- Footer Aksi Modal -->
+        <div class="no-print bg-slate-50 px-5 py-3.5 border-t border-slate-200 flex items-center justify-end gap-2.5">
+            <button type="button" onclick="closePayslipModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
+                Tutup
+            </button>
+            <button type="button" onclick="printPayslipWindow()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-print"></i> Cetak (Print)
+            </button>
+            <button type="button" id="btn-download-pdf" onclick="downloadPayslipPDF()" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-sm transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-file-pdf"></i> Simpan PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODAL DAFTAR KARYAWAN ANOMALI ================= -->
+<div id="anomaly-detail-modal" class="hidden fixed inset-0 z-[85] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-rose-200 overflow-hidden flex flex-col max-h-[85vh]">
+        <div class="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-rose-500/40 shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-400/50 flex items-center justify-center text-rose-400">
+                    <i class="fa-solid fa-magnifying-glass-chart text-lg"></i>
+                </div>
+                <div>
+                    <h3 id="anomaly-modal-title" class="font-bold text-sm sm:text-base tracking-wide">Detail Temuan Anomali</h3>
+                    <p id="anomaly-modal-subtitle" class="text-[11px] text-slate-300">Daftar lengkap karyawan yang terdeteksi oleh sistem audit otomatis</p>
+                </div>
+            </div>
+            <button onclick="closeAnomalyModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+            <div class="relative flex-1">
+                <span class="absolute left-3 top-2.5 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
+                <input type="text" id="anomaly-modal-search" oninput="renderAnomalyModalTable()" placeholder="Cari nama, NIP, atau divisi di daftar ini..." 
+                    class="w-full bg-white border border-slate-300 rounded-xl text-xs pl-8 p-2 focus:outline-none focus:border-amber-500">
+            </div>
+            <button onclick="exportCurrentAnomalyToExcel()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm shrink-0">
+                <i class="fa-solid fa-file-excel"></i> Export Daftar ke Excel
+            </button>
+        </div>
+
+        <div class="overflow-y-auto flex-1">
+            <table class="w-full text-left text-xs text-slate-700">
+                <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 z-10">
+                    <tr>
+                        <th class="p-3">No</th>
+                        <th class="p-3">NIP</th>
+                        <th class="p-3">Nama Karyawan</th>
+                        <th class="p-3">Divisi</th>
+                        <th class="p-3">Periode</th>
+                        <th class="p-3 text-right">Gapok</th>
+                        <th class="p-3 text-right" id="anomaly-col-metric">Nominal</th>
+                        <th class="p-3 text-center">Detail</th>
+                    </tr>
+                </thead>
+                <tbody id="anomaly-modal-tbody" class="divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
+
+        <div class="bg-slate-50 px-5 py-3 border-t border-slate-200 flex items-center justify-between text-xs shrink-0">
+            <span id="anomaly-modal-count" class="font-semibold text-slate-600">0 Karyawan</span>
+            <button onclick="closeAnomalyModal()" class="px-4 py-2 rounded-xl font-semibold bg-slate-200 hover:bg-slate-300 text-slate-800 transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- JAVASCRIPT LOGIC -->
 <script>
+    // Konfigurasi Autentikasi & Session Timeout (30 Menit)
     const VALID_USER = "hr payroll";
     const VALID_PASS = "Rajaemas123";
+    const SESSION_DURATION_MS = 30 * 60 * 1000;
+    let sessionTimerInterval = null;
     
+    // Endpoint Google Sheets CSV
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpsZAJ9yP0vM6MJgNO_osGuXcTF-UJferbQ4Q6XNI3-UoM22o1IuozuiNrH8FR9TZvE3N7tvQ2YCil/pub?gid=1295374531&single=true&output=csv';
     const LOAN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpsZAJ9yP0vM6MJgNO_osGuXcTF-UJferbQ4Q6XNI3-UoM22o1IuozuiNrH8FR9TZvE3N7tvQ2YCil/pub?gid=66273530&single=true&output=csv';
     const COMPLAIN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpsZAJ9yP0vM6MJgNO_osGuXcTF-UJferbQ4Q6XNI3-UoM22o1IuozuiNrH8FR9TZvE3N7tvQ2YCil/pub?gid=1338364058&single=true&output=csv';
@@ -927,6 +1247,7 @@
         Chart.register(ChartDataLabels);
     }
 
+    // State Global Data
     let rawData = [];
     let headerRow = [];
     let rawLoanData = [];
@@ -943,29 +1264,119 @@
     let rawTimelineHeaders = [];
     let localTimelineRecords = [];
 
+    // State Pagination per Tabel
+    const paginationState = {
+        summary: { page: 1, perPage: 25 },
+        payslip: { page: 1, perPage: 25 },
+        allowance: { page: 1, perPage: 25 },
+        kewajiban: { page: 1, perPage: 25 },
+        database: { page: 1, perPage: 25 }
+    };
+
+    // Chart Instances
+    let chartPayrollTrendLineInstance = null;
     let chartOvertimeInstance = null;
     let chartOvertimeDivisionInstance = null;
     let chartBenefitInstance = null;
     let chartKewajibanInstance = null;
     let chartLoanTrendLineInstance = null;
     let cachedCostMap = {};
+    let currentFilteredPayrollRows = [];
+    let cachedAnomalyData = { minus: [], deduction: [], overtime: [] };
+    let activeAnomalyCategory = 'deduction';
 
     const monthsNameList = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
     const standardMonthsOrder = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
+    // ================= TOAST NOTIFICATION SYSTEM =================
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const styles = {
+            success: { bg: 'bg-emerald-600', icon: 'fa-circle-check', title: 'Berhasil' },
+            error: { bg: 'bg-rose-600', icon: 'fa-circle-exclamation', title: 'Perhatian' },
+            warning: { bg: 'bg-amber-600', icon: 'fa-triangle-exclamation', title: 'Peringatan' },
+            info: { bg: 'bg-slate-800', icon: 'fa-circle-info', title: 'Informasi' }
+        };
+        const cfg = styles[type] || styles.info;
+
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto ${cfg.bg} text-white px-4 py-3 rounded-xl shadow-xl flex items-start gap-3 transform transition-all duration-300 translate-x-full opacity-0 border border-white/15`;
+        toast.innerHTML = `
+            <i class="fa-solid ${cfg.icon} text-base mt-0.5 shrink-0"></i>
+            <div class="flex-1 text-xs">
+                <p class="font-bold">${cfg.title}</p>
+                <p class="opacity-95 mt-0.5 leading-relaxed">${message}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-white/70 hover:text-white">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+        });
+
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // ================= SESSION & INITIALIZATION =================
     document.addEventListener("DOMContentLoaded", function() {
         try {
-            localStorage.removeItem('isLoggedIn');
-            showLogin();
+            const expiry = sessionStorage.getItem('payroll_session_expiry');
+            if (expiry && Date.now() < parseInt(expiry, 10)) {
+                showDashboard();
+            } else {
+                sessionStorage.removeItem('payroll_session_expiry');
+                showLogin();
+            }
         } catch (e) {
             console.error("Initialization error:", e);
             showLogin();
         }
     });
 
+    function startSessionTimer() {
+        if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+        const timerEl = document.getElementById('session-timer');
+
+        sessionTimerInterval = setInterval(() => {
+            const expiry = parseInt(sessionStorage.getItem('payroll_session_expiry') || '0', 10);
+            const remaining = expiry - Date.now();
+            if (remaining <= 0) {
+                clearInterval(sessionTimerInterval);
+                handleLogout(true);
+            } else if (timerEl) {
+                const mins = Math.floor(remaining / 60000);
+                const secs = Math.floor((remaining % 60000) / 1000);
+                timerEl.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+        }, 1000);
+    }
+
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('main-sidebar');
+        const backdrop = document.getElementById('mobile-sidebar-backdrop');
+        if (!sidebar || !backdrop) return;
+
+        const isClosed = sidebar.classList.contains('-translate-x-full');
+        if (isClosed) {
+            sidebar.classList.remove('-translate-x-full');
+            backdrop.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
+        }
+    }
+
     function switchSubMenu(tabName) {
         try {
-            const tabs = ['dashboard', 'summary', 'allowance', 'kewajiban', 'loan', 'overtime', 'database', 'cost-analysis', 'timeline', 'adjustment', 'laporan', 'ppt'];
+            const tabs = ['dashboard', 'summary', 'payslip', 'allowance', 'kewajiban', 'loan', 'overtime', 'database', 'cost-analysis', 'timeline', 'adjustment', 'laporan', 'ppt'];
             
             tabs.forEach(tab => {
                 const contentEl = document.getElementById('tab-content-' + tab);
@@ -975,23 +1386,32 @@
                 if (tab === tabName) {
                     contentEl.classList.remove('hidden');
                     if(tab === 'ppt') {
-                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all bg-indigo-600 text-white shadow-md";
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all bg-indigo-600 text-white shadow-md";
                     } else if(tab === 'laporan') {
-                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all bg-emerald-600 text-white shadow-md";
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all bg-emerald-600 text-white shadow-md";
                     } else {
-                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md";
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all bg-amber-500 text-slate-950 shadow-md";
                     }
                 } else {
                     contentEl.classList.add('hidden');
                     if(tab === 'ppt') {
-                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-indigo-500/30";
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-indigo-500/30";
                     } else if(tab === 'laporan') {
-                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-amber-500/20";
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white border border-amber-500/20";
                     } else {
-                        btnEl.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white";
+                        btnEl.className = "w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800 hover:text-white";
                     }
                 }
             });
+
+            // Tutup drawer otomatis di layar mobile setelah pilih menu
+            const sidebar = document.getElementById('main-sidebar');
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
+            if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+                if (backdrop) backdrop.classList.add('hidden');
+            }
+
             updateDashboard();
         } catch (err) {
             console.error("switchSubMenu error:", err);
@@ -1022,22 +1442,30 @@
 
             if (usernameInput === VALID_USER && passwordInput === VALID_PASS) {
                 if (errorAlert) errorAlert.classList.add('hidden');
-                localStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('payroll_session_expiry', (Date.now() + SESSION_DURATION_MS).toString());
                 showDashboard();
+                showToast('Selamat datang kembali di Portal Report Payroll.', 'success');
             } else {
                 if (errorAlert) errorAlert.classList.remove('hidden');
+                showToast('Username atau Password yang Anda masukkan salah.', 'error');
             }
         } catch (err) {
             console.error("Login error:", err);
-            alert("Terjadi kesalahan saat proses login.");
+            showToast("Terjadi kesalahan saat proses login.", 'error');
         }
     }
 
-    function handleLogout() {
+    function handleLogout(isExpired = false) {
         try {
-            localStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('payroll_session_expiry');
+            if (sessionTimerInterval) clearInterval(sessionTimerInterval);
         } catch (e) {}
         showLogin();
+        if (isExpired) {
+            showToast('Sesi Anda telah berakhir (30 menit). Silakan login kembali.', 'warning');
+        } else {
+            showToast('Anda telah keluar dari portal.', 'info');
+        }
     }
 
     function showLogin() {
@@ -1052,21 +1480,41 @@
         const dashSec = document.getElementById('dashboard-section');
         if (loginSec) loginSec.classList.add('hidden');
         if (dashSec) dashSec.classList.remove('hidden');
-        loadAllData();
+        startSessionTimer();
+        loadAllData(false);
     }
 
-    function loadAllData() {
+    function setSyncLoadingState(isLoading) {
+        const refreshIcon = document.getElementById('refresh-icon');
+        const syncDot = document.getElementById('sync-dot');
+        if (refreshIcon) {
+            if (isLoading) refreshIcon.classList.add('fa-spin');
+            else refreshIcon.classList.remove('fa-spin');
+        }
+        if (syncDot) {
+            syncDot.className = isLoading 
+                ? "w-2.5 h-2.5 rounded-full bg-amber-500 pulse-live" 
+                : "w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-live";
+        }
+    }
+
+    function loadAllData(manualTrigger = false) {
+        setSyncLoadingState(true);
+        if (manualTrigger) {
+            showToast('Menyinkronkan ulang seluruh database Google Sheets...', 'info');
+        }
         loadData();
         loadLoanData();
-        loadAdjustmentRecords();
-        loadTimelineRecords();
+        loadAdjustmentRecords(false);
+        loadTimelineRecords(false);
     }
 
+    // ================= FORMATTERS & PARSERS =================
     const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
     const formatCompact = (num) => {
-        if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + ' M';
-        if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + ' Jt';
-        if (num >= 1e3) return (num / 1e3).toFixed(0) + ' Rb';
+        if (Math.abs(num) >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + ' M';
+        if (Math.abs(num) >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + ' Jt';
+        if (Math.abs(num) >= 1e3) return (num / 1e3).toFixed(0) + ' Rb';
         return num;
     };
 
@@ -1213,21 +1661,32 @@
         const updateEl = document.getElementById('last-update');
         if (updateEl) updateEl.innerText = 'Memuat Data...';
         
-        Papa.parse(CSV_URL, {
-            download: true,
-            header: false,
-            skipEmptyLines: true,
-            complete: function (results) { 
-                try {
-                    processResults(results); 
-                } catch (e) {
-                    console.error("Error processing CSV results:", e);
-                }
-            },
-            error: function () { 
+        fetch(CSV_URL)
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.text();
+            })
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: false,
+                    skipEmptyLines: true,
+                    complete: function (results) { 
+                        try {
+                            processResults(results); 
+                        } catch (e) {
+                            console.error("Error processing CSV results:", e);
+                        } finally {
+                            setSyncLoadingState(false);
+                        }
+                    }
+                });
+            })
+            .catch(err => { 
+                console.error("Fetch CSV_URL error:", err);
+                setSyncLoadingState(false);
                 if (updateEl) updateEl.innerText = 'Gagal memuat data'; 
-            }
-        });
+                showToast('Gagal mengambil data Payroll dari Google Sheets. Pastikan koneksi internet aktif.', 'error');
+            });
     }
 
     function processResults(results) {
@@ -1381,18 +1840,253 @@
         });
     }
 
+    function resetAllPagesAndUpdate() {
+        Object.keys(paginationState).forEach(k => paginationState[k].page = 1);
+        updateDashboard();
+    }
+
     function resetFilters() {
         if(document.getElementById('filter-tahun')) document.getElementById('filter-tahun').value = 'ALL';
         if(document.getElementById('filter-periode')) document.getElementById('filter-periode').value = 'ALL';
         if(document.getElementById('filter-perusahaan')) document.getElementById('filter-perusahaan').value = 'ALL';
         if(document.getElementById('filter-divisi')) document.getElementById('filter-divisi').value = 'ALL';
         if(document.getElementById('search-query')) document.getElementById('search-query').value = '';
-        updateDashboard();
+        resetAllPagesAndUpdate();
+        showToast('Seluruh filter berhasil direset.', 'info');
+    }
+
+    function renderPaginationControls(containerId, stateKey, totalItems, renderCallbackName) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const state = paginationState[stateKey];
+        const totalPages = Math.max(1, Math.ceil(totalItems / state.perPage));
+        if (state.page > totalPages) state.page = totalPages;
+
+        const startIdx = totalItems === 0 ? 0 : (state.page - 1) * state.perPage + 1;
+        const endIdx = Math.min(totalItems, state.page * state.perPage);
+
+        container.innerHTML = `
+            <div class="flex items-center gap-2">
+                <span>Menampilkan <strong>${startIdx}-${endIdx}</strong> dari <strong>${totalItems}</strong> data</span>
+                <select onchange="changePageSize('${stateKey}', this.value, '${renderCallbackName}')" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs">
+                    <option value="25" ${state.perPage === 25 ? 'selected' : ''}>25 / hal</option>
+                    <option value="50" ${state.perPage === 50 ? 'selected' : ''}>50 / hal</option>
+                    <option value="100" ${state.perPage === 100 ? 'selected' : ''}>100 / hal</option>
+                    <option value="1000" ${state.perPage === 1000 ? 'selected' : ''}>Semua (max 1000)</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <button onclick="changePage('${stateKey}', ${state.page - 1}, '${renderCallbackName}')" ${state.page <= 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium">
+                    <i class="fa-solid fa-chevron-left mr-1"></i> Sebelumnya
+                </button>
+                <span class="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 font-bold border border-amber-200">Hal ${state.page} / ${totalPages}</span>
+                <button onclick="changePage('${stateKey}', ${state.page + 1}, '${renderCallbackName}')" ${state.page >= totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium">
+                    Berikutnya <i class="fa-solid fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    function changePage(stateKey, newPage, renderCallbackName) {
+        paginationState[stateKey].page = newPage;
+        if (typeof window[renderCallbackName] === 'function') {
+            window[renderCallbackName](currentFilteredPayrollRows);
+        }
+    }
+
+    function changePageSize(stateKey, newSize, renderCallbackName) {
+        paginationState[stateKey].perPage = parseInt(newSize, 10);
+        paginationState[stateKey].page = 1;
+        if (typeof window[renderCallbackName] === 'function') {
+            window[renderCallbackName](currentFilteredPayrollRows);
+        }
+    }
+
+    function detectPayrollAnomalies(filteredRows) {
+        const alertBox = document.getElementById('anomaly-alert-box');
+        const listContainer = document.getElementById('anomaly-list-container');
+        const totalBadge = document.getElementById('anomaly-total-badge');
+        if (!alertBox || !listContainer || !totalBadge) return;
+
+        const minusThpList = [];
+        const highDeductionList = [];
+        const highOvertimeList = [];
+
+        filteredRows.forEach(row => {
+            const nama = row[2] ? row[2].trim() : 'Tanpa Nama';
+            const nip = row[3] ? row[3].trim() : '-';
+            const divisi = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : '-');
+            const periode = row[1] ? row[1].trim() : '-';
+            const gapok = calcRowGapok(row);
+            const gross = calcRowGross(row);
+            const kewajiban = calcRowKewajiban(row);
+            const lembur = parseNum(row[10]) + parseNum(row[11]);
+            const thp = parseNum(row[26]);
+
+            if (thp <= 0 && gross > 0) {
+                minusThpList.push({ nama, nip, divisi, periode, gapok, metricVal: thp, detailText: `THP: ${formatIDR(thp)}`, rawRow: row });
+            }
+            if (gapok > 0 && kewajiban > (gapok * 0.5)) {
+                const pct = ((kewajiban / gapok) * 100).toFixed(0);
+                highDeductionList.push({ nama, nip, divisi, periode, gapok, metricVal: kewajiban, detailText: `Potongan ${pct}% (${formatIDR(kewajiban)})`, rawRow: row });
+            }
+            if (gapok > 0 && lembur > (gapok * 0.4)) {
+                const pct = ((lembur / gapok) * 100).toFixed(0);
+                highOvertimeList.push({ nama, nip, divisi, periode, gapok, metricVal: lembur, detailText: `${formatIDR(lembur)} (${pct}% Gapok)`, rawRow: row });
+            }
+        });
+
+        cachedAnomalyData = {
+            minus: minusThpList,
+            deduction: highDeductionList,
+            overtime: highOvertimeList
+        };
+
+        const totalAnomalies = minusThpList.length + highDeductionList.length + highOvertimeList.length;
+        if (totalAnomalies === 0) {
+            alertBox.classList.add('hidden');
+            return;
+        }
+
+        alertBox.classList.remove('hidden');
+        totalBadge.innerText = `${totalAnomalies} Temuan Perlu Dicek`;
+
+        const cards = [
+            {
+                key: 'minus',
+                title: 'THP Minus / Nol (Rp ≤ 0)',
+                count: minusThpList.length,
+                color: 'rose',
+                items: minusThpList.slice(0, 3).map(i => `${i.nama} (${formatIDR(i.metricVal)})`).join(', ') || 'Tidak ada temuan'
+            },
+            {
+                key: 'deduction',
+                title: 'Potongan > 50% dari Gapok',
+                count: highDeductionList.length,
+                color: 'amber',
+                items: highDeductionList.slice(0, 3).map(i => `${i.nama} (${i.detailText})`).join(', ') || 'Tidak ada temuan'
+            },
+            {
+                key: 'overtime',
+                title: 'Lembur > 40% dari Gapok',
+                count: highOvertimeList.length,
+                color: 'purple',
+                items: highOvertimeList.slice(0, 3).map(i => `${i.nama} (${formatIDR(i.metricVal)})`).join(', ') || 'Tidak ada temuan'
+            }
+        ];
+
+        listContainer.innerHTML = cards.map(c => `
+            <div onclick="openAnomalyModal('${c.key}')" class="p-3.5 rounded-xl bg-${c.color}-50/50 border border-${c.color}-200/80 hover:bg-${c.color}-50 hover:shadow-md transition-all cursor-pointer group">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-bold text-slate-800 group-hover:text-${c.color}-700 transition-colors">${c.title}</span>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white text-${c.color}-700 border border-${c.color}-200 shadow-2xs">${c.count} Orang <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1 opacity-70"></i></span>
+                </div>
+                <p class="text-[11px] text-slate-600 line-clamp-1">${c.items}</p>
+            </div>
+        `).join('');
+    }
+
+    function openAnomalyModal(category) {
+        activeAnomalyCategory = category;
+        const modal = document.getElementById('anomaly-detail-modal');
+        const titleEl = document.getElementById('anomaly-modal-title');
+        const colMetricEl = document.getElementById('anomaly-col-metric');
+        const searchInput = document.getElementById('anomaly-modal-search');
+        if (!modal) return;
+
+        if (searchInput) searchInput.value = '';
+
+        const titles = {
+            minus: { title: 'Temuan Anomali: THP Minus / Nol (Rp ≤ 0)', col: 'Take Home Pay (THP)' },
+            deduction: { title: 'Temuan Anomali: Potongan > 50% dari Gapok', col: 'Total Potongan' },
+            overtime: { title: 'Temuan Anomali: Lembur > 40% dari Gapok', col: 'Total Lembur' }
+        };
+        const cfg = titles[category] || titles.deduction;
+        if (titleEl) titleEl.innerText = cfg.title;
+        if (colMetricEl) colMetricEl.innerText = cfg.col;
+
+        renderAnomalyModalTable();
+        modal.classList.remove('hidden');
+    }
+
+    function closeAnomalyModal() {
+        const modal = document.getElementById('anomaly-detail-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function renderAnomalyModalTable() {
+        const tbody = document.getElementById('anomaly-modal-tbody');
+        const countEl = document.getElementById('anomaly-modal-count');
+        const query = (document.getElementById('anomaly-modal-search')?.value || '').toLowerCase().trim();
+        if (!tbody) return;
+
+        const list = (cachedAnomalyData[activeAnomalyCategory] || []).filter(item => {
+            return query === '' ||
+                item.nama.toLowerCase().includes(query) ||
+                item.nip.toLowerCase().includes(query) ||
+                item.divisi.toLowerCase().includes(query);
+        });
+
+        if (countEl) countEl.innerText = `Menampilkan ${list.length} Karyawan`;
+
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">Tidak ada karyawan yang cocok dengan pencarian.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        list.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-amber-50/50 transition-colors";
+            tr.innerHTML = `
+                <td class="p-3 text-slate-500">${idx + 1}</td>
+                <td class="p-3 font-medium text-slate-800">${item.nip}</td>
+                <td class="p-3 font-semibold text-slate-900">${item.nama}</td>
+                <td class="p-3 text-indigo-700 font-medium">${item.divisi}</td>
+                <td class="p-3 text-slate-600">${item.periode}</td>
+                <td class="p-3 text-right font-medium">${formatIDR(item.gapok)}</td>
+                <td class="p-3 text-right font-bold text-rose-700">${item.detailText}</td>
+                <td class="p-3 text-center">
+                    <button class="btn-slip px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-[11px]">
+                        <i class="fa-solid fa-receipt mr-1"></i>Slip Gaji
+                    </button>
+                </td>
+            `;
+            tr.querySelector('.btn-slip').addEventListener('click', () => openPayslipModal(item.rawRow));
+            tbody.appendChild(tr);
+        });
+    }
+
+    function exportCurrentAnomalyToExcel() {
+        const list = cachedAnomalyData[activeAnomalyCategory] || [];
+        if (list.length === 0) {
+            showToast('Tidak ada data anomali untuk diekspor.', 'warning');
+            return;
+        }
+        const rows = list.map((item, idx) => ({
+            "No": idx + 1,
+            "NIP": item.nip,
+            "Nama Karyawan": item.nama,
+            "Divisi": item.divisi,
+            "Periode": item.periode,
+            "Gapok (Rp)": item.gapok,
+            "Nominal Anomali (Rp)": item.metricVal,
+            "Keterangan": item.detailText
+        }));
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Audit Anomali");
+        XLSX.writeFile(wb, `Audit_Anomali_Payroll_${activeAnomalyCategory}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('Daftar audit anomali berhasil diunduh ke Excel.', 'success');
     }
 
     function updateDashboard() {
         try {
             const filtered = getFilteredData();
+            currentFilteredPayrollRows = filtered;
+
+            detectPayrollAnomalies(filtered);
 
             let totalGapok = 0, totalGross = 0, totalTunjangan = 0, totalKekurangan = 0, totalLemburan = 0, totalKewajiban = 0, totalTHP = 0;
             const karyawanSet = new Set(), perusahaanSet = new Set(), divisiSet = new Set(), cabangSet = new Set();
@@ -1513,6 +2207,7 @@
                 benefitChartLabels.push(headerRow[i] ? headerRow[i].trim() : `Col ${i}`);
             }
 
+            renderChartPayrollTrendLine();
             renderTableTop5THP(thpPerDivisi, totalTHP);
             renderChartOvertimeDivision(overtimePerDivisi);
             renderChartOvertime(overtimePerKaryawan);
@@ -1522,13 +2217,14 @@
 
             renderSummaryTable(filtered);
             renderSummaryComparisonCards(filtered);
+            renderPayslipDirectoryTable(filtered);
             renderAllowanceTable(filtered);
             renderAllowanceComparisonCards(filtered);
             renderKewajibanTable(filtered);
             renderKewajibanComparisonCards(filtered);
             renderLoanSection();
             renderOvertimeCostSection(filtered);
-            renderDatabaseTable(headerRow, filtered);
+            renderDatabaseTable(filtered);
             renderCostAnalysisTable(cachedCostMap);
 
             filterTimelineTable();
@@ -1536,6 +2232,94 @@
         } catch (err) {
             console.error("updateDashboard error:", err);
         }
+    }
+
+    function renderChartPayrollTrendLine() {
+        const canvas = document.getElementById('chartPayrollTrendLine');
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        const fTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'ALL';
+        const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
+        const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
+        const searchQuery = document.getElementById('search-query') ? document.getElementById('search-query').value.toLowerCase().trim() : '';
+
+        const monthlyGross = new Array(12).fill(0);
+        const monthlyTHP = new Array(12).fill(0);
+
+        rawData.forEach(row => {
+            const kolomBVal = row[1] ? row[1].trim() : '';
+            const matchTahun = fTahun === 'ALL' || kolomBVal.includes(fTahun);
+            const matchPerusahaan = fPerusahaan === 'ALL' || (row[4] && row[4].trim() === fPerusahaan);
+            const matchDivisi = fDivisi === 'ALL' || (row[27] && row[27].trim() === fDivisi);
+            const idKaryawan = row[3] ? row[3].toString().toLowerCase() : '';
+            const namaKaryawan = row[2] ? row[2].toString().toLowerCase() : '';
+            const matchSearch = searchQuery === '' || idKaryawan.includes(searchQuery) || namaKaryawan.includes(searchQuery);
+
+            if (matchTahun && matchPerusahaan && matchDivisi && matchSearch) {
+                const mIdx = detectMonthIndexFromText(kolomBVal);
+                if (mIdx !== -1) {
+                    monthlyGross[mIdx] += calcRowGross(row);
+                    monthlyTHP[mIdx] += parseNum(row[26]);
+                }
+            }
+        });
+
+        const ctx = canvas.getContext('2d');
+        if (chartPayrollTrendLineInstance) chartPayrollTrendLineInstance.destroy();
+        chartPayrollTrendLineInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: standardMonthsOrder,
+                datasets: [
+                    {
+                        label: 'Total Gross (Rp)',
+                        data: monthlyGross,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#f59e0b'
+                    },
+                    {
+                        label: 'Total THP (Rp)',
+                        data: monthlyTHP,
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.08)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#059669'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 25, right: 15 } },
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11, weight: '600' } } },
+                    tooltip: {
+                        callbacks: {
+                            label: (item) => `${item.dataset.label}: ${formatIDR(item.raw)}`
+                        }
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        formatter: (val) => val > 0 ? formatCompact(val) : '',
+                        font: { weight: 'bold', size: 9.5 },
+                        color: (ctx) => ctx.datasetIndex === 0 ? '#b45309' : '#047857'
+                    }
+                },
+                scales: {
+                    y: { grace: '18%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
 
     function renderTableTop5THP(dataMap, grandTotalTHP) {
@@ -1571,36 +2355,282 @@
         });
     }
 
+    function renderPayslipDirectoryTable(baseData = null) {
+        const tbody = document.getElementById('payslip-directory-tbody');
+        const countEl = document.getElementById('payslip-tab-count');
+        const quickSearch = (document.getElementById('payslip-quick-search')?.value || '').toLowerCase().trim();
+        if (!tbody) return;
+
+        const sourceRows = Array.isArray(baseData) ? baseData : currentFilteredPayrollRows;
+        const filteredPayslips = sourceRows.filter(row => {
+            if (!quickSearch) return true;
+            const nip = (row[3] || '').toString().toLowerCase();
+            const nama = (row[2] || '').toString().toLowerCase();
+            const divisi = (row[27] || '').toString().toLowerCase();
+            const posisi = (row[5] || '').toString().toLowerCase();
+            const cabang = (row[6] || '').toString().toLowerCase();
+            return nip.includes(quickSearch) || nama.includes(quickSearch) || divisi.includes(quickSearch) || posisi.includes(quickSearch) || cabang.includes(quickSearch);
+        });
+
+        if (countEl) countEl.innerText = `${filteredPayslips.length} Karyawan`;
+        renderPaginationControls('payslip-pagination', 'payslip', filteredPayslips.length, 'renderPayslipDirectoryTable');
+
+        tbody.innerHTML = '';
+        if (filteredPayslips.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-400">Tidak ada karyawan yang sesuai dengan pencarian.</td></tr>';
+            return;
+        }
+
+        const state = paginationState.payslip;
+        const start = (state.page - 1) * state.perPage;
+        const pageData = filteredPayslips.slice(start, start + state.perPage);
+
+        pageData.forEach(row => {
+            const grossVal = calcRowGross(row);
+            const kewajibanVal = calcRowKewajiban(row);
+            const thpVal = parseNum(row[26]);
+            const divisiVal = row[27] ? row[27].trim() : '-';
+            const posisiVal = row[5] ? row[5].trim() : '-';
+
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-teal-50/50 transition-colors cursor-pointer group";
+            tr.onclick = () => openPayslipModal(row);
+            tr.innerHTML = `
+                <td class="p-3 font-medium text-amber-700">${row[1] || '-'}</td>
+                <td class="p-3 font-medium text-slate-800">${row[3] || '-'}</td>
+                <td class="p-3 font-bold text-slate-900 group-hover:text-teal-700">${row[2] || '-'}</td>
+                <td class="p-3">
+                    <span class="font-medium text-indigo-700 block">${divisiVal}</span>
+                    <span class="text-[11px] text-slate-500">${posisiVal}</span>
+                </td>
+                <td class="p-3 text-slate-700">${row[6] || '-'}</td>
+                <td class="p-3 text-right font-semibold text-slate-800">${formatIDR(grossVal)}</td>
+                <td class="p-3 text-right font-semibold text-rose-600">${formatIDR(kewajibanVal)}</td>
+                <td class="p-3 text-right font-bold text-emerald-700">${formatIDR(thpVal)}</td>
+                <td class="p-3 text-center">
+                    <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 group-hover:bg-teal-700 text-white font-semibold text-[11px] shadow-xs transition-all">
+                        <i class="fa-solid fa-file-invoice"></i> Buat Slip
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openFirstFilteredPayslip() {
+        const quickSearch = (document.getElementById('payslip-quick-search')?.value || '').toLowerCase().trim();
+        const filteredPayslips = currentFilteredPayrollRows.filter(row => {
+            if (!quickSearch) return true;
+            const nip = (row[3] || '').toString().toLowerCase();
+            const nama = (row[2] || '').toString().toLowerCase();
+            const divisi = (row[27] || '').toString().toLowerCase();
+            const posisi = (row[5] || '').toString().toLowerCase();
+            const cabang = (row[6] || '').toString().toLowerCase();
+            return nip.includes(quickSearch) || nama.includes(quickSearch) || divisi.includes(quickSearch) || posisi.includes(quickSearch) || cabang.includes(quickSearch);
+        });
+
+        if (filteredPayslips.length === 0) {
+            showToast('Tidak ada data karyawan yang ditemukan untuk dibuatkan slip gaji.', 'warning');
+            return;
+        }
+        openPayslipModal(filteredPayslips[0]);
+    }
+
+    // ================= MODAL SLIP GAJI & PDF / PRINT =================
+    let activePayslipRow = null;
+
+    function openPayslipModal(row) {
+        if (!row) return;
+        activePayslipRow = row;
+        const modal = document.getElementById('payslip-modal');
+        if (!modal) return;
+
+        const nama = row[2] ? row[2].trim() : '-';
+        const nip = row[3] ? row[3].trim() : '-';
+        const periode = row[1] ? row[1].trim() : '-';
+        const perusahaan = row[4] ? row[4].trim() : '-';
+        const divisi = row[27] ? row[27].trim() : '-';
+        const posisi = row[5] ? row[5].trim() : '-';
+        const cabang = row[6] ? row[6].trim() : '-';
+
+        if (document.getElementById('slip-nama')) document.getElementById('slip-nama').innerText = nama;
+        if (document.getElementById('slip-nip')) document.getElementById('slip-nip').innerText = nip;
+        if (document.getElementById('slip-periode')) document.getElementById('slip-periode').innerText = periode;
+        if (document.getElementById('slip-perusahaan')) document.getElementById('slip-perusahaan').innerText = perusahaan;
+        if (document.getElementById('slip-divisi-posisi')) document.getElementById('slip-divisi-posisi').innerText = `${divisi} / ${posisi}`;
+        if (document.getElementById('slip-cabang')) document.getElementById('slip-cabang').innerText = cabang;
+
+        const incomeList = document.getElementById('slip-income-list');
+        if (incomeList) {
+            incomeList.innerHTML = '';
+            allowanceIndices.forEach((colIdx, i) => {
+                const val = parseNum(row[colIdx]);
+                const label = allowanceHeaders[i] || `Komponen ${colIdx}`;
+                incomeList.innerHTML += `
+                    <div class="flex justify-between items-center text-slate-700">
+                        <span>${label}</span>
+                        <span class="font-semibold text-slate-900">${formatIDR(val)}</span>
+                    </div>
+                `;
+            });
+        }
+
+        const deductionList = document.getElementById('slip-deduction-list');
+        if (deductionList) {
+            deductionList.innerHTML = '';
+            kewajibanIndices.forEach((colIdx, i) => {
+                const val = parseNum(row[colIdx]);
+                const label = kewajibanHeaders[i] || `Potongan ${colIdx}`;
+                deductionList.innerHTML += `
+                    <div class="flex justify-between items-center text-slate-700">
+                        <span>${label}</span>
+                        <span class="font-semibold text-rose-600">${formatIDR(val)}</span>
+                    </div>
+                `;
+            });
+        }
+
+        const totalGross = calcRowGross(row);
+        const totalDeduction = calcRowKewajiban(row);
+        const thp = parseNum(row[26]);
+
+        if (document.getElementById('slip-total-gross')) document.getElementById('slip-total-gross').innerText = formatIDR(totalGross);
+        if (document.getElementById('slip-total-deduction')) document.getElementById('slip-total-deduction').innerText = formatIDR(totalDeduction);
+        if (document.getElementById('slip-thp')) document.getElementById('slip-thp').innerText = formatIDR(thp);
+
+        modal.classList.remove('hidden');
+    }
+
+    function closePayslipModal() {
+        const modal = document.getElementById('payslip-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function printPayslipWindow() {
+        const element = document.getElementById('payslip-printable-area');
+        if (!element) return;
+
+        const clone = element.cloneNode(true);
+        clone.querySelectorAll('.no-print').forEach(el => el.remove());
+
+        const printWin = window.open('', '_blank', 'width=850,height=700');
+        if (!printWin) {
+            window.print();
+            return;
+        }
+
+        printWin.document.write(`
+            <!DOCTYPE html>
+            <html lang="id">
+            <head>
+                <meta charset="UTF-8">
+                <title>Cetak Slip Gaji - PT Raja Emas Indonesia</title>
+                <script src="https://cdn.tailwindcss.com"><\/script>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                <style>
+                    body { font-family: sans-serif; padding: 20px; background: white; }
+                    @media print { @page { margin: 12mm; } }
+                </style>
+            </head>
+            <body>
+                ${clone.outerHTML}
+                <script>
+                    setTimeout(() => { window.print(); window.close(); }, 600);
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWin.document.close();
+    }
+
+    function downloadPayslipPDF() {
+        const element = document.getElementById('payslip-printable-area');
+        if (!element) return;
+
+        if (typeof html2pdf === 'undefined') {
+            showToast('Library PDF belum termuat, membuka jendela cetak sebagai alternatif...', 'warning');
+            printPayslipWindow();
+            return;
+        }
+
+        const btn = document.getElementById('btn-download-pdf');
+        const originalHTML = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan PDF...';
+        }
+
+        const noPrintEls = element.querySelectorAll('.no-print');
+        noPrintEls.forEach(el => el.style.display = 'none');
+
+        const namaKaryawan = (document.getElementById('slip-nama')?.innerText || 'Karyawan').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const periodeStr = (document.getElementById('slip-periode')?.innerText || 'Periode').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const fileName = `Slip_Gaji_${namaKaryawan}_${periodeStr}.pdf`;
+
+        const opt = {
+            margin: 10,
+            filename: fileName,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            noPrintEls.forEach(el => el.style.display = '');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+            showToast(`Slip Gaji (${fileName}) berhasil diunduh.`, 'success');
+        }).catch(err => {
+            console.error('PDF generation error:', err);
+            noPrintEls.forEach(el => el.style.display = '');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+            showToast('Gagal membuat file PDF otomatis. Gunakan tombol Cetak (Print).', 'error');
+        });
+    }
+
+    // ================= DATA LOAN & SUMMARY TABLES =================
     function loadLoanData() {
         const tbody = document.getElementById('loan-table-body');
         if (tbody) tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-slate-400">Memuat data loan...</td></tr>';
 
-        Papa.parse(LOAN_CSV_URL, {
-            download: true,
-            header: false,
-            skipEmptyLines: true,
-            complete: function (results) {
-                if (results.data && results.data.length > 0) {
-                    rawLoanHeaders = results.data[0];
-                    rawLoanData = results.data.slice(1).filter(row => {
-                        const colA = (row[0] || '').toString().trim().toLowerCase();
-                        const colD = (row[3] || '').toString().trim().toLowerCase();
-                        const colE = (row[4] || '').toString().trim().toLowerCase();
-                        if (colA === 'total' || colA === 'grand total' || colD === 'total' || colE === 'total' || colE === 'grand total') {
-                            return false;
+        fetch(LOAN_CSV_URL)
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.text();
+            })
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: false,
+                    skipEmptyLines: true,
+                    complete: function (results) {
+                        if (results.data && results.data.length > 0) {
+                            rawLoanHeaders = results.data[0];
+                            rawLoanData = results.data.slice(1).filter(row => {
+                                const colA = (row[0] || '').toString().trim().toLowerCase();
+                                const colD = (row[3] || '').toString().trim().toLowerCase();
+                                const colE = (row[4] || '').toString().trim().toLowerCase();
+                                if (colA === 'total' || colA === 'grand total' || colD === 'total' || colE === 'total' || colE === 'grand total') {
+                                    return false;
+                                }
+                                return true;
+                            });
+                            if (rawData.length > 0) {
+                                populateFilters(rawData);
+                            }
+                            updateDashboard();
                         }
-                        return true;
-                    });
-                    if (rawData.length > 0) {
-                        populateFilters(rawData);
                     }
-                    updateDashboard();
-                }
-            },
-            error: function () {
+                });
+            })
+            .catch(err => {
+                console.error("Fetch LOAN_CSV_URL error:", err);
                 if (tbody) tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-rose-500">Gagal memuat data Loan.</td></tr>';
-            }
-        });
+            });
     }
 
     function getFilteredLoanData(overridePeriodeVal = null, ignoreMonthFilter = false) {
@@ -1698,7 +2728,7 @@
             data: {
                 labels: standardMonthsOrder,
                 datasets: [{
-                    label: 'Total Pinjaman Kolom I (Rp)',
+                    label: 'Total Pinjaman (Rp)',
                     data: monthlyTotals,
                     borderColor: '#f97316',
                     backgroundColor: 'rgba(249, 115, 22, 0.1)',
@@ -1833,35 +2863,34 @@
     function exportLoanToExcel() {
         const filtered = getFilteredLoanData();
         if (filtered.length === 0) {
-            alert('Tidak ada data loan untuk diunduh pada filter saat ini.');
+            showToast('Tidak ada data loan untuk diunduh pada filter saat ini.', 'warning');
             return;
         }
         const empMetaMap = getEmployeeMetaMap();
         const exportArray = filtered.map((row, idx) => {
             const nip = row[3] ? row[3].trim() : '';
             const meta = empMetaMap[nip.toLowerCase()] || { divisi: '', posisi: '' };
-            const pinj = parseNum(row[8]);
-            const sisa = parseNum(row[10]);
             return {
                 "Nomor": idx + 1,
                 "Nama Karyawan": row[4] ? row[4].trim() : '',
-                "NIP (Kolom D)": nip,
-                "Divisi ": meta.divisi || '',
-                "Posisi ": meta.posisi || '',
-                "Bulan / Periode ": getLoanRowPeriodLabel(row),
-                "Total Kewajiban / Pinjaman (Rp)": pinj,
-                "Total Pembayaran Setahun  (Rp)": parseNum(row[9]),
+                "NIP": nip,
+                "Divisi": meta.divisi || '',
+                "Posisi": meta.posisi || '',
+                "Bulan / Periode": getLoanRowPeriodLabel(row),
+                "Total Kewajiban / Pinjaman (Rp)": parseNum(row[8]),
+                "Total Pembayaran Setahun (Rp)": parseNum(row[9]),
                 "Total Tenor": row[6] ? row[6].trim() : '',
                 "Angsuran per Bulan (Rp)": parseNum(row[9]),
                 "Sisa Tenor": row[7] ? row[7].trim() : '',
-                "Sisa Pinjaman (Rp)": sisa,
-                "Status Kolom O": row[14] ? row[14].trim() : ''
+                "Sisa Pinjaman (Rp)": parseNum(row[10]),
+                "Status": row[14] ? row[14].trim() : ''
             };
         });
         const worksheet = XLSX.utils.json_to_sheet(exportArray);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Data Loan Karyawan");
         XLSX.writeFile(workbook, `Laporan_Loan_Karyawan_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('Laporan Loan Karyawan berhasil diunduh.', 'success');
     }
 
     function renderSummaryComparisonCards(filteredData) {
@@ -1906,7 +2935,7 @@
                 if (diffPercent >= 0) {
                     badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}%</span>`;
                 } else {
-                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
                 }
             }
         }
@@ -1954,7 +2983,7 @@
                 if (diffPercent >= 0) {
                     badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}%</span>`;
                 } else {
-                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
                 }
             }
         }
@@ -2002,7 +3031,7 @@
                 if (diffPercent >= 0) {
                     badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}%</span>`;
                 } else {
-                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
                 }
             }
         }
@@ -2013,12 +3042,20 @@
         const countEl = document.getElementById('summary-count');
         if(countEl) countEl.innerText = `${data.length} Records`;
         if(!tbody) return;
+
+        renderPaginationControls('summary-pagination', 'summary', data.length, 'renderSummaryTable');
+
         tbody.innerHTML = '';
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="12" class="p-4 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-slate-400">Tidak ada data ditemukan.</td></tr>';
             return;
         }
-        data.slice(0, 100).forEach(row => {
+
+        const state = paginationState.summary;
+        const start = (state.page - 1) * state.perPage;
+        const pageData = data.slice(start, start + state.perPage);
+
+        pageData.forEach(row => {
             const gapokVal = calcRowGapok(row);
             const lemburVal = parseNum(row[10]) + parseNum(row[11]);
             const tunjanganVal = calcRowTunjangan(row);
@@ -2029,10 +3066,11 @@
             const posisiVal = row[5] ? row[5].trim() : '-';
 
             const tr = document.createElement('tr');
-            tr.className = "hover:bg-amber-50/40 transition-colors";
+            tr.className = "hover:bg-amber-50/50 transition-colors cursor-pointer group";
+            tr.onclick = () => openPayslipModal(row);
             tr.innerHTML = `
                 <td class="p-3 font-medium text-slate-900">${row[3] || '-'}</td>
-                <td class="p-3 font-semibold text-slate-900">${row[2] || '-'}</td>
+                <td class="p-3 font-semibold text-slate-900 group-hover:text-amber-700 underline decoration-amber-300/60 underline-offset-2">${row[2] || '-'}</td>
                 <td class="p-3">${row[4] || '-'}</td>
                 <td class="p-3 font-medium text-indigo-700">${divisiVal}</td>
                 <td class="p-3 text-slate-700">${posisiVal}</td>
@@ -2043,6 +3081,11 @@
                 <td class="p-3 text-right font-semibold text-rose-600">${formatIDR(kewajibanVal)}</td>
                 <td class="p-3 text-right font-semibold text-slate-900">${formatIDR(grossVal)}</td>
                 <td class="p-3 text-right font-bold text-amber-900">${formatIDR(thpVal)}</td>
+                <td class="p-3 text-center">
+                    <button type="button" class="px-2.5 py-1 rounded-lg bg-amber-50 group-hover:bg-amber-500 text-amber-800 group-hover:text-slate-950 border border-amber-200 font-semibold text-[11px] transition-colors">
+                        <i class="fa-solid fa-receipt"></i> Slip
+                    </button>
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -2055,10 +3098,12 @@
         if(countEl) countEl.innerText = `${data.length} Records`;
         if(!thead || !tbody) return;
 
-        let headHTML = `<tr><th class="p-3">ID</th><th class="p-3">Nama Karyawan</th><th class="p-3">Divisi </th><th class="p-3">Posisi </th>`;
+        let headHTML = `<tr><th class="p-3">ID</th><th class="p-3">Nama Karyawan</th><th class="p-3">Divisi</th><th class="p-3">Posisi</th>`;
         allowanceHeaders.forEach(h => headHTML += `<th class="p-3 text-right">${h}</th>`);
         headHTML += `<th class="p-3 text-right font-bold">Total Gross (H-Q)</th></tr>`;
         thead.innerHTML = headHTML;
+
+        renderPaginationControls('allowance-pagination', 'allowance', data.length, 'renderAllowanceTable');
 
         tbody.innerHTML = '';
         if (data.length === 0) {
@@ -2066,7 +3111,11 @@
             return;
         }
 
-        data.slice(0, 100).forEach(row => {
+        const state = paginationState.allowance;
+        const start = (state.page - 1) * state.perPage;
+        const pageData = data.slice(start, start + state.perPage);
+
+        pageData.forEach(row => {
             let rowTotal = 0;
             const divisiVal = row[27] ? row[27].trim() : '-';
             const posisiVal = row[5] ? row[5].trim() : '-';
@@ -2088,10 +3137,12 @@
         if(countEl) countEl.innerText = `${data.length} Records`;
         if(!thead || !tbody) return;
 
-        let headHTML = `<tr><th class="p-3">ID</th><th class="p-3">Nama Karyawan</th><th class="p-3">Divisi </th><th class="p-3">Posisi </th>`;
+        let headHTML = `<tr><th class="p-3">ID</th><th class="p-3">Nama Karyawan</th><th class="p-3">Divisi</th><th class="p-3">Posisi</th>`;
         kewajibanHeaders.forEach(h => headHTML += `<th class="p-3 text-right">${h}</th>`);
         headHTML += `<th class="p-3 text-right font-bold">Total Kewajiban</th></tr>`;
         thead.innerHTML = headHTML;
+
+        renderPaginationControls('kewajiban-pagination', 'kewajiban', data.length, 'renderKewajibanTable');
 
         tbody.innerHTML = '';
         if (data.length === 0) {
@@ -2099,7 +3150,11 @@
             return;
         }
 
-        data.slice(0, 100).forEach(row => {
+        const state = paginationState.kewajiban;
+        const start = (state.page - 1) * state.perPage;
+        const pageData = data.slice(start, start + state.perPage);
+
+        pageData.forEach(row => {
             let rowTotal = 0;
             const divisiVal = row[27] ? row[27].trim() : '-';
             const posisiVal = row[5] ? row[5].trim() : '-';
@@ -2186,27 +3241,35 @@
                 if (diffPercent >= 0) {
                     badgeEl.innerHTML = `<span class="text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +${diffPercent.toFixed(1)}%</span>`;
                 } else {
-                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-rose-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
+                    badgeEl.innerHTML = `<span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200"><i class="fa-solid fa-arrow-trend-down mr-1"></i> ${diffPercent.toFixed(1)}%</span>`;
                 }
             }
         }
     }
 
-    function renderDatabaseTable(headers, data) {
+    function renderDatabaseTable(data) {
         const thead = document.getElementById('database-table-head');
         const tbody = document.getElementById('database-table-body');
+        const countEl = document.getElementById('database-count');
+        if(countEl) countEl.innerText = `${data.length} Records`;
         if(!thead || !tbody) return;
         thead.innerHTML = '';
         tbody.innerHTML = '';
 
-        if (headers.length > 0) {
+        renderPaginationControls('database-pagination', 'database', data.length, 'renderDatabaseTable');
+
+        if (headerRow.length > 0) {
             let trHead = '<tr>';
-            headers.forEach(h => trHead += `<th class="p-3 border-b border-slate-200">${h}</th>`);
+            headerRow.forEach(h => trHead += `<th class="p-3 border-b border-slate-200">${h}</th>`);
             trHead += '</tr>';
             thead.innerHTML = trHead;
         }
 
-        data.slice(0, 50).forEach(row => {
+        const state = paginationState.database;
+        const start = (state.page - 1) * state.perPage;
+        const pageData = data.slice(start, start + state.perPage);
+
+        pageData.forEach(row => {
             let trBody = '<tr class="hover:bg-slate-50 transition-colors">';
             row.forEach(val => trBody += `<td class="p-3 border-b border-slate-100">${val || '-'}</td>`);
             trBody += '</tr>';
@@ -2376,7 +3439,7 @@
         }
     }
 
-    function loadTimelineRecords() {
+    function loadTimelineRecords(manualNotify = false) {
         const tbody = document.getElementById('timeline-table-body');
         if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data payroll timeline...</td></tr>';
 
@@ -2390,6 +3453,7 @@
                             rawTimelineHeaders = results.data[0];
                             localTimelineRecords = results.data.slice(1);
                             renderTimelineTable();
+                            if (manualNotify) showToast('Data Payroll Timeline berhasil diperbarui.', 'success');
                         }
                     }
                 });
@@ -2467,9 +3531,9 @@
                 if (lowerVal === 'sla' || lowerVal === 'oversla') {
                     let badgeClass = "px-2.5 py-1 rounded-full text-[11px] font-semibold border ";
                     if (lowerVal === 'sla') {
-                        badgeClass += "bg-blue-50 text-blue-700 border-blue-200"; // Biru untuk SLA
+                        badgeClass += "bg-blue-50 text-blue-700 border-blue-200";
                     } else if (lowerVal === 'oversla') {
-                        badgeClass += "bg-rose-50 text-rose-700 border-rose-200"; // Merah untuk OverSLA
+                        badgeClass += "bg-rose-50 text-rose-700 border-rose-200";
                     }
                     rowHTML += `<td class="p-3 border-b border-slate-100"><span class="${badgeClass}">${cellValStr}</span></td>`;
                 } else {
@@ -2481,9 +3545,9 @@
         });
     }
 
-    function loadAdjustmentRecords() {
+    function loadAdjustmentRecords(manualNotify = false) {
         const tbody = document.getElementById('adj-table-body');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data complainan...</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Memuat data komplain...</td></tr>';
 
         fetch(COMPLAIN_CSV_URL)
             .then(response => { if (!response.ok) throw new Error('Network error'); return response.text(); })
@@ -2495,11 +3559,12 @@
                             rawComplainHeaders = results.data[0];
                             localAdjustmentRecords = results.data.slice(1);
                             renderAdjustmentTable();
+                            if (manualNotify) showToast('Data Payroll Complaint berhasil diperbarui.', 'success');
                         }
                     }
                 });
             })
-            .catch(() => { if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-rose-500">Gagal memuat data komplainan.</td></tr>'; });
+            .catch(() => { if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-rose-500">Gagal memuat data komplain.</td></tr>'; });
     }
 
     function renderAdjustmentTable() { filterAdjustmentTable(); }
@@ -2558,7 +3623,7 @@
 
         tbody.innerHTML = '';
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Data komplainan tidak ditemukan.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Data komplain tidak ditemukan.</td></tr>';
             return;
         }
 
@@ -2566,19 +3631,18 @@
             const tr = document.createElement('tr');
             tr.className = "hover:bg-amber-50/40 transition-colors";
             let rowHTML = '';
-            row.forEach((val, colIdx) => {
+            row.forEach((val) => {
                 const cellValStr = (val !== undefined && val !== null) ? val.toString().trim() : '';
                 const lowerVal = cellValStr.toLowerCase();
                 
-                // Cek apakah kolom ini berisi status (open, proses, selesai)
                 if (lowerVal === 'open' || lowerVal === 'proses' || lowerVal === 'selesai') {
                     let badgeClass = "px-2.5 py-1 rounded-full text-[11px] font-semibold border ";
                     if (lowerVal === 'open') {
-                        badgeClass += "bg-rose-50 text-rose-700 border-rose-200"; // Merah
+                        badgeClass += "bg-rose-50 text-rose-700 border-rose-200";
                     } else if (lowerVal === 'proses') {
-                        badgeClass += "bg-orange-50 text-orange-700 border-orange-200"; // Oren
+                        badgeClass += "bg-orange-50 text-orange-700 border-orange-200";
                     } else if (lowerVal === 'selesai') {
-                        badgeClass += "bg-blue-50 text-blue-700 border-blue-200"; // Biru
+                        badgeClass += "bg-blue-50 text-blue-700 border-blue-200";
                     }
                     rowHTML += `<td class="p-3 border-b border-slate-100"><span class="${badgeClass}">${cellValStr}</span></td>`;
                 } else {
@@ -2593,7 +3657,7 @@
     function exportTimelineToExcel() {
         const filtered = getFilteredTimelineData();
         if (filtered.length === 0) {
-            alert('Tidak ada data timeline untuk diunduh.');
+            showToast('Tidak ada data timeline untuk diunduh.', 'warning');
             return;
         }
         let exportArray = filtered.map(row => {
@@ -2607,12 +3671,13 @@
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Timeline");
         XLSX.writeFile(workbook, `Laporan_Payroll_Timeline_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('Laporan Payroll Timeline berhasil diunduh.', 'success');
     }
 
     function exportAdjustmentToExcel() {
         const filtered = getFilteredComplainanData();
         if (filtered.length === 0) {
-            alert('Tidak ada data komplainan untuk diunduh.');
+            showToast('Tidak ada data komplain untuk diunduh.', 'warning');
             return;
         }
         let exportArray = filtered.map(row => {
@@ -2624,17 +3689,24 @@
         });
         const worksheet = XLSX.utils.json_to_sheet(exportArray);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Complainan");
-        XLSX.writeFile(workbook, `Laporan_Payroll_Complainan_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Complaint");
+        XLSX.writeFile(workbook, `Laporan_Payroll_Complaint_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('Laporan Payroll Complaint berhasil diunduh.', 'success');
     }
 
+    // ================= EXPORT POWERPOINT (.PPTX) =================
     function downloadPPTX() {
         try {
             const filtered = getFilteredData();
+            if (filtered.length === 0) {
+                showToast('Tidak ada data untuk dibuatkan presentasi PPT pada filter saat ini.', 'warning');
+                return;
+            }
+
             const fPeriodeSelect = document.getElementById('filter-periode');
             const selectedPeriode = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text : 'Semua Bulan';
             const selectedTahun = document.getElementById('filter-tahun').value;
-            const periodeText = selectedPeriode !== 'Semua Bulan' ? selectedPeriode : (selectedTahun !== 'ALL' ? selectedTahun : 'Oktober 2026');
+            const periodeText = selectedPeriode !== 'Semua Bulan' ? selectedPeriode : (selectedTahun !== 'ALL' ? selectedTahun : 'Periode Aktif');
 
             let totalGross = 0, totalTHP = 0, totalPotongan = 0;
             let totalKekuranganBlnLalu = 0, totalLemburan = 0, totalTunjanganBenefit = 0;
@@ -2729,10 +3801,10 @@
                 totalPotongan += (pin1 + pin2 + pnl + pAbsen + pSakit + bpjsK + jhtK);
             });
 
+            // Perhitungan Dinamis Cabang & Gross Bulan Lalu (Tanpa angka hardcoded)
             let prevMonthGross = 0;
-            let prevMonthBranchesCount = 122;
-            const currentBranchesCount = cabangSet.size > 0 ? cabangSet.size : 136;
-            const branchDiffCount = currentBranchesCount - prevMonthBranchesCount;
+            const prevMonthBranchesSet = new Set();
+            const currentBranchesCount = cabangSet.size;
 
             const fPeriodeSelectObj = document.getElementById('filter-periode');
             if (fPeriodeSelectObj && fPeriodeSelectObj.selectedIndex > 1) {
@@ -2740,13 +3812,17 @@
                 rawData.forEach(row => {
                     if (row[1] && row[1].trim() === prevPeriodeVal) {
                         prevMonthGross += calcRowGross(row);
+                        if (row[6] && row[6].trim() !== '') {
+                            prevMonthBranchesSet.add(row[6].trim());
+                        }
                     }
                 });
-            } else {
-                prevMonthGross = totalGross * 0.95;
             }
 
-            const diffGrossAmt = totalGross - prevMonthGross;
+            const prevMonthBranchesCount = prevMonthBranchesSet.size;
+            const branchDiffCount = prevMonthBranchesCount > 0 ? (currentBranchesCount - prevMonthBranchesCount) : 0;
+
+            const diffGrossAmt = prevMonthGross > 0 ? (totalGross - prevMonthGross) : 0;
             const diffGrossPct = prevMonthGross > 0 ? ((diffGrossAmt / prevMonthGross) * 100).toFixed(1) : "0.0";
             const diffSign = diffGrossAmt >= 0 ? "+" : "";
 
@@ -2779,7 +3855,7 @@
             let selesaiKomplain = localAdjustmentRecords.filter(r => r.join(" ").toLowerCase().includes('selesai')).length;
 
             if (typeof PptxGenJS === 'undefined') {
-                alert('Library PptxGenJS belum termuat. Periksa koneksi internet Anda.');
+                showToast('Library PptxGenJS belum termuat. Periksa koneksi internet Anda.', 'error');
                 return;
             }
 
@@ -2794,12 +3870,14 @@
             const SLATE_DARK = "1E293B";
             const SLATE_MUTED = "64748B";
 
+            // SLIDE 1
             let slide1 = pptx.addSlide();
             slide1.background = { color: BG_DARK };
-            slide1.addText("👑 PT RAJA EMAS INDONESIA", { x: 1.2, y: 1.8, w: 10, h: 0.5, fontSize: 16, bold: true, color: AMBER });
+            slide1.addText("PT RAJA EMAS INDONESIA", { x: 1.2, y: 1.8, w: 10, h: 0.5, fontSize: 16, bold: true, color: AMBER });
             slide1.addText("Laporan Payroll Raja Emas Indonesia", { x: 1.2, y: 2.5, w: 11, h: 1.0, fontSize: 32, bold: true, color: WHITE });
             slide1.addText(`Periode: ${periodeText}\nDisusun Oleh: Tim HR / Payroll & Finance\nKepada: Direksi & Manajemen PT Raja Emas Indonesia`, { x: 1.2, y: 3.9, w: 10, h: 1.5, fontSize: 14, color: "CBD5E1" });
 
+            // SLIDE 2
             let slide2 = pptx.addSlide();
             slide2.addText("2. Ringkasan Finansial & Demografi Utama", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
             slide2.addText(`Akumulasi finansial dan demografi karyawan periode ${periodeText}`, { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
@@ -2817,11 +3895,12 @@
                 [{ text: "Parameter Laporan", options: { fill: SLATE_DARK, color: WHITE, bold: true } }, { text: "Total Nilai / Jumlah", options: { fill: SLATE_DARK, color: WHITE, bold: true, align: "right" } }],
                 [{ text: "Total Keseluruhan Karyawan" }, { text: `${karyawanSet.size} Karyawan`, options: { bold: true, align: "right" } }],
                 [{ text: "Total Perusahaan Terdaftar" }, { text: `${perusahaanSet.size} Perusahaan`, options: { bold: true, align: "right" } }],
-                [{ text: "Total Divisi Operasional " }, { text: `${divisiSet.size} Divisi`, options: { bold: true, align: "right" } }],
+                [{ text: "Total Divisi Operasional" }, { text: `${divisiSet.size} Divisi`, options: { bold: true, align: "right" } }],
                 [{ text: "Total Cabang / Store" }, { text: `${cabangSet.size} Cabang`, options: { bold: true, align: "right" } }]
             ];
             slide2.addTable(tableSlide2, { x: 0.8, y: 3.4, w: 11.7, h: 3.5, border: { pt: 1, color: "E2E8F0" } });
 
+            // SLIDE 3
             let slide3 = pptx.addSlide();
             slide3.addText("3. Pendetailan Demografi & Total THP per Perusahaan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
             slide3.addText("Rincian keseluruhan karyawan, divisi, cabang, dan total THP dikelompokkan berdasarkan entitas perusahaan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
@@ -2848,6 +3927,7 @@
 
             slide3.addTable(tableCompRows, { x: 0.8, y: 1.6, w: 11.7, h: 5.0, border: { pt: 1, color: "E2E8F0" } });
 
+            // SLIDE 4
             let slide4 = pptx.addSlide();
             slide4.addText("4. Rincian / Komponen Pendapatan Karyawan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
             slide4.addText("Komponen pendapatan dari kolom H (Salary) sampai Q (Uang Transport)", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
@@ -2871,6 +3951,7 @@
             }];
             slide4.addChart(pptx.charts.BAR, chartBenefitData, { x: 7.3, y: 1.5, w: 5.2, h: 5.5, barDir: "col", chartColors: ["047857", "10B981", "34D399", "6EE7B7"], showValue: true });
 
+            // SLIDE 5
             let slide5 = pptx.addSlide();
             slide5.addText("5. Komponen Potongan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
             slide5.addText("Rincian kewajiban, cicilan, pinalti, dan BPJS", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
@@ -2881,7 +3962,7 @@
             kewajibanHeaders.forEach((h, idx) => {
                 tablePotongan.push([{ text: h }, { text: formatIDR(kewajibanTotalsArr[idx]), options: { align: "right", bold: true } }]);
             });
-            tablePotongan.push([{ text: "Total Seluruh Komponen Potongan ", options: { bold: true, fill: "FFF1F2" } }, { text: formatIDR(totalKomponenSlide5), options: { align: "right", bold: true, fill: "FFF1F2", color: "E11D48" } }]);
+            tablePotongan.push([{ text: "Total Seluruh Komponen Potongan", options: { bold: true, fill: "FFF1F2" } }, { text: formatIDR(totalKomponenSlide5), options: { align: "right", bold: true, fill: "FFF1F2", color: "E11D48" } }]);
 
             slide5.addTable(tablePotongan, { x: 0.8, y: 1.6, w: 6.0, h: 5.2, border: { pt: 1, color: "E2E8F0" } });
 
@@ -2892,13 +3973,14 @@
             }];
             slide5.addChart(pptx.charts.BAR, chartPotonganData, { x: 7.1, y: 1.6, w: 5.4, h: 5.2, barDir: "col", chartColors: ["E11D48", "F43F5E", "FB7185", "FDA4AF"], showValue: true });
 
+            // SLIDE 6 (LOAN)
             let slideLoan = pptx.addSlide();
             slideLoan.addText("6. Laporan Pinjaman Karyawan (Loan)", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
             slideLoan.addText(`Ringkasan kewajiban pinjaman periode ${periodeText} dan grafik tren pinjaman (loan) setahun`, { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
 
             const loanBoxes = [
-                { title: "TOTAL PINJAMAN ", val: formatIDR(pptTotalLoan), bg: "FFF7ED", line: "F97316", txtColor: "C2410C" },
-                { title: "SUDAH DIBAYAR ", val: formatIDR(pptTotalBayarLoan), bg: "ECFDF5", line: "10B981", txtColor: "047857" },
+                { title: "TOTAL PINJAMAN", val: formatIDR(pptTotalLoan), bg: "FFF7ED", line: "F97316", txtColor: "C2410C" },
+                { title: "SUDAH DIBAYAR", val: formatIDR(pptTotalBayarLoan), bg: "ECFDF5", line: "10B981", txtColor: "047857" },
                 { title: "SISA PINJAMAN", val: formatIDR(pptTotalSisaLoan), bg: "FFF1F2", line: "E11D48", txtColor: "BE123C" },
                 { title: "PEMINJAM AKTIF", val: `${pptLoanBorrowers.size} Orang`, bg: "FEF3C7", line: "F59E0B", txtColor: "B45309" }
             ];
@@ -2913,22 +3995,20 @@
             slideLoan.addText("Grafik Tren Garis Total Pinjaman (Loan) per Bulan dalam Setahun (Rp)", { x: 0.8, y: 3.05, w: 11.7, h: 0.35, fontSize: 13, bold: true, color: SLATE_DARK });
 
             let chartLoanYearLineData = [{
-                name: "Total Pinjaman ",
+                name: "Total Pinjaman",
                 labels: standardMonthsOrder,
                 values: pptMonthlyLoanTotals
             }];
 
             slideLoan.addChart(pptx.charts.LINE, chartLoanYearLineData, {
-                x: 0.8,
-                y: 3.45,
-                w: 11.7,
-                h: 3.65,
+                x: 0.8, y: 3.45, w: 11.7, h: 3.65,
                 chartColors: ["F97316"],
                 lineSize: 3,
                 showValue: true,
                 valAxisLabelFormatCode: "#,##0"
             });
 
+            // SLIDE 7 (LEMBUR)
             let slide6 = pptx.addSlide();
             slide6.addText("7. Analisis Rinci Biaya & Jam Lembur", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
             slide6.addText("Divisi dengan akumulasi lembur terbanyak dan karyawan dengan nominal lembur tertinggi", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
@@ -2953,17 +4033,26 @@
             slide6.addTable(tableDivLemburRows, { x: 0.8, y: 1.6, w: 5.7, h: 5.0, border: { pt: 1, color: "E2E8F0" } });
             slide6.addTable(tableKarLemburRows, { x: 6.8, y: 1.6, w: 5.7, h: 5.0, border: { pt: 1, color: "E2E8F0" } });
 
+            // SLIDE 8 (REKONSILIASI DINAMIS)
             let slide7 = pptx.addSlide();
             slide7.addText("8. Rekonsiliasi & Analisis Variansi (Payroll)", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
-            slide7.addText("Analisis perbandingan gaji, penambahan cabang, dan penyesuaian periode berjalan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+            slide7.addText("Analisis perbandingan gaji, jumlah cabang, dan penyesuaian periode berjalan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
 
             slide7.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 1.5, w: 11.7, h: 5.4, fill: { color: SLATE_LIGHT }, line: { color: "E2E8F0" } });
             
+            const perbandinganGajiStr = prevMonthGross > 0
+                ? `Total pengeluaran gross periode ini adalah ${formatIDR(totalGross)}, mengalami selisih sebesar ${diffSign}${formatIDR(diffGrossAmt)} (${diffSign}${diffGrossPct}%) dibandingkan total gross bulan lalu (${formatIDR(prevMonthGross)}).`
+                : `Total pengeluaran gross periode aktif tercatat sebesar ${formatIDR(totalGross)} (Pilih periode bulan spesifik pada filter untuk melihat persentase selisih terhadap bulan sebelumnya).`;
+
+            const perbandinganCabangStr = prevMonthBranchesCount > 0
+                ? `Jumlah cabang / store aktif tercatat sebanyak ${currentBranchesCount} cabang (${branchDiffCount >= 0 ? '+' : ''}${branchDiffCount} cabang dibandingkan bulan lalu sebanyak ${prevMonthBranchesCount} cabang).`
+                : `Jumlah cabang / store aktif pada periode ini tercatat sebanyak ${currentBranchesCount} cabang operasional.`;
+
             let rekonsiliasiText = 
                 `• Perbandingan Gaji Bulan Lalu:\n` +
-                `  Total pengeluaran gross bulan ini adalah ${formatIDR(totalGross)}, mengalami selisih sebesar ${diffSign}${formatIDR(diffGrossAmt)} (${diffSign}${diffGrossPct}%) dibandingkan total gross bulan lalu (${formatIDR(prevMonthGross)}).\n\n` +
-                `• Data Penambahan Cabang:\n` +
-                `  Jumlah cabang / store aktif pada periode ini tercatat sebanyak ${currentBranchesCount} cabang, bertambah ${branchDiffCount} cabang dari bulan lalu (${prevMonthBranchesCount} cabang menjadi ${currentBranchesCount} cabang).\n\n` +
+                `  ${perbandinganGajiStr}\n\n` +
+                `• Data Operasional Cabang:\n` +
+                `  ${perbandinganCabangStr}\n\n` +
                 `• Penyesuaian Gaji & Kekurangan Bulan Lalu:\n` +
                 `  Total kekurangan gaji bulan lalu sebesar ${formatIDR(totalKekuranganBlnLalu)} telah diverifikasi dan dimasukkan ke dalam komponen pembayaran periode berjalan.\n\n` +
                 `• Catatan Audit & Rekonsiliasi Finansial:\n` +
@@ -2971,6 +4060,7 @@
             
             slide7.addText(rekonsiliasiText, { x: 1.2, y: 1.8, w: 11.0, h: 4.8, fontSize: 13, color: SLATE_DARK });
 
+            // SLIDE 9 (COMPLAINT)
             let slide8 = pptx.addSlide();
             slide8.addText("9. Laporan Komplain dan Penyesuaian Laporan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
             slide8.addText("Monitoring status tiket komplain dan kendala penggajian karyawan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
@@ -2991,13 +4081,14 @@
 
             slide8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 3.5, w: 11.7, h: 3.4, fill: { color: SLATE_LIGHT }, line: { color: "E2E8F0" } });
             let komplainSummaryText = 
-                `• Monitoring Kendala & Complainan Penggajian:\n` +
+                `• Monitoring Kendala & Complaint Penggajian:\n` +
                 `  - Total Tiket Masuk: ${totalKomplain} laporan.\n` +
                 `  - Selesai Ditangani: ${selesaiKomplain} tiket (${totalKomplain > 0 ? ((selesaiKomplain/totalKomplain)*100).toFixed(1) : 0}% resolusi).\n` +
                 `  - Dalam Proses & Open: ${openKomplain + prosesKomplain} tiket sedang ditindaklanjuti oleh tim HR Payroll.\n\n` +
                 `• Tindak Lanjut Penyesuaian:\n  Seluruh komplain terkait selisih nominal, absensi, dan tunjangan telah diverifikasi dengan data presensi cabang masing-masing untuk memastikan akurasi laporan payroll.`;
             slide8.addText(komplainSummaryText, { x: 1.2, y: 3.8, w: 11.0, h: 2.8, fontSize: 13, color: SLATE_DARK });
 
+            // SLIDE 10 (CLOSING)
             let slide9 = pptx.addSlide();
             slide9.background = { color: BG_DARK };
             slide9.addText("TERIMA KASIH", { x: 1.5, y: 2.2, w: 10, h: 0.8, fontSize: 36, bold: true, color: AMBER });
@@ -3005,9 +4096,10 @@
             slide9.addText("PT Raja Emas Indonesia • Portal Report Payroll & Finance", { x: 1.5, y: 4.2, w: 10, h: 0.5, fontSize: 14, color: "CBD5E1" });
 
             pptx.writeFile({ fileName: `Laporan_Payroll_Raja_Emas_${periodeText.replace(/\s+/g, '_')}.pptx` });
+            showToast('File presentasi PowerPoint (.pptx) berhasil diunduh.', 'success');
         } catch (err) {
             console.error(err);
-            alert('Terjadi kesalahan saat membuat file PowerPoint: ' + err.message);
+            showToast('Terjadi kesalahan saat membuat file PowerPoint: ' + err.message, 'error');
         }
     }
 
@@ -3028,8 +4120,8 @@
                 "ID Karyawan": row[3] || '',
                 "Nama Karyawan": row[2] || '',
                 "Perusahaan": row[4] || '',
-                "Divisi ": row[27] || '',
-                "Posisi ": row[5] || '',
+                "Divisi": row[27] || '',
+                "Posisi": row[5] || '',
                 "Cabang": row[6] || '',
                 "Gapok (Rp)": calcRowGapok(row),
                 "Gross (Rp)": calcRowGross(row),
@@ -3042,8 +4134,8 @@
                 let obj = { 
                     "ID Karyawan": row[3] || '', 
                     "Nama Karyawan": row[2] || '',
-                    "Divisi ": row[27] || '',
-                    "Posisi ": row[5] || ''
+                    "Divisi": row[27] || '',
+                    "Posisi": row[5] || ''
                 };
                 let total = 0;
                 allowanceIndices.forEach((idx, i) => {
@@ -3060,8 +4152,8 @@
                 let obj = { 
                     "ID Karyawan": row[3] || '', 
                     "Nama Karyawan": row[2] || '',
-                    "Divisi ": row[27] || '',
-                    "Posisi ": row[5] || ''
+                    "Divisi": row[27] || '',
+                    "Posisi": row[5] || ''
                 };
                 let total = 0;
                 kewajibanHeaders.forEach((h, idx) => {
@@ -3082,17 +4174,17 @@
                 return {
                     "Nomor": idx + 1,
                     "Nama Karyawan": row[4] ? row[4].trim() : '',
-                    "NIP (Kolom D)": nip,
-                    "Divisi ": meta.divisi || '',
-                    "Posisi ": meta.posisi || '',
-                    "Bulan / Periode ": getLoanRowPeriodLabel(row),
-                    "Total Kewajiban / Pinjaman(Rp)": parseNum(row[8]),
-                    "Total Pembayaran Setahun  (Rp)": parseNum(row[9]),
+                    "NIP": nip,
+                    "Divisi": meta.divisi || '',
+                    "Posisi": meta.posisi || '',
+                    "Bulan / Periode": getLoanRowPeriodLabel(row),
+                    "Total Kewajiban / Pinjaman (Rp)": parseNum(row[8]),
+                    "Total Pembayaran Setahun (Rp)": parseNum(row[9]),
                     "Total Tenor": row[6] ? row[6].trim() : '',
                     "Angsuran per Bulan (Rp)": parseNum(row[9]),
                     "Sisa Tenor": row[7] ? row[7].trim() : '',
                     "Sisa Pinjaman (Rp)": parseNum(row[10]),
-                    "Status Kolom O": row[14] ? row[14].trim() : ''
+                    "Status": row[14] ? row[14].trim() : ''
                 };
             });
             fileName = `Laporan_Loan_Karyawan_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
@@ -3103,7 +4195,7 @@
                 "Nama Karyawan": row[2] || '',
                 "Perusahaan": row[4] || '',
                 "Posisi": row[5] || '',
-                "Divisi ": row[27] || '',
+                "Divisi": row[27] || '',
                 "Nominal Lembur (Rp)": parseNum(row[10]) + parseNum(row[11])
             }));
             fileName = `Overtime_Cost_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
@@ -3121,7 +4213,7 @@
                 costMap[divisi].thp += parseNum(row[26]);
             });
             rawRowsForSheet = Object.entries(costMap).map(([div, info]) => ({
-                "Nama Divisi ": div,
+                "Nama Divisi": div,
                 "Jumlah Karyawan": info.karyawan.size,
                 "Total Gapok (Rp)": info.gapok,
                 "Total Tunjangan (Rp)": info.tunjangan,
@@ -3151,7 +4243,7 @@
         }
 
         if (rawRowsForSheet.length === 0) {
-            alert('Tidak ada data untuk diunduh pada filter saat ini.');
+            showToast('Tidak ada data untuk diunduh pada filter saat ini.', 'warning');
             return;
         }
 
@@ -3168,6 +4260,7 @@
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Payroll");
         XLSX.writeFile(workbook, fileName);
+        showToast(`File Excel (${fileName}) berhasil diunduh.`, 'success');
     }
 </script>
 </body>
