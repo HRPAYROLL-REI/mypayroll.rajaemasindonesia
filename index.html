@@ -273,7 +273,7 @@
                     <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Cari Karyawan</label>
                     <div class="relative flex items-center">
                         <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                        <input type="text" id="search-query" oninput="resetAllPagesAndUpdate()" placeholder="Nama atau NIP..." 
+                        <input type="text" id="search-query" oninput="debouncedGlobalSearch()" placeholder="Nama atau NIP..." 
                             class="w-full bg-slate-50/70 border border-amber-200/50 text-slate-700 text-xs rounded-xl pl-8 p-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-500">
                     </div>
                 </div>
@@ -407,20 +407,30 @@
                     </h2>
                     <span class="text-[11px] bg-orange-50 text-orange-700 px-3 py-1 rounded-full font-semibold border border-orange-200/60">Sumber: Database Loan</span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="bg-orange-50/40 rounded-xl p-4 border border-orange-200/60 flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Pinjaman</p>
-                            <h3 id="metric-total-loan-dashboard" class="text-xl sm:text-2xl font-bold text-orange-600 mt-1">Rp 0</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-orange-50/40 rounded-xl p-4 border border-orange-200/60 flex items-center justify-between overflow-hidden">
+                        <div class="min-w-0 pr-2">
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Uang Pinjaman</p>
+                            <h3 id="metric-total-loan-amount" class="text-lg sm:text-xl font-bold text-orange-700 mt-1 truncate">Rp 0</h3>
+                            <span class="text-[10px] text-orange-600/80 font-medium">Akumulasi nominal pinjaman</span>
                         </div>
-                        <div class="p-3 bg-orange-100 text-orange-600 rounded-xl"><i class="fa-solid fa-money-bill-wave text-xl"></i></div>
+                        <div class="p-3 bg-orange-100 text-orange-600 rounded-xl shrink-0"><i class="fa-solid fa-sack-dollar text-lg"></i></div>
                     </div>
-                    <div class="bg-amber-50/40 rounded-xl p-4 border border-amber-200/60 flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Karyawan yang Meminjam</p>
-                            <h3 id="metric-total-loan-employees" class="text-xl sm:text-2xl font-bold text-slate-800 mt-1">0 Orang</h3>
+                    <div class="bg-rose-50/40 rounded-xl p-4 border border-rose-200/60 flex items-center justify-between overflow-hidden">
+                        <div class="min-w-0 pr-2">
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jumlah Unpaid</p>
+                            <h3 id="metric-count-loan-unpaid" class="text-xl font-bold text-rose-600 mt-1">0 Transaksi</h3>
+                            <span id="metric-total-loan-unpaid" class="text-[10px] text-rose-700 font-semibold block truncate">Nominal: Rp 0</span>
                         </div>
-                        <div class="p-3 bg-amber-100 text-amber-600 rounded-xl"><i class="fa-solid fa-user-check text-xl"></i></div>
+                        <div class="p-3 bg-rose-100 text-rose-600 rounded-xl shrink-0"><i class="fa-solid fa-hourglass-half text-lg"></i></div>
+                    </div>
+                    <div class="bg-emerald-50/40 rounded-xl p-4 border border-emerald-200/60 flex items-center justify-between overflow-hidden">
+                        <div class="min-w-0 pr-2">
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jumlah Paid</p>
+                            <h3 id="metric-count-loan-paid" class="text-xl font-bold text-emerald-600 mt-1">0 Transaksi</h3>
+                            <span id="metric-total-loan-paid" class="text-[10px] text-emerald-700 font-semibold block truncate">Nominal: Rp 0</span>
+                        </div>
+                        <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl shrink-0"><i class="fa-solid fa-circle-check text-lg"></i></div>
                     </div>
                 </div>
             </div>
@@ -578,7 +588,7 @@
                         <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Pilih / Cari Karyawan untuk Slip Gaji</label>
                         <div class="relative flex items-center">
                             <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-user-tag text-xs"></i></span>
-                            <input type="text" id="payslip-quick-search" oninput="renderPayslipDirectoryTable()" placeholder="Ketik Nama Karyawan, NIP, Divisi, atau Cabang..." 
+                            <input type="text" id="payslip-quick-search" oninput="debouncedPayslipSearch()" placeholder="Ketik Nama Karyawan, NIP, Divisi, atau Cabang..." 
                                 class="w-full bg-white border border-slate-300 text-slate-700 text-xs rounded-xl pl-8 p-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500">
                         </div>
                     </div>
@@ -832,7 +842,7 @@
                     <div class="w-full md:w-72">
                         <div class="relative flex items-center">
                             <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                            <input type="text" id="cost-search-filter" onkeyup="filterCostAnalysisTable()" placeholder="Cari nama divisi..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
+                            <input type="text" id="cost-search-filter" oninput="filterCostAnalysisTable()" placeholder="Cari nama divisi..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
                         </div>
                     </div>
                 </div>
@@ -881,7 +891,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="relative flex items-center">
                         <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                        <input type="text" id="timeline-search-filter" onkeyup="filterTimelineTable()" placeholder="Cari kegiatan, divisi, PIC, atau kata kunci..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
+                        <input type="text" id="timeline-search-filter" oninput="debouncedTimelineSearch()" placeholder="Cari kegiatan, divisi, PIC, atau kata kunci..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
                     </div>
                     <div>
                         <select id="timeline-status-filter" onchange="filterTimelineTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs p-2.5">
@@ -927,7 +937,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="relative flex items-center">
                         <span class="absolute pl-3 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                        <input type="text" id="adj-search-filter" onkeyup="filterAdjustmentTable()" placeholder="Cari NIP, Nama Karyawan, atau PIC..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
+                        <input type="text" id="adj-search-filter" oninput="debouncedAdjustmentSearch()" placeholder="Cari NIP, Nama Karyawan, atau PIC..." class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs pl-8 p-2.5 focus:ring-amber-500 focus:border-amber-500">
                     </div>
                     <div>
                         <select id="adj-status-filter" onchange="filterAdjustmentTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-xs p-2.5">
@@ -1194,7 +1204,7 @@
         <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
             <div class="relative flex-1">
                 <span class="absolute left-3 top-2.5 text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                <input type="text" id="anomaly-modal-search" oninput="renderAnomalyModalTable()" placeholder="Cari nama, NIP, atau divisi di daftar ini..." 
+                <input type="text" id="anomaly-modal-search" oninput="debouncedAnomalySearch()" placeholder="Cari nama, NIP, atau divisi di daftar ini..." 
                     class="w-full bg-white border border-slate-300 rounded-xl text-xs pl-8 p-2 focus:outline-none focus:border-amber-500">
             </div>
             <button onclick="exportCurrentAnomalyToExcel()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm shrink-0">
@@ -1285,8 +1295,41 @@
     let cachedAnomalyData = { minus: [], deduction: [], overtime: [] };
     let activeAnomalyCategory = 'deduction';
 
+    // Track tab aktif saat ini agar tidak merender DOM tabel tersembunyi secara sia-sia
+    let currentActiveTab = 'dashboard';
+
     const monthsNameList = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
     const standardMonthsOrder = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+    // ================= UTILITY DEBOUNCE (ANTI-LAG SAAT MENGETIK) =================
+    function debounce(fn, delay = 300) {
+        let timer = null;
+        return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
+
+    const debouncedGlobalSearch = debounce(() => {
+        resetAllPagesAndUpdate();
+    }, 300);
+
+    const debouncedPayslipSearch = debounce(() => {
+        paginationState.payslip.page = 1;
+        renderPayslipDirectoryTable();
+    }, 250);
+
+    const debouncedTimelineSearch = debounce(() => {
+        filterTimelineTable();
+    }, 250);
+
+    const debouncedAdjustmentSearch = debounce(() => {
+        filterAdjustmentTable();
+    }, 250);
+
+    const debouncedAnomalySearch = debounce(() => {
+        renderAnomalyModalTable();
+    }, 200);
 
     // ================= TOAST NOTIFICATION SYSTEM =================
     function showToast(message, type = 'info') {
@@ -1376,6 +1419,7 @@
 
     function switchSubMenu(tabName) {
         try {
+            currentActiveTab = tabName;
             const tabs = ['dashboard', 'summary', 'payslip', 'allowance', 'kewajiban', 'loan', 'overtime', 'database', 'cost-analysis', 'timeline', 'adjustment', 'laporan', 'ppt'];
             
             tabs.forEach(tab => {
@@ -1510,7 +1554,8 @@
     }
 
     // ================= FORMATTERS & PARSERS =================
-    const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
+    const idrFormatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+    const formatIDR = (num) => idrFormatter.format(num || 0);
     const formatCompact = (num) => {
         if (Math.abs(num) >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + ' M';
         if (Math.abs(num) >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + ' Jt';
@@ -2086,149 +2131,181 @@
             const filtered = getFilteredData();
             currentFilteredPayrollRows = filtered;
 
-            detectPayrollAnomalies(filtered);
+            // Hanya kalkulasi dan render komponen yang relevan dengan tab yang sedang dibuka
+            if (currentActiveTab === 'dashboard') {
+                detectPayrollAnomalies(filtered);
 
-            let totalGapok = 0, totalGross = 0, totalTunjangan = 0, totalKekurangan = 0, totalLemburan = 0, totalKewajiban = 0, totalTHP = 0;
-            const karyawanSet = new Set(), perusahaanSet = new Set(), divisiSet = new Set(), cabangSet = new Set();
-            const thpPerDivisi = {}, overtimePerKaryawan = {}, overtimePerDivisi = {}, costPerDivisi = {};
-            const benefitTotals = [0, 0, 0, 0, 0, 0, 0, 0, 0], kewajibanTotals = [0, 0, 0, 0, 0, 0, 0];
+                let totalGapok = 0, totalGross = 0, totalTunjangan = 0, totalKekurangan = 0, totalLemburan = 0, totalKewajiban = 0, totalTHP = 0;
+                const karyawanSet = new Set(), perusahaanSet = new Set(), divisiSet = new Set(), cabangSet = new Set();
+                const thpPerDivisi = {}, overtimePerKaryawan = {}, overtimePerDivisi = {};
+                const benefitTotals = [0, 0, 0, 0, 0, 0, 0, 0, 0], kewajibanTotals = [0, 0, 0, 0, 0, 0, 0];
 
-            filtered.forEach(row => {
-                const idKaryawan = row[3] ? row[3].trim() : '';
-                const namaKaryawan = row[2] ? row[2].trim() : 'Tanpa Nama';
-                if (idKaryawan) karyawanSet.add(idKaryawan);
+                filtered.forEach(row => {
+                    const idKaryawan = row[3] ? row[3].trim() : '';
+                    const namaKaryawan = row[2] ? row[2].trim() : 'Tanpa Nama';
+                    if (idKaryawan) karyawanSet.add(idKaryawan);
 
-                const perusahaan = row[4] ? row[4].trim() : 'Unassigned';
-                const divisi = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Unassigned');
-                const cabang = row[6] ? row[6].trim() : 'Unassigned';
+                    const perusahaan = row[4] ? row[4].trim() : 'Unassigned';
+                    const divisi = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Unassigned');
+                    const cabang = row[6] ? row[6].trim() : 'Unassigned';
 
-                if (row[4]) perusahaanSet.add(perusahaan);
-                if (row[27]) divisiSet.add(divisi);
-                if (row[6]) cabangSet.add(cabang);
+                    if (row[4]) perusahaanSet.add(perusahaan);
+                    if (row[27]) divisiSet.add(divisi);
+                    if (row[6]) cabangSet.add(cabang);
 
-                const gapok = calcRowGapok(row);
-                const gross = calcRowGross(row); 
-                let rowTunjangan = 0;
-                for(let i=8; i<=16; i++) {
-                    const val = parseNum(row[i]);
-                    benefitTotals[i-8] += val;
-                    if (i !== 9 && i !== 10 && i !== 11) {
-                        rowTunjangan += val;
+                    const gapok = calcRowGapok(row);
+                    const gross = calcRowGross(row); 
+                    let rowTunjangan = 0;
+                    for(let i=8; i<=16; i++) {
+                        const val = parseNum(row[i]);
+                        benefitTotals[i-8] += val;
+                        if (i !== 9 && i !== 10 && i !== 11) {
+                            rowTunjangan += val;
+                        }
                     }
-                }
 
-                const kekurangan = parseNum(row[9]); 
-                const lembur = parseNum(row[10]) + parseNum(row[11]);
+                    const kekurangan = parseNum(row[9]); 
+                    const lembur = parseNum(row[10]) + parseNum(row[11]);
 
-                let kewajibanRow = calcRowKewajiban(row);
-                kewajibanIndices.forEach((kIdx, kPos) => {
-                    const val = parseNum(row[kIdx]);
-                    kewajibanTotals[kPos] += val;
+                    let kewajibanRow = calcRowKewajiban(row);
+                    kewajibanIndices.forEach((kIdx, kPos) => {
+                        const val = parseNum(row[kIdx]);
+                        kewajibanTotals[kPos] += val;
+                    });
+
+                    const thp = parseNum(row[26]); 
+
+                    totalGapok += gapok;
+                    totalGross += gross;
+                    totalTunjangan += rowTunjangan;
+                    totalKekurangan += kekurangan;
+                    totalLemburan += lembur;
+                    totalKewajiban += kewajibanRow;
+                    totalTHP += thp;
+
+                    const divNorm = divisi.toLowerCase();
+                    const mergedDivisiGroup = (divNorm === 'content creator' || divNorm === 'conten creator' || divNorm === 'customer service')
+                        ? 'Content Creator & Customer Service'
+                        : divisi;
+                    
+                    if (!thpPerDivisi[mergedDivisiGroup]) {
+                        thpPerDivisi[mergedDivisiGroup] = { thp: 0, karyawan: new Set() };
+                    }
+                    thpPerDivisi[mergedDivisiGroup].thp += thp;
+                    if (idKaryawan) thpPerDivisi[mergedDivisiGroup].karyawan.add(idKaryawan);
+                    
+                    if (lembur > 0) {
+                        const empKey = `${idKaryawan || 'NO-NIP'}||${namaKaryawan}||${divisi}`;
+                        if (!overtimePerKaryawan[empKey]) {
+                            overtimePerKaryawan[empKey] = {
+                                nip: idKaryawan || '-',
+                                nama: namaKaryawan,
+                                divisi: divisi,
+                                total: 0
+                            };
+                        }
+                        overtimePerKaryawan[empKey].total += lembur;
+                        overtimePerDivisi[mergedDivisiGroup] = (overtimePerDivisi[mergedDivisiGroup] || 0) + lembur;
+                    }
                 });
 
-                const thp = parseNum(row[26]); 
+                if(document.getElementById('metric-karyawan')) document.getElementById('metric-karyawan').innerText = `${karyawanSet.size} Orang`;
+                if(document.getElementById('metric-total-perusahaan')) document.getElementById('metric-total-perusahaan').innerText = perusahaanSet.size;
+                if(document.getElementById('metric-total-divisi')) document.getElementById('metric-total-divisi').innerText = divisiSet.size;
+                if(document.getElementById('metric-total-cabang')) document.getElementById('metric-total-cabang').innerText = cabangSet.size;
 
-                totalGapok += gapok;
-                totalGross += gross;
-                totalTunjangan += rowTunjangan;
-                totalKekurangan += kekurangan;
-                totalLemburan += lembur;
-                totalKewajiban += kewajibanRow;
-                totalTHP += thp;
+                if(document.getElementById('metric-gapok')) document.getElementById('metric-gapok').innerText = formatIDR(totalGapok);
+                if(document.getElementById('metric-tunjangan')) document.getElementById('metric-tunjangan').innerText = formatIDR(totalTunjangan);
+                if(document.getElementById('metric-lemburan')) document.getElementById('metric-lemburan').innerText = formatIDR(totalLemburan);
+                if(document.getElementById('metric-kekurangan')) document.getElementById('metric-kekurangan').innerText = formatIDR(totalKekurangan);
 
-                const divNorm = divisi.toLowerCase();
-                const mergedDivisiGroup = (divNorm === 'content creator' || divNorm === 'conten creator' || divNorm === 'customer service')
-                    ? 'Content Creator & Customer Service'
-                    : divisi;
-                
-                if (!thpPerDivisi[mergedDivisiGroup]) {
-                    thpPerDivisi[mergedDivisiGroup] = { thp: 0, karyawan: new Set() };
-                }
-                thpPerDivisi[mergedDivisiGroup].thp += thp;
-                if (idKaryawan) thpPerDivisi[mergedDivisiGroup].karyawan.add(idKaryawan);
-                
-                if (lembur > 0) {
-                    const empKey = `${idKaryawan || 'NO-NIP'}||${namaKaryawan}||${divisi}`;
-                    if (!overtimePerKaryawan[empKey]) {
-                        overtimePerKaryawan[empKey] = {
-                            nip: idKaryawan || '-',
-                            nama: namaKaryawan,
-                            divisi: divisi,
-                            total: 0
-                        };
+                if(document.getElementById('metric-gross')) document.getElementById('metric-gross').innerText = formatIDR(totalGross);
+                if(document.getElementById('metric-kewajiban')) document.getElementById('metric-kewajiban').innerText = formatIDR(totalKewajiban);
+                if(document.getElementById('metric-thp')) document.getElementById('metric-thp').innerText = formatIDR(totalTHP);
+
+                const filteredLoanForDashboard = getFilteredLoanData();
+                let sumDashboardTotalLoan = 0;
+                let sumDashboardUnpaid = 0;
+                let sumDashboardPaid = 0;
+                let countDashboardUnpaid = 0;
+                let countDashboardPaid = 0;
+
+                // Deteksi otomatis indeks kolom jika header spesifik tersedia, dengan fallback ke kolom standar
+                const idxTotalUnpaidCol = rawLoanHeaders.findIndex(h => h && h.toLowerCase().includes('total unpaid'));
+                const idxTotalPaidCol = rawLoanHeaders.findIndex(h => h && h.toLowerCase().includes('total paid'));
+
+                filteredLoanForDashboard.forEach(row => {
+                    const nominalPinjaman = parseNum(row[8]);
+                    sumDashboardTotalLoan += nominalPinjaman;
+
+                    const statusRaw = row[14] ? row[14].toString().trim().toLowerCase() : '';
+
+                    if (statusRaw.includes('unpaid') || statusRaw.includes('belum')) {
+                        // Ambil dari kolom Total Unpaid / Sisa Pinjaman (row[10])
+                        const valUnpaid = idxTotalUnpaidCol !== -1 ? parseNum(row[idxTotalUnpaidCol]) : parseNum(row[10]);
+                        sumDashboardUnpaid += valUnpaid;
+                        countDashboardUnpaid++;
+                    } else if (statusRaw.includes('paid') || statusRaw.includes('lunas') || statusRaw.includes('selesai')) {
+                        // Ambil dari kolom Total Paid / Total Pembayaran (row[9])
+                        const valPaid = idxTotalPaidCol !== -1 ? parseNum(row[idxTotalPaidCol]) : parseNum(row[9]);
+                        sumDashboardPaid += valPaid;
+                        countDashboardPaid++;
                     }
-                    overtimePerKaryawan[empKey].total += lembur;
-                    overtimePerDivisi[mergedDivisiGroup] = (overtimePerDivisi[mergedDivisiGroup] || 0) + lembur;
-                }
+                });
 
-                if (!costPerDivisi[divisi]) {
-                    costPerDivisi[divisi] = { karyawan: new Set(), gapok: 0, tunjangan: 0, kewajiban: 0, lembur: 0, thp: 0 };
-                }
-                if (idKaryawan) costPerDivisi[divisi].karyawan.add(idKaryawan);
-                
-                costPerDivisi[divisi].gapok += gapok;
-                costPerDivisi[divisi].tunjangan += calcRowTunjangan(row);
-                costPerDivisi[divisi].kewajiban += kewajibanRow;
-                costPerDivisi[divisi].lembur += lembur;
-                costPerDivisi[divisi].thp += thp;
-            });
+                if(document.getElementById('metric-total-loan-amount')) document.getElementById('metric-total-loan-amount').innerText = formatIDR(sumDashboardTotalLoan);
+                if(document.getElementById('metric-count-loan-unpaid')) document.getElementById('metric-count-loan-unpaid').innerText = `${countDashboardUnpaid} Transaksi`;
+                if(document.getElementById('metric-total-loan-unpaid')) document.getElementById('metric-total-loan-unpaid').innerText = `Nominal: ${formatIDR(sumDashboardUnpaid)}`;
+                if(document.getElementById('metric-count-loan-paid')) document.getElementById('metric-count-loan-paid').innerText = `${countDashboardPaid} Transaksi`;
+                if(document.getElementById('metric-total-loan-paid')) document.getElementById('metric-total-loan-paid').innerText = `Nominal: ${formatIDR(sumDashboardPaid)}`;
 
-            cachedCostMap = costPerDivisi;
-
-            if(document.getElementById('metric-karyawan')) document.getElementById('metric-karyawan').innerText = `${karyawanSet.size} Orang`;
-            if(document.getElementById('metric-total-perusahaan')) document.getElementById('metric-total-perusahaan').innerText = perusahaanSet.size;
-            if(document.getElementById('metric-total-divisi')) document.getElementById('metric-total-divisi').innerText = divisiSet.size;
-            if(document.getElementById('metric-total-cabang')) document.getElementById('metric-total-cabang').innerText = cabangSet.size;
-
-            if(document.getElementById('metric-gapok')) document.getElementById('metric-gapok').innerText = formatIDR(totalGapok);
-            if(document.getElementById('metric-tunjangan')) document.getElementById('metric-tunjangan').innerText = formatIDR(totalTunjangan);
-            if(document.getElementById('metric-lemburan')) document.getElementById('metric-lemburan').innerText = formatIDR(totalLemburan);
-            if(document.getElementById('metric-kekurangan')) document.getElementById('metric-kekurangan').innerText = formatIDR(totalKekurangan);
-
-            if(document.getElementById('metric-gross')) document.getElementById('metric-gross').innerText = formatIDR(totalGross);
-            if(document.getElementById('metric-kewajiban')) document.getElementById('metric-kewajiban').innerText = formatIDR(totalKewajiban);
-            if(document.getElementById('metric-thp')) document.getElementById('metric-thp').innerText = formatIDR(totalTHP);
-
-            const filteredLoanForDashboard = getFilteredLoanData();
-            let sumDashboardLoan = 0;
-            const uniqueLoanBorrowers = new Set();
-            filteredLoanForDashboard.forEach(row => {
-                sumDashboardLoan += parseNum(row[8]);
-                const nipColD = row[3] ? row[3].toString().trim().toLowerCase() : '';
-                if (nipColD && nipColD !== '-') {
-                    uniqueLoanBorrowers.add(nipColD);
-                }
-            });
-            if(document.getElementById('metric-total-loan-dashboard')) document.getElementById('metric-total-loan-dashboard').innerText = formatIDR(sumDashboardLoan);
-            if(document.getElementById('metric-total-loan-employees')) document.getElementById('metric-total-loan-employees').innerText = `${uniqueLoanBorrowers.size} Orang`;
-
-            let benefitChartLabels = [];
-            for(let i=8; i<=16; i++) {
-                benefitChartLabels.push(headerRow[i] ? headerRow[i].trim() : `Col ${i}`);
+                const benefitChartLabels = allowanceHeaders.slice(1);
+                renderChartPayrollTrendLine();
+                renderTableTop5THP(thpPerDivisi, totalTHP);
+                renderChartOvertimeDivision(overtimePerDivisi);
+                renderChartOvertime(overtimePerKaryawan);
+                renderChartLoanTrendLine();
+                renderChartBenefit(benefitChartLabels, benefitTotals);
+                renderChartKewajiban(kewajibanHeaders, kewajibanTotals);
+            } else if (currentActiveTab === 'summary') {
+                renderSummaryTable(filtered);
+                renderSummaryComparisonCards(filtered);
+            } else if (currentActiveTab === 'payslip') {
+                renderPayslipDirectoryTable(filtered);
+            } else if (currentActiveTab === 'allowance') {
+                renderAllowanceTable(filtered);
+                renderAllowanceComparisonCards(filtered);
+            } else if (currentActiveTab === 'kewajiban') {
+                renderKewajibanTable(filtered);
+                renderKewajibanComparisonCards(filtered);
+            } else if (currentActiveTab === 'loan') {
+                renderLoanSection();
+            } else if (currentActiveTab === 'overtime') {
+                renderOvertimeCostSection(filtered);
+            } else if (currentActiveTab === 'database') {
+                renderDatabaseTable(filtered);
+            } else if (currentActiveTab === 'cost-analysis') {
+                const costPerDivisi = {};
+                filtered.forEach(row => {
+                    const idKaryawan = row[3] ? row[3].trim() : '';
+                    const divisi = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Unassigned');
+                    if (!costPerDivisi[divisi]) {
+                        costPerDivisi[divisi] = { karyawan: new Set(), gapok: 0, tunjangan: 0, kewajiban: 0, lembur: 0, thp: 0 };
+                    }
+                    if (idKaryawan) costPerDivisi[divisi].karyawan.add(idKaryawan);
+                    costPerDivisi[divisi].gapok += calcRowGapok(row);
+                    costPerDivisi[divisi].tunjangan += calcRowTunjangan(row);
+                    costPerDivisi[divisi].kewajiban += calcRowKewajiban(row);
+                    costPerDivisi[divisi].lembur += (parseNum(row[10]) + parseNum(row[11]));
+                    costPerDivisi[divisi].thp += parseNum(row[26]);
+                });
+                cachedCostMap = costPerDivisi;
+                renderCostAnalysisTable(cachedCostMap);
+            } else if (currentActiveTab === 'timeline') {
+                filterTimelineTable();
+            } else if (currentActiveTab === 'adjustment') {
+                filterAdjustmentTable();
             }
-
-            renderChartPayrollTrendLine();
-            renderTableTop5THP(thpPerDivisi, totalTHP);
-            renderChartOvertimeDivision(overtimePerDivisi);
-            renderChartOvertime(overtimePerKaryawan);
-            renderChartLoanTrendLine();
-            renderChartBenefit(benefitChartLabels, benefitTotals);
-            renderChartKewajiban(kewajibanHeaders, kewajibanTotals);
-
-            renderSummaryTable(filtered);
-            renderSummaryComparisonCards(filtered);
-            renderPayslipDirectoryTable(filtered);
-            renderAllowanceTable(filtered);
-            renderAllowanceComparisonCards(filtered);
-            renderKewajibanTable(filtered);
-            renderKewajibanComparisonCards(filtered);
-            renderLoanSection();
-            renderOvertimeCostSection(filtered);
-            renderDatabaseTable(filtered);
-            renderCostAnalysisTable(cachedCostMap);
-
-            filterTimelineTable();
-            filterAdjustmentTable();
         } catch (err) {
             console.error("updateDashboard error:", err);
         }
@@ -2264,8 +2341,14 @@
             }
         });
 
+        if (chartPayrollTrendLineInstance) {
+            chartPayrollTrendLineInstance.data.datasets[0].data = monthlyGross;
+            chartPayrollTrendLineInstance.data.datasets[1].data = monthlyTHP;
+            chartPayrollTrendLineInstance.update('none');
+            return;
+        }
+
         const ctx = canvas.getContext('2d');
-        if (chartPayrollTrendLineInstance) chartPayrollTrendLineInstance.destroy();
         chartPayrollTrendLineInstance = new Chart(ctx, {
             type: 'line',
             data: {
@@ -2298,6 +2381,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: false,
                 layout: { padding: { top: 25, right: 15 } },
                 plugins: {
                     legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11, weight: '600' } } },
@@ -2330,29 +2414,28 @@
             .sort((a, b) => b[1].thp - a[1].thp)
             .slice(0, 5);
 
-        tbody.innerHTML = '';
         if (sorted.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada data THP per divisi pada filter saat ini.</td></tr>';
             return;
         }
 
-        sorted.forEach(([divisi, info], idx) => {
+        const rowsHTML = sorted.map(([divisi, info], idx) => {
             const pct = grandTotalTHP > 0 ? ((info.thp / grandTotalTHP) * 100).toFixed(1) : '0.0';
             const rankBadge = idx === 0 
                 ? '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-white font-bold text-xs shadow-sm">1</span>'
                 : `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">${idx + 1}</span>`;
 
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-amber-50/40 transition-colors";
-            tr.innerHTML = `
-                <td class="p-3 text-center">${rankBadge}</td>
-                <td class="p-3 font-semibold text-slate-900">${divisi}</td>
-                <td class="p-3 text-center font-medium text-slate-600">${info.karyawan.size} Orang</td>
-                <td class="p-3 text-right font-bold text-amber-800">${formatIDR(info.thp)}</td>
-                <td class="p-3 text-right font-semibold text-slate-600">${pct}%</td>
+            return `
+                <tr class="hover:bg-amber-50/40 transition-colors">
+                    <td class="p-3 text-center">${rankBadge}</td>
+                    <td class="p-3 font-semibold text-slate-900">${divisi}</td>
+                    <td class="p-3 text-center font-medium text-slate-600">${info.karyawan.size} Orang</td>
+                    <td class="p-3 text-right font-bold text-amber-800">${formatIDR(info.thp)}</td>
+                    <td class="p-3 text-right font-semibold text-slate-600">${pct}%</td>
+                </tr>
             `;
-            tbody.appendChild(tr);
         });
+        tbody.innerHTML = rowsHTML.join('');
     }
 
     function renderPayslipDirectoryTable(baseData = null) {
@@ -2384,6 +2467,7 @@
         const state = paginationState.payslip;
         const start = (state.page - 1) * state.perPage;
         const pageData = filteredPayslips.slice(start, start + state.perPage);
+        const frag = document.createDocumentFragment();
 
         pageData.forEach(row => {
             const grossVal = calcRowGross(row);
@@ -2413,8 +2497,9 @@
                     </button>
                 </td>
             `;
-            tbody.appendChild(tr);
+            frag.appendChild(tr);
         });
+        tbody.appendChild(frag);
     }
 
     function openFirstFilteredPayslip() {
@@ -2462,32 +2547,30 @@
 
         const incomeList = document.getElementById('slip-income-list');
         if (incomeList) {
-            incomeList.innerHTML = '';
-            allowanceIndices.forEach((colIdx, i) => {
+            incomeList.innerHTML = allowanceIndices.map((colIdx, i) => {
                 const val = parseNum(row[colIdx]);
                 const label = allowanceHeaders[i] || `Komponen ${colIdx}`;
-                incomeList.innerHTML += `
+                return `
                     <div class="flex justify-between items-center text-slate-700">
                         <span>${label}</span>
                         <span class="font-semibold text-slate-900">${formatIDR(val)}</span>
                     </div>
                 `;
-            });
+            }).join('');
         }
 
         const deductionList = document.getElementById('slip-deduction-list');
         if (deductionList) {
-            deductionList.innerHTML = '';
-            kewajibanIndices.forEach((colIdx, i) => {
+            deductionList.innerHTML = kewajibanIndices.map((colIdx, i) => {
                 const val = parseNum(row[colIdx]);
                 const label = kewajibanHeaders[i] || `Potongan ${colIdx}`;
-                deductionList.innerHTML += `
+                return `
                     <div class="flex justify-between items-center text-slate-700">
                         <span>${label}</span>
                         <span class="font-semibold text-rose-600">${formatIDR(val)}</span>
                     </div>
                 `;
-            });
+            }).join('');
         }
 
         const totalGross = calcRowGross(row);
@@ -2721,8 +2804,13 @@
             }
         });
 
+        if (chartLoanTrendLineInstance) {
+            chartLoanTrendLineInstance.data.datasets[0].data = monthlyTotals;
+            chartLoanTrendLineInstance.update('none');
+            return;
+        }
+
         const ctx = canvas.getContext('2d');
-        if (chartLoanTrendLineInstance) chartLoanTrendLineInstance.destroy();
         chartLoanTrendLineInstance = new Chart(ctx, {
             type: 'line',
             data: {
@@ -2742,6 +2830,7 @@
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
+                animation: false,
                 layout: { padding: { top: 25, right: 15 } },
                 plugins: {
                     legend: { display: false },
@@ -2777,56 +2866,54 @@
         let totalSisaPinjaman = 0;
         let totalSudahDibayarSetahun = 0;
 
-        if (tbody) tbody.innerHTML = '';
+        if (tbody) {
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-slate-400">Tidak ada data pinjaman (loan) pada filter saat ini.</td></tr>';
+            } else {
+                const rowsHTML = filtered.map((row, index) => {
+                    const nama = row[4] ? row[4].trim() : '-';
+                    const nip = row[3] ? row[3].trim() : '-';
+                    const meta = empMetaMap[nip.toLowerCase()] || { divisi: '-', posisi: '-' };
+                    const divisiVal = meta.divisi || '-';
+                    const posisiVal = meta.posisi || '-';
 
-        if (filtered.length === 0) {
-            if (tbody) tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-slate-400">Tidak ada data pinjaman (loan) pada filter saat ini.</td></tr>';
-        } else {
-            filtered.forEach((row, index) => {
-                const nama = row[4] ? row[4].trim() : '-';
-                const nip = row[3] ? row[3].trim() : '-';
-                const meta = empMetaMap[nip.toLowerCase()] || { divisi: '-', posisi: '-' };
-                const divisiVal = meta.divisi || '-';
-                const posisiVal = meta.posisi || '-';
+                    const periodeBulan = getLoanRowPeriodLabel(row);
+                    const pinjamanVal = parseNum(row[8]);
+                    const totalBayarSetahun = parseNum(row[9]);
+                    const totalTenor = row[6] ? row[6].trim() : '-';
+                    const angsuranVal = parseNum(row[9]);
+                    const sisaTenor = row[7] ? row[7].trim() : '-';
+                    const sisaPinjamanVal = parseNum(row[10]);
+                    const statusLoan = row[14] ? row[14].trim() : '-';
 
-                const periodeBulan = getLoanRowPeriodLabel(row);
-                const pinjamanVal = parseNum(row[8]);
-                const totalBayarSetahun = parseNum(row[9]);
-                const totalTenor = row[6] ? row[6].trim() : '-';
-                const angsuranVal = parseNum(row[9]);
-                const sisaTenor = row[7] ? row[7].trim() : '-';
-                const sisaPinjamanVal = parseNum(row[10]);
-                const statusLoan = row[14] ? row[14].trim() : '-';
+                    totalPinjaman += pinjamanVal;
+                    totalSisaPinjaman += sisaPinjamanVal;
+                    totalSudahDibayarSetahun += totalBayarSetahun;
 
-                totalPinjaman += pinjamanVal;
-                totalSisaPinjaman += sisaPinjamanVal;
-                totalSudahDibayarSetahun += totalBayarSetahun;
-
-                if (tbody) {
                     const statusBadge = statusLoan.toLowerCase() === 'lunas' || statusLoan.toLowerCase() === 'active' || statusLoan.toLowerCase() === 'selesai'
                         ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">${statusLoan}</span>`
                         : `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">${statusLoan}</span>`;
 
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-orange-50/40 transition-colors";
-                    tr.innerHTML = `
-                        <td class="p-3 font-medium text-slate-600">${index + 1}</td>
-                        <td class="p-3 font-semibold text-slate-900">${nama}</td>
-                        <td class="p-3 font-medium text-slate-700">${nip}</td>
-                        <td class="p-3 font-medium text-indigo-700">${divisiVal}</td>
-                        <td class="p-3 text-slate-700">${posisiVal}</td>
-                        <td class="p-3 text-center font-medium text-orange-700">${periodeBulan}</td>
-                        <td class="p-3 text-right font-semibold text-slate-900">${formatIDR(pinjamanVal)}</td>
-                        <td class="p-3 text-right font-semibold text-emerald-700">${formatIDR(totalBayarSetahun)}</td>
-                        <td class="p-3 text-center font-medium">${totalTenor}</td>
-                        <td class="p-3 text-right font-semibold text-orange-600">${formatIDR(angsuranVal)}</td>
-                        <td class="p-3 text-center font-medium">${sisaTenor}</td>
-                        <td class="p-3 text-right font-bold text-rose-700">${formatIDR(sisaPinjamanVal)}</td>
-                        <td class="p-3 text-center">${statusBadge}</td>
+                    return `
+                        <tr class="hover:bg-orange-50/40 transition-colors">
+                            <td class="p-3 font-medium text-slate-600">${index + 1}</td>
+                            <td class="p-3 font-semibold text-slate-900">${nama}</td>
+                            <td class="p-3 font-medium text-slate-700">${nip}</td>
+                            <td class="p-3 font-medium text-indigo-700">${divisiVal}</td>
+                            <td class="p-3 text-slate-700">${posisiVal}</td>
+                            <td class="p-3 text-center font-medium text-orange-700">${periodeBulan}</td>
+                            <td class="p-3 text-right font-semibold text-slate-900">${formatIDR(pinjamanVal)}</td>
+                            <td class="p-3 text-right font-semibold text-emerald-700">${formatIDR(totalBayarSetahun)}</td>
+                            <td class="p-3 text-center font-medium">${totalTenor}</td>
+                            <td class="p-3 text-right font-semibold text-orange-600">${formatIDR(angsuranVal)}</td>
+                            <td class="p-3 text-center font-medium">${sisaTenor}</td>
+                            <td class="p-3 text-right font-bold text-rose-700">${formatIDR(sisaPinjamanVal)}</td>
+                            <td class="p-3 text-center">${statusBadge}</td>
+                        </tr>
                     `;
-                    tbody.appendChild(tr);
-                }
-            });
+                });
+                tbody.innerHTML = rowsHTML.join('');
+            }
         }
 
         if (document.getElementById('loan-total-pinjaman')) document.getElementById('loan-total-pinjaman').innerText = formatIDR(totalPinjaman);
@@ -3054,6 +3141,7 @@
         const state = paginationState.summary;
         const start = (state.page - 1) * state.perPage;
         const pageData = data.slice(start, start + state.perPage);
+        const frag = document.createDocumentFragment();
 
         pageData.forEach(row => {
             const gapokVal = calcRowGapok(row);
@@ -3087,8 +3175,9 @@
                     </button>
                 </td>
             `;
-            tbody.appendChild(tr);
+            frag.appendChild(tr);
         });
+        tbody.appendChild(frag);
     }
 
     function renderAllowanceTable(data) {
@@ -3105,7 +3194,6 @@
 
         renderPaginationControls('allowance-pagination', 'allowance', data.length, 'renderAllowanceTable');
 
-        tbody.innerHTML = '';
         if (data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="17" class="p-4 text-center text-slate-400">Tidak ada data.</td></tr>';
             return;
@@ -3115,7 +3203,7 @@
         const start = (state.page - 1) * state.perPage;
         const pageData = data.slice(start, start + state.perPage);
 
-        pageData.forEach(row => {
+        const rowsHTML = pageData.map(row => {
             let rowTotal = 0;
             const divisiVal = row[27] ? row[27].trim() : '-';
             const posisiVal = row[5] ? row[5].trim() : '-';
@@ -3126,8 +3214,9 @@
                 trHTML += `<td class="p-3 text-right">${formatIDR(val)}</td>`;
             });
             trHTML += `<td class="p-3 text-right font-bold text-emerald-700">${formatIDR(rowTotal)}</td></tr>`;
-            tbody.innerHTML += trHTML;
+            return trHTML;
         });
+        tbody.innerHTML = rowsHTML.join('');
     }
 
     function renderKewajibanTable(data) {
@@ -3144,7 +3233,6 @@
 
         renderPaginationControls('kewajiban-pagination', 'kewajiban', data.length, 'renderKewajibanTable');
 
-        tbody.innerHTML = '';
         if (data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="12" class="p-4 text-center text-slate-400">Tidak ada data.</td></tr>';
             return;
@@ -3154,7 +3242,7 @@
         const start = (state.page - 1) * state.perPage;
         const pageData = data.slice(start, start + state.perPage);
 
-        pageData.forEach(row => {
+        const rowsHTML = pageData.map(row => {
             let rowTotal = 0;
             const divisiVal = row[27] ? row[27].trim() : '-';
             const posisiVal = row[5] ? row[5].trim() : '-';
@@ -3165,14 +3253,14 @@
                 trHTML += `<td class="p-3 text-right">${formatIDR(val)}</td>`;
             });
             trHTML += `<td class="p-3 text-right font-bold text-rose-700">${formatIDR(rowTotal)}</td></tr>`;
-            tbody.innerHTML += trHTML;
+            return trHTML;
         });
+        tbody.innerHTML = rowsHTML.join('');
     }
 
     function renderOvertimeCostSection(filteredData) {
         const tbody = document.getElementById('ot-table-body');
         if(!tbody) return;
-        tbody.innerHTML = '';
         const fPeriodeSelect = document.getElementById('filter-periode');
         const fPeriode = fPeriodeSelect ? fPeriodeSelect.value : 'ALL';
         const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
@@ -3184,28 +3272,28 @@
         if(countEl) countEl.innerText = `${overtimeEmployees.length} Karyawan`;
 
         let currentTotalLembur = 0;
-        overtimeEmployees.forEach(row => {
-            const lemburVal = parseNum(row[10]) + parseNum(row[11]);
-            currentTotalLembur += lemburVal;
-
-            const posisiVal = row[5] ? row[5].trim() : '-';
-            const divisiVal = row[27] ? row[27].trim() : '-';
-
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-purple-50/40 transition-colors";
-            tr.innerHTML = `
-                <td class="p-3 font-medium text-slate-900">${row[3] || '-'}</td>
-                <td class="p-3 font-semibold text-slate-900">${row[2] || '-'}</td>
-                <td class="p-3">${row[4] || '-'}</td>
-                <td class="p-3">${posisiVal}</td>
-                <td class="p-3 font-medium text-indigo-700">${divisiVal}</td>
-                <td class="p-3 text-right font-bold text-purple-700">${formatIDR(lemburVal)}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-
         if (overtimeEmployees.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada data lembur pada periode bulan ini.</td></tr>';
+        } else {
+            const rowsHTML = overtimeEmployees.map(row => {
+                const lemburVal = parseNum(row[10]) + parseNum(row[11]);
+                currentTotalLembur += lemburVal;
+
+                const posisiVal = row[5] ? row[5].trim() : '-';
+                const divisiVal = row[27] ? row[27].trim() : '-';
+
+                return `
+                    <tr class="hover:bg-purple-50/40 transition-colors">
+                        <td class="p-3 font-medium text-slate-900">${row[3] || '-'}</td>
+                        <td class="p-3 font-semibold text-slate-900">${row[2] || '-'}</td>
+                        <td class="p-3">${row[4] || '-'}</td>
+                        <td class="p-3">${posisiVal}</td>
+                        <td class="p-3 font-medium text-indigo-700">${divisiVal}</td>
+                        <td class="p-3 text-right font-bold text-purple-700">${formatIDR(lemburVal)}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rowsHTML.join('');
         }
         if(document.getElementById('ot-current-total')) document.getElementById('ot-current-total').innerText = formatIDR(currentTotalLembur);
 
@@ -3253,34 +3341,26 @@
         const countEl = document.getElementById('database-count');
         if(countEl) countEl.innerText = `${data.length} Records`;
         if(!thead || !tbody) return;
-        thead.innerHTML = '';
-        tbody.innerHTML = '';
 
         renderPaginationControls('database-pagination', 'database', data.length, 'renderDatabaseTable');
 
         if (headerRow.length > 0) {
-            let trHead = '<tr>';
-            headerRow.forEach(h => trHead += `<th class="p-3 border-b border-slate-200">${h}</th>`);
-            trHead += '</tr>';
-            thead.innerHTML = trHead;
+            thead.innerHTML = '<tr>' + headerRow.map(h => `<th class="p-3 border-b border-slate-200">${h}</th>`).join('') + '</tr>';
         }
 
         const state = paginationState.database;
         const start = (state.page - 1) * state.perPage;
         const pageData = data.slice(start, start + state.perPage);
 
-        pageData.forEach(row => {
-            let trBody = '<tr class="hover:bg-slate-50 transition-colors">';
-            row.forEach(val => trBody += `<td class="p-3 border-b border-slate-100">${val || '-'}</td>`);
-            trBody += '</tr>';
-            tbody.innerHTML += trBody;
+        const rowsHTML = pageData.map(row => {
+            return '<tr class="hover:bg-slate-50 transition-colors">' + row.map(val => `<td class="p-3 border-b border-slate-100">${val || '-'}</td>`).join('') + '</tr>';
         });
+        tbody.innerHTML = rowsHTML.join('');
     }
 
     function renderCostAnalysisTable(costMap) {
         const tbody = document.getElementById('cost-table-body');
         if(!tbody) return;
-        tbody.innerHTML = '';
         
         const searchInput = document.getElementById('cost-search-filter');
         const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
@@ -3294,21 +3374,21 @@
             return;
         }
 
-        sorted.forEach(([divisi, info]) => {
+        const rowsHTML = sorted.map(([divisi, info]) => {
             const count = info.karyawan.size || 1;
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-amber-50/40 transition-colors";
-            tr.innerHTML = `
-                <td class="p-3 font-semibold text-slate-900">${divisi}</td>
-                <td class="p-3 text-center font-medium">${count} Orang</td>
-                <td class="p-3 text-right font-semibold text-slate-800">${formatIDR(info.gapok)}</td>
-                <td class="p-3 text-right font-semibold text-emerald-600">${formatIDR(info.tunjangan)}</td>
-                <td class="p-3 text-right font-semibold text-rose-600">${formatIDR(info.kewajiban)}</td>
-                <td class="p-3 text-right font-semibold text-purple-600">${formatIDR(info.lembur)}</td>
-                <td class="p-3 text-right font-bold text-amber-900">${formatIDR(info.thp)}</td>
+            return `
+                <tr class="hover:bg-amber-50/40 transition-colors">
+                    <td class="p-3 font-semibold text-slate-900">${divisi}</td>
+                    <td class="p-3 text-center font-medium">${count} Orang</td>
+                    <td class="p-3 text-right font-semibold text-slate-800">${formatIDR(info.gapok)}</td>
+                    <td class="p-3 text-right font-semibold text-emerald-600">${formatIDR(info.tunjangan)}</td>
+                    <td class="p-3 text-right font-semibold text-rose-600">${formatIDR(info.kewajiban)}</td>
+                    <td class="p-3 text-right font-semibold text-purple-600">${formatIDR(info.lembur)}</td>
+                    <td class="p-3 text-right font-bold text-amber-900">${formatIDR(info.thp)}</td>
+                </tr>
             `;
-            tbody.appendChild(tr);
         });
+        tbody.innerHTML = rowsHTML.join('');
     }
 
     function filterCostAnalysisTable() {
@@ -3319,8 +3399,26 @@
         const canvas = document.getElementById('chartOvertime');
         if(!canvas || typeof Chart === 'undefined') return;
         const sorted = Object.values(dataMap).sort((a, b) => b.total - a.total).slice(0, 5);
+        
+        if (chartOvertimeInstance) {
+            chartOvertimeInstance.data.labels = sorted.map(i => [i.nama, `(${i.nip} - ${i.divisi})`]);
+            chartOvertimeInstance.data.datasets[0].data = sorted.map(i => i.total);
+            chartOvertimeInstance.options.plugins.tooltip.callbacks = {
+                title: (items) => {
+                    const item = sorted[items[0].dataIndex];
+                    return item ? `${item.nama} (NIP: ${item.nip})` : '';
+                },
+                afterTitle: (items) => {
+                    const item = sorted[items[0].dataIndex];
+                    return item ? `Divisi: ${item.divisi}` : '';
+                },
+                label: (item) => `Total Lembur: ${formatIDR(item.raw)}`
+            };
+            chartOvertimeInstance.update('none');
+            return;
+        }
+
         const ctx = canvas.getContext('2d');
-        if (chartOvertimeInstance) chartOvertimeInstance.destroy();
         chartOvertimeInstance = new Chart(ctx, {
             type: 'bar',
             data: { 
@@ -3329,6 +3427,7 @@
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
+                animation: false,
                 layout: { padding: { top: 25 } },
                 plugins: { 
                     legend: { display: false }, 
@@ -3336,11 +3435,11 @@
                         callbacks: {
                             title: (items) => {
                                 const item = sorted[items[0].dataIndex];
-                                return `${item.nama} (NIP: ${item.nip})`;
+                                return item ? `${item.nama} (NIP: ${item.nip})` : '';
                             },
                             afterTitle: (items) => {
                                 const item = sorted[items[0].dataIndex];
-                                return `Divisi: ${item.divisi}`;
+                                return item ? `Divisi: ${item.divisi}` : '';
                             },
                             label: (item) => `Total Lembur: ${formatIDR(item.raw)}`
                         }
@@ -3359,13 +3458,21 @@
         const canvas = document.getElementById('chartOvertimeDivision');
         if(!canvas || typeof Chart === 'undefined') return;
         const sorted = Object.entries(dataMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        
+        if (chartOvertimeDivisionInstance) {
+            chartOvertimeDivisionInstance.data.labels = sorted.map(i => i[0]);
+            chartOvertimeDivisionInstance.data.datasets[0].data = sorted.map(i => i[1]);
+            chartOvertimeDivisionInstance.update('none');
+            return;
+        }
+
         const ctx = canvas.getContext('2d');
-        if (chartOvertimeDivisionInstance) chartOvertimeDivisionInstance.destroy();
         chartOvertimeDivisionInstance = new Chart(ctx, {
             type: 'bar',
             data: { labels: sorted.map(i => i[0]), datasets: [{ data: sorted.map(i => i[1]), backgroundColor: '#4f46e5', borderRadius: 8 }] },
             options: {
                 indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                animation: false,
                 layout: { padding: { right: 35 } },
                 plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: (val) => formatCompact(val), font: { weight: 'bold', size: 11 }, color: '#312e81' } },
                 scales: { x: { grace: '15%', grid: { display: false }, ticks: { callback: (val) => formatCompact(val) } }, y: { grid: { display: false } } }
@@ -3376,66 +3483,76 @@
     function renderChartBenefit(labels, values) {
         const canvas = document.getElementById('chartBenefit');
         if(!canvas || typeof Chart === 'undefined') return;
-        const ctx = canvas.getContext('2d');
-        if (chartBenefitInstance) chartBenefitInstance.destroy();
         const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#14b8a6', '#6366f1', '#f43f5e', '#84cc16'];
-        chartBenefitInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }] },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12 } },
-                    datalabels: {
-                        formatter: (value, ctx) => {
-                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            if (sum === 0 || value === 0) return '';
-                            return (value * 100 / sum).toFixed(1) + "%";
-                        }, color: '#fff', font: { weight: 'bold', size: 10 }
-                    }
-                }, cutout: '65%'
-            }
-        });
+        
+        if (chartBenefitInstance) {
+            chartBenefitInstance.data.labels = labels;
+            chartBenefitInstance.data.datasets[0].data = values;
+            chartBenefitInstance.update('none');
+        } else {
+            const ctx = canvas.getContext('2d');
+            chartBenefitInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12 } },
+                        datalabels: {
+                            formatter: (value, ctx) => {
+                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                if (sum === 0 || value === 0) return '';
+                                return (value * 100 / sum).toFixed(1) + "%";
+                            }, color: '#fff', font: { weight: 'bold', size: 10 }
+                        }
+                    }, cutout: '65%'
+                }
+            });
+        }
 
         const listContainer = document.getElementById('benefit-list');
         if(listContainer) {
-            listContainer.innerHTML = '<h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">Rincian Allowance & Benefit</h4>';
-            labels.forEach((label, idx) => {
-                listContainer.innerHTML += `<div class="flex justify-between items-center text-xs"><span class="flex items-center gap-2 text-slate-700 truncate"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${colors[idx % colors.length]}"></span><span class="truncate">${label}</span></span><span class="font-semibold text-slate-900 shrink-0 ml-2">${formatIDR(values[idx])}</span></div>`;
-            });
+            const itemsHTML = labels.map((label, idx) => `<div class="flex justify-between items-center text-xs"><span class="flex items-center gap-2 text-slate-700 truncate"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${colors[idx % colors.length]}"></span><span class="truncate">${label}</span></span><span class="font-semibold text-slate-900 shrink-0 ml-2">${formatIDR(values[idx])}</span></div>`).join('');
+            listContainer.innerHTML = '<h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">Rincian Allowance & Benefit</h4>' + itemsHTML;
         }
     }
 
     function renderChartKewajiban(labels, values) {
         const canvas = document.getElementById('chartKewajiban');
         if(!canvas || typeof Chart === 'undefined') return;
-        const ctx = canvas.getContext('2d');
-        if (chartKewajibanInstance) chartKewajibanInstance.destroy();
         const colors = ['#e11d48', '#9333ea', '#2563eb', '#0891b2', '#d97706', '#4f46e5', '#db2777'];
-        chartKewajibanInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }] },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12 } },
-                    datalabels: {
-                        formatter: (value, ctx) => {
-                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            if (sum === 0 || value === 0) return '';
-                            return (value * 100 / sum).toFixed(1) + "%";
-                        }, color: '#fff', font: { weight: 'bold', size: 10 }
-                    }
-                }, cutout: '65%'
-            }
-        });
+        
+        if (chartKewajibanInstance) {
+            chartKewajibanInstance.data.labels = labels;
+            chartKewajibanInstance.data.datasets[0].data = values;
+            chartKewajibanInstance.update('none');
+        } else {
+            const ctx = canvas.getContext('2d');
+            chartKewajibanInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12 } },
+                        datalabels: {
+                            formatter: (value, ctx) => {
+                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                if (sum === 0 || value === 0) return '';
+                                return (value * 100 / sum).toFixed(1) + "%";
+                            }, color: '#fff', font: { weight: 'bold', size: 10 }
+                        }
+                    }, cutout: '65%'
+                }
+            });
+        }
 
         const listContainer = document.getElementById('kewajiban-list');
         if(listContainer) {
-            listContainer.innerHTML = '<h4 class="text-xs font-bold text-rose-800 uppercase tracking-wider mb-2">Rincian Nominal Kewajiban</h4>';
-            labels.forEach((label, idx) => {
-                listContainer.innerHTML += `<div class="flex justify-between items-center text-xs"><span class="flex items-center gap-2 text-slate-700"><span class="w-2.5 h-2.5 rounded-full" style="background-color: ${colors[idx]}"></span>${label}</span><span class="font-semibold text-slate-900">${formatIDR(values[idx])}</span></div>`;
-            });
+            const itemsHTML = labels.map((label, idx) => `<div class="flex justify-between items-center text-xs"><span class="flex items-center gap-2 text-slate-700"><span class="w-2.5 h-2.5 rounded-full" style="background-color: ${colors[idx]}"></span>${label}</span><span class="font-semibold text-slate-900">${formatIDR(values[idx])}</span></div>`).join('');
+            listContainer.innerHTML = '<h4 class="text-xs font-bold text-rose-800 uppercase tracking-wider mb-2">Rincian Nominal Kewajiban</h4>' + itemsHTML;
         }
     }
 
@@ -3502,10 +3619,7 @@
     function filterTimelineTable() {
         const thead = document.getElementById('timeline-table-head');
         if (thead && rawTimelineHeaders.length > 0) {
-            let headHTML = '<tr>';
-            rawTimelineHeaders.forEach(h => headHTML += `<th class="p-3 border-b border-slate-200">${h}</th>`);
-            headHTML += '</tr>';
-            thead.innerHTML = headHTML;
+            thead.innerHTML = '<tr>' + rawTimelineHeaders.map(h => `<th class="p-3 border-b border-slate-200">${h}</th>`).join('') + '</tr>';
         }
 
         const filtered = getFilteredTimelineData();
@@ -3514,17 +3628,13 @@
         if (countEl) countEl.innerText = `${filtered.length} Data`;
         if (!tbody) return;
 
-        tbody.innerHTML = '';
         if (filtered.length === 0) {
             tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Data tidak ditemukan.</td></tr>';
             return;
         }
 
-        filtered.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-cyan-50/40 transition-colors";
-            let rowHTML = '';
-            row.forEach(val => {
+        const rowsHTML = filtered.map(row => {
+            const cellsHTML = row.map(val => {
                 const cellValStr = (val !== undefined && val !== null) ? val.toString().trim() : '';
                 const lowerVal = cellValStr.toLowerCase();
                 
@@ -3535,14 +3645,14 @@
                     } else if (lowerVal === 'oversla') {
                         badgeClass += "bg-rose-50 text-rose-700 border-rose-200";
                     }
-                    rowHTML += `<td class="p-3 border-b border-slate-100"><span class="${badgeClass}">${cellValStr}</span></td>`;
+                    return `<td class="p-3 border-b border-slate-100"><span class="${badgeClass}">${cellValStr}</span></td>`;
                 } else {
-                    rowHTML += `<td class="p-3 border-b border-slate-100">${cellValStr || '-'}</td>`;
+                    return `<td class="p-3 border-b border-slate-100">${cellValStr || '-'}</td>`;
                 }
-            });
-            tr.innerHTML = rowHTML;
-            tbody.appendChild(tr);
+            }).join('');
+            return `<tr class="hover:bg-cyan-50/40 transition-colors">${cellsHTML}</tr>`;
         });
+        tbody.innerHTML = rowsHTML.join('');
     }
 
     function loadAdjustmentRecords(manualNotify = false) {
@@ -3609,10 +3719,7 @@
     function filterAdjustmentTable() {
         const thead = document.getElementById('adj-table-head');
         if (thead && rawComplainHeaders.length > 0) {
-            let headHTML = '<tr>';
-            rawComplainHeaders.forEach(h => headHTML += `<th class="p-3 border-b border-slate-200">${h}</th>`);
-            headHTML += '</tr>';
-            thead.innerHTML = headHTML;
+            thead.innerHTML = '<tr>' + rawComplainHeaders.map(h => `<th class="p-3 border-b border-slate-200">${h}</th>`).join('') + '</tr>';
         }
 
         const filtered = getFilteredComplainanData();
@@ -3621,17 +3728,13 @@
         if (countEl) countEl.innerText = `${filtered.length} Data`;
         if (!tbody) return;
 
-        tbody.innerHTML = '';
         if (filtered.length === 0) {
             tbody.innerHTML = '<tr><td colspan="15" class="p-4 text-center text-slate-400">Data komplain tidak ditemukan.</td></tr>';
             return;
         }
 
-        filtered.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-amber-50/40 transition-colors";
-            let rowHTML = '';
-            row.forEach((val) => {
+        const rowsHTML = filtered.map(row => {
+            const cellsHTML = row.map((val) => {
                 const cellValStr = (val !== undefined && val !== null) ? val.toString().trim() : '';
                 const lowerVal = cellValStr.toLowerCase();
                 
@@ -3644,14 +3747,14 @@
                     } else if (lowerVal === 'selesai') {
                         badgeClass += "bg-blue-50 text-blue-700 border-blue-200";
                     }
-                    rowHTML += `<td class="p-3 border-b border-slate-100"><span class="${badgeClass}">${cellValStr}</span></td>`;
+                    return `<td class="p-3 border-b border-slate-100"><span class="${badgeClass}">${cellValStr}</span></td>`;
                 } else {
-                    rowHTML += `<td class="p-3 border-b border-slate-100">${cellValStr || '-'}</td>`;
+                    return `<td class="p-3 border-b border-slate-100">${cellValStr || '-'}</td>`;
                 }
-            });
-            tr.innerHTML = rowHTML;
-            tbody.appendChild(tr);
+            }).join('');
+            return `<tr class="hover:bg-amber-50/40 transition-colors">${cellsHTML}</tr>`;
         });
+        tbody.innerHTML = rowsHTML.join('');
     }
 
     function exportTimelineToExcel() {
@@ -3933,332 +4036,273 @@
             slide4.addText("Komponen pendapatan dari kolom H (Salary) sampai Q (Uang Transport)", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
 
             let tablePenghasilan = [
-                [{ text: "Komponen Pendapatan & Benefit", options: { fill: "047857", color: WHITE, bold: true } }, { text: "Total Nominal", options: { fill: "047857", color: WHITE, bold: true, align: "right" } }]
+                [{ text: "Komponen Pendapatan & Benefit", options: { fill: "047857", color: WHITE, bold: true } }, { text: "Nominal (IDR)", options: { fill: "047857", color: WHITE, bold: true, align: "right" } }],
+                [{ text: "Salary (Gaji Pokok)" }, { text: formatIDR(colTotals[0]), options: { align: "right" } }],
+                [{ text: "Bonus Target" }, { text: formatIDR(colTotals[1]), options: { align: "right" } }],
+                [{ text: "Kekurangan Gaji Bulan Lalu" }, { text: formatIDR(colTotals[2]), options: { align: "right" } }],
+                [{ text: "Lembur Fullday" }, { text: formatIDR(colTotals[3]), options: { align: "right" } }],
+                [{ text: "Lembur Longshift" }, { text: formatIDR(colTotals[4]), options: { align: "right" } }],
+                [{ text: "Penyesuaian Posisi / Gaji" }, { text: formatIDR(colTotals[5]), options: { align: "right" } }],
+                [{ text: "Tunjangan Lainnya" }, { text: formatIDR(colTotals[6]), options: { align: "right" } }],
+                [{ text: "Tunjangan Sewa Kost" }, { text: formatIDR(colTotals[7]), options: { align: "right" } }],
+                [{ text: "Uang Kerajinan" }, { text: formatIDR(colTotals[8]), options: { align: "right" } }],
+                [{ text: "Uang Transport" }, { text: formatIDR(colTotals[9]), options: { align: "right" } }],
+                [{ text: "Total", options: { fill: "D1FAE5", bold: true } }, { text: formatIDR(totalKomponenSlide4), options: { fill: "D1FAE5", bold: true, align: "right" } }]
             ];
-            
-            for(let i = 0; i < allowanceHeaders.length; i++) {
-                tablePenghasilan.push([{ text: allowanceHeaders[i] }, { text: formatIDR(colTotals[i]), options: { align: "right", bold: true } }]);
-            }
-            
-            tablePenghasilan.push([{ text: "Total Keseluruhan (Total Komponen H-Q)", options: { bold: true, fill: "ECFDF5" } }, { text: formatIDR(totalKomponenSlide4), options: { align: "right", bold: true, fill: "ECFDF5", color: "047857" } }]);
-
-            slide4.addTable(tablePenghasilan, { x: 0.8, y: 1.5, w: 6.2, h: 5.5, border: { pt: 1, color: "E2E8F0" } });
-
-            let chartBenefitData = [{
-                name: "Pendapatan",
-                labels: allowanceHeaders,
-                values: colTotals
-            }];
-            slide4.addChart(pptx.charts.BAR, chartBenefitData, { x: 7.3, y: 1.5, w: 5.2, h: 5.5, barDir: "col", chartColors: ["047857", "10B981", "34D399", "6EE7B7"], showValue: true });
+            slide4.addTable(tablePenghasilan, { x: 0.8, y: 1.5, w: 11.7, h: 5.5, border: { pt: 1, color: "E2E8F0" } });
 
             // SLIDE 5
             let slide5 = pptx.addSlide();
-            slide5.addText("5. Komponen Potongan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
-            slide5.addText("Rincian kewajiban, cicilan, pinalti, dan BPJS", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+            slide5.addText("5. Rincian / Komponen Potongan Karyawan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide5.addText("Akumulasi seluruh kewajiban pemotongan yang diproses", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
 
             let tablePotongan = [
-                [{ text: "Jenis Potongan", options: { fill: "E11D48", color: WHITE, bold: true } }, { text: "Total Nominal", options: { fill: "E11D48", color: WHITE, bold: true, align: "right" } }]
+                [{ text: "Komponen Kewajiban / Potongan", options: { fill: "BE123C", color: WHITE, bold: true } }, { text: "Nominal (IDR)", options: { fill: "BE123C", color: WHITE, bold: true, align: "right" } }],
+                [{ text: "Pinjaman 1" }, { text: formatIDR(kewajibanTotalsArr[0]), options: { align: "right" } }],
+                [{ text: "Pinjaman 2" }, { text: formatIDR(kewajibanTotalsArr[1]), options: { align: "right" } }],
+                [{ text: "PNL" }, { text: formatIDR(kewajibanTotalsArr[2]), options: { align: "right" } }],
+                [{ text: "Potongan Absen" }, { text: formatIDR(kewajibanTotalsArr[3]), options: { align: "right" } }],
+                [{ text: "Potongan Sakit" }, { text: formatIDR(kewajibanTotalsArr[4]), options: { align: "right" } }],
+                [{ text: "BPJS Kesehatan (Karyawan)" }, { text: formatIDR(kewajibanTotalsArr[5]), options: { align: "right" } }],
+                [{ text: "JHT (Karyawan)" }, { text: formatIDR(kewajibanTotalsArr[6]), options: { align: "right" } }],
+                [{ text: "Total", options: { fill: "FFE4E6", bold: true } }, { text: formatIDR(totalKomponenSlide5), options: { fill: "FFE4E6", bold: true, align: "right" } }]
             ];
-            kewajibanHeaders.forEach((h, idx) => {
-                tablePotongan.push([{ text: h }, { text: formatIDR(kewajibanTotalsArr[idx]), options: { align: "right", bold: true } }]);
-            });
-            tablePotongan.push([{ text: "Total Seluruh Komponen Potongan", options: { bold: true, fill: "FFF1F2" } }, { text: formatIDR(totalKomponenSlide5), options: { align: "right", bold: true, fill: "FFF1F2", color: "E11D48" } }]);
+            slide5.addTable(tablePotongan, { x: 0.8, y: 1.6, w: 11.7, h: 4.8, border: { pt: 1, color: "E2E8F0" } });
 
-            slide5.addTable(tablePotongan, { x: 0.8, y: 1.6, w: 6.0, h: 5.2, border: { pt: 1, color: "E2E8F0" } });
-
-            let chartPotonganData = [{
-                name: "Potongan",
-                labels: kewajibanHeaders,
-                values: kewajibanTotalsArr
-            }];
-            slide5.addChart(pptx.charts.BAR, chartPotonganData, { x: 7.1, y: 1.6, w: 5.4, h: 5.2, barDir: "col", chartColors: ["E11D48", "F43F5E", "FB7185", "FDA4AF"], showValue: true });
-
-            // SLIDE 6 (LOAN)
-            let slideLoan = pptx.addSlide();
-            slideLoan.addText("6. Laporan Pinjaman Karyawan (Loan)", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
-            slideLoan.addText(`Ringkasan kewajiban pinjaman periode ${periodeText} dan grafik tren pinjaman (loan) setahun`, { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
-
-            const loanBoxes = [
-                { title: "TOTAL PINJAMAN", val: formatIDR(pptTotalLoan), bg: "FFF7ED", line: "F97316", txtColor: "C2410C" },
-                { title: "SUDAH DIBAYAR", val: formatIDR(pptTotalBayarLoan), bg: "ECFDF5", line: "10B981", txtColor: "047857" },
-                { title: "SISA PINJAMAN", val: formatIDR(pptTotalSisaLoan), bg: "FFF1F2", line: "E11D48", txtColor: "BE123C" },
-                { title: "PEMINJAM AKTIF", val: `${pptLoanBorrowers.size} Orang`, bg: "FEF3C7", line: "F59E0B", txtColor: "B45309" }
-            ];
-
-            loanBoxes.forEach((lb, idx) => {
-                let x = 0.8 + idx * 3.0;
-                slideLoan.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: x, y: 1.5, w: 2.75, h: 1.35, fill: { color: lb.bg }, line: { color: lb.line } });
-                slideLoan.addText(lb.title, { x: x + 0.15, y: 1.65, w: 2.45, h: 0.3, fontSize: 9.5, bold: true, color: lb.txtColor });
-                slideLoan.addText(lb.val, { x: x + 0.15, y: 2.0, w: 2.45, h: 0.65, fontSize: 14, bold: true, color: SLATE_DARK });
-            });
-
-            slideLoan.addText("Grafik Tren Garis Total Pinjaman (Loan) per Bulan dalam Setahun (Rp)", { x: 0.8, y: 3.05, w: 11.7, h: 0.35, fontSize: 13, bold: true, color: SLATE_DARK });
-
-            let chartLoanYearLineData = [{
-                name: "Total Pinjaman",
-                labels: standardMonthsOrder,
-                values: pptMonthlyLoanTotals
-            }];
-
-            slideLoan.addChart(pptx.charts.LINE, chartLoanYearLineData, {
-                x: 0.8, y: 3.45, w: 11.7, h: 3.65,
-                chartColors: ["F97316"],
-                lineSize: 3,
-                showValue: true,
-                valAxisLabelFormatCode: "#,##0"
-            });
-
-            // SLIDE 7 (LEMBUR)
+            // SLIDE 6
             let slide6 = pptx.addSlide();
-            slide6.addText("7. Analisis Rinci Biaya & Jam Lembur", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
-            slide6.addText("Divisi dengan akumulasi lembur terbanyak dan karyawan dengan nominal lembur tertinggi", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+            slide6.addText("6. Ringkasan Data Pinjaman Karyawan (Loan)", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide6.addText(`Sumber: Database Pinjaman Karyawan | Periode: ${periodeText}`, { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
 
-            let sortedDivLembur = Object.entries(divisiLemburMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            let sortedKarLembur = Object.entries(karyawanLemburMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            slide6.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 1.5, w: 3.7, h: 1.3, fill: { color: "FFF7ED" }, line: { color: "FDBA74" } });
+            slide6.addText("TOTAL KEWAJIBAN PINJAMAN", { x: 0.95, y: 1.65, w: 3.4, h: 0.3, fontSize: 10, bold: true, color: "9A3412" });
+            slide6.addText(formatIDR(pptTotalLoan), { x: 0.95, y: 2.0, w: 3.4, h: 0.5, fontSize: 16, bold: true, color: "EA580C" });
 
-            let tableDivLemburRows = [
-                [{ text: "Divisi (Top Lembur)", options: { fill: "7C3AED", color: WHITE, bold: true } }, { text: "Total Nominal", options: { fill: "7C3AED", color: WHITE, bold: true, align: "right" } }]
+            slide6.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 4.8, y: 1.5, w: 3.7, h: 1.3, fill: { color: "FFE4E6" }, line: { color: "FDA4AF" } });
+            slide6.addText("TOTAL SISA PINJAMAN", { x: 4.95, y: 1.65, w: 3.4, h: 0.3, fontSize: 10, bold: true, color: "9F1239" });
+            slide6.addText(formatIDR(pptTotalSisaLoan), { x: 4.95, y: 2.0, w: 3.4, h: 0.5, fontSize: 16, bold: true, color: "E11D48" });
+
+            slide6.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 8.8, y: 1.5, w: 3.7, h: 1.3, fill: { color: "ECFDF5" }, line: { color: "6EE7B7" } });
+            slide6.addText("PEMINJAM & TERBAYAR", { x: 8.95, y: 1.65, w: 3.4, h: 0.3, fontSize: 10, bold: true, color: "065F46" });
+            slide6.addText(`${pptLoanBorrowers.size} Orang (${formatCompact(pptTotalBayarLoan)})`, { x: 8.95, y: 2.0, w: 3.4, h: 0.5, fontSize: 15, bold: true, color: "059669" });
+
+            let tableMonthlyLoan = [
+                [
+                    { text: "Bulan", options: { fill: "EA580C", color: WHITE, bold: true } },
+                    { text: "Total Pinjaman", options: { fill: "EA580C", color: WHITE, bold: true, align: "right" } },
+                    { text: "Bulan", options: { fill: "EA580C", color: WHITE, bold: true } },
+                    { text: "Total Pinjaman", options: { fill: "EA580C", color: WHITE, bold: true, align: "right" } }
+                ]
             ];
-            sortedDivLembur.forEach(([divName, val]) => {
-                tableDivLemburRows.push([{ text: divName }, { text: formatIDR(val), options: { align: "right", bold: true } }]);
-            });
 
-            let tableKarLemburRows = [
-                [{ text: "Karyawan (Top Lembur)", options: { fill: "9333EA", color: WHITE, bold: true } }, { text: "Total Nominal", options: { fill: "9333EA", color: WHITE, bold: true, align: "right" } }]
-            ];
-            sortedKarLembur.forEach(([karName, val]) => {
-                tableKarLemburRows.push([{ text: karName }, { text: formatIDR(val), options: { align: "right", bold: true } }]);
-            });
+            for (let m = 0; m < 6; m++) {
+                tableMonthlyLoan.push([
+                    { text: standardMonthsOrder[m], options: { bold: true } },
+                    { text: formatIDR(pptMonthlyLoanTotals[m]), options: { align: "right" } },
+                    { text: standardMonthsOrder[m + 6], options: { bold: true } },
+                    { text: formatIDR(pptMonthlyLoanTotals[m + 6]), options: { align: "right" } }
+                ]);
+            }
 
-            slide6.addTable(tableDivLemburRows, { x: 0.8, y: 1.6, w: 5.7, h: 5.0, border: { pt: 1, color: "E2E8F0" } });
-            slide6.addTable(tableKarLemburRows, { x: 6.8, y: 1.6, w: 5.7, h: 5.0, border: { pt: 1, color: "E2E8F0" } });
+            slide6.addTable(tableMonthlyLoan, { x: 0.8, y: 3.1, w: 11.7, h: 3.8, border: { pt: 1, color: "E2E8F0" } });
 
-            // SLIDE 8 (REKONSILIASI DINAMIS)
+            // SLIDE 7
             let slide7 = pptx.addSlide();
-            slide7.addText("8. Rekonsiliasi & Analisis Variansi (Payroll)", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
-            slide7.addText("Analisis perbandingan gaji, jumlah cabang, dan penyesuaian periode berjalan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
+            slide7.addText("7. Analisis Lembur (Overtime Cost)", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide7.addText("Top 5 Divisi & Top 5 Karyawan dengan kontribusi lembur tertinggi", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
 
-            slide7.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 1.5, w: 11.7, h: 5.4, fill: { color: SLATE_LIGHT }, line: { color: "E2E8F0" } });
-            
-            const perbandinganGajiStr = prevMonthGross > 0
-                ? `Total pengeluaran gross periode ini adalah ${formatIDR(totalGross)}, mengalami selisih sebesar ${diffSign}${formatIDR(diffGrossAmt)} (${diffSign}${diffGrossPct}%) dibandingkan total gross bulan lalu (${formatIDR(prevMonthGross)}).`
-                : `Total pengeluaran gross periode aktif tercatat sebesar ${formatIDR(totalGross)} (Pilih periode bulan spesifik pada filter untuk melihat persentase selisih terhadap bulan sebelumnya).`;
-
-            const perbandinganCabangStr = prevMonthBranchesCount > 0
-                ? `Jumlah cabang / store aktif tercatat sebanyak ${currentBranchesCount} cabang (${branchDiffCount >= 0 ? '+' : ''}${branchDiffCount} cabang dibandingkan bulan lalu sebanyak ${prevMonthBranchesCount} cabang).`
-                : `Jumlah cabang / store aktif pada periode ini tercatat sebanyak ${currentBranchesCount} cabang operasional.`;
-
-            let rekonsiliasiText = 
-                `• Perbandingan Gaji Bulan Lalu:\n` +
-                `  ${perbandinganGajiStr}\n\n` +
-                `• Data Operasional Cabang:\n` +
-                `  ${perbandinganCabangStr}\n\n` +
-                `• Penyesuaian Gaji & Kekurangan Bulan Lalu:\n` +
-                `  Total kekurangan gaji bulan lalu sebesar ${formatIDR(totalKekuranganBlnLalu)} telah diverifikasi dan dimasukkan ke dalam komponen pembayaran periode berjalan.\n\n` +
-                `• Catatan Audit & Rekonsiliasi Finansial:\n` +
-                `  Seluruh perhitungan iuran BPJS, cicilan pinjaman (loan), lembur, dan potongan telah terekonsiliasi secara akurat dengan database pusat PT Raja Emas Indonesia.`;
-            
-            slide7.addText(rekonsiliasiText, { x: 1.2, y: 1.8, w: 11.0, h: 4.8, fontSize: 13, color: SLATE_DARK });
-
-            // SLIDE 9 (COMPLAINT)
-            let slide8 = pptx.addSlide();
-            slide8.addText("9. Laporan Komplain dan Penyesuaian Laporan", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
-            slide8.addText("Monitoring status tiket komplain dan kendala penggajian karyawan", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
-
-            let boxWidth = 3.6;
-            let komplainStats = [
-                { title: "TOTAL TIKET KOMPLAIN", val: `${totalKomplain} Tiket`, color: "3B82F6", bg: "EFF6FF" },
-                { title: "STATUS SELESAI", val: `${selesaiKomplain} Selesai`, color: "10B981", bg: "ECFDF5" },
-                { title: "STATUS OPEN & PROSES", val: `${openKomplain + prosesKomplain} Aktif`, color: "F59E0B", bg: "FEF3C7" }
+            let topDiv = Object.entries(divisiLemburMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            let tableTopDiv = [
+                [{ text: "Top 5 Divisi Lembur", options: { fill: "6D28D9", color: WHITE, bold: true } }, { text: "Nominal", options: { fill: "6D28D9", color: WHITE, bold: true, align: "right" } }]
             ];
+            topDiv.forEach(([d, v]) => tableTopDiv.push([{ text: d }, { text: formatIDR(v), options: { align: "right" } }]));
+            if(topDiv.length === 0) tableTopDiv.push([{ text: "Nihil" }, { text: "Rp 0", options: { align: "right" } }]);
+            slide7.addTable(tableTopDiv, { x: 0.8, y: 1.7, w: 5.5, h: 4.5, border: { pt: 1, color: "E2E8F0" } });
 
-            komplainStats.forEach((ks, idx) => {
-                let x = 0.8 + idx * 4.05;
-                slide8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: x, y: 1.6, w: boxWidth, h: 1.7, fill: { color: ks.bg }, line: { color: ks.color } });
-                slide8.addText(ks.title, { x: x + 0.2, y: 1.8, w: boxWidth - 0.4, h: 0.3, fontSize: 11, bold: true, color: ks.color });
-                slide8.addText(ks.val, { x: x + 0.2, y: 2.2, w: boxWidth - 0.4, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
-            });
+            let topKar = Object.entries(karyawanLemburMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            let tableTopKar = [
+                [{ text: "Top 5 Karyawan Lembur", options: { fill: "4338CA", color: WHITE, bold: true } }, { text: "Nominal", options: { fill: "4338CA", color: WHITE, bold: true, align: "right" } }]
+            ];
+            topKar.forEach(([k, v]) => tableTopKar.push([{ text: k }, { text: formatIDR(v), options: { align: "right" } }]));
+            if(topKar.length === 0) tableTopKar.push([{ text: "Nihil" }, { text: "Rp 0", options: { align: "right" } }]);
+            slide7.addTable(tableTopKar, { x: 6.8, y: 1.7, w: 5.7, h: 4.5, border: { pt: 1, color: "E2E8F0" } });
 
-            slide8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 3.5, w: 11.7, h: 3.4, fill: { color: SLATE_LIGHT }, line: { color: "E2E8F0" } });
-            let komplainSummaryText = 
-                `• Monitoring Kendala & Complaint Penggajian:\n` +
-                `  - Total Tiket Masuk: ${totalKomplain} laporan.\n` +
-                `  - Selesai Ditangani: ${selesaiKomplain} tiket (${totalKomplain > 0 ? ((selesaiKomplain/totalKomplain)*100).toFixed(1) : 0}% resolusi).\n` +
-                `  - Dalam Proses & Open: ${openKomplain + prosesKomplain} tiket sedang ditindaklanjuti oleh tim HR Payroll.\n\n` +
-                `• Tindak Lanjut Penyesuaian:\n  Seluruh komplain terkait selisih nominal, absensi, dan tunjangan telah diverifikasi dengan data presensi cabang masing-masing untuk memastikan akurasi laporan payroll.`;
-            slide8.addText(komplainSummaryText, { x: 1.2, y: 3.8, w: 11.0, h: 2.8, fontSize: 13, color: SLATE_DARK });
+            // SLIDE 8: REKONSILIASI DINAMIS
+            let slide8 = pptx.addSlide();
+            slide8.addText("8. Rekonsiliasi & Pembukaan Cabang Baru", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide8.addText("Analisis perbandingan operasional & finansial terhadap periode sebelumnya", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
 
-            // SLIDE 10 (CLOSING)
+            slide8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 1.7, w: 5.6, h: 4.8, fill: { color: "FFFBEB" }, line: { color: "FDE68A" } });
+            slide8.addText("A. Dampak Ekspansi Cabang Operasional", { x: 1.0, y: 1.9, w: 5.2, h: 0.5, fontSize: 15, bold: true, color: "92400E" });
+            slide8.addText(
+                `• Total cabang periode aktif: ${currentBranchesCount} Cabang\n` +
+                `• Total cabang periode lalu: ${prevMonthBranchesCount > 0 ? prevMonthBranchesCount + ' Cabang' : 'Data pembanding tidak tersedia'}\n` +
+                `• Perubahan jumlah cabang: ${branchDiffCount >= 0 ? '+' + branchDiffCount : branchDiffCount} Cabang\n` +
+                `• Ekspansi unit operasional berbanding lurus dengan penambahan SDM lapangan`,
+                { x: 1.0, y: 2.5, w: 5.2, h: 3.6, fontSize: 12, color: SLATE_DARK }
+            );
+
+            slide8.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 6.8, y: 1.7, w: 5.7, h: 4.8, fill: { color: "F1F5F9" }, line: { color: "CBD5E1" } });
+            slide8.addText("B. Perbandingan & Rekonsiliasi Selisih Gross", { x: 7.0, y: 1.9, w: 5.3, h: 0.5, fontSize: 15, bold: true, color: SLATE_DARK });
+            slide8.addText(
+                `• Total Gross Periode Aktif: ${formatIDR(totalGross)}\n` +
+                `• Total Gross Periode Lalu: ${prevMonthGross > 0 ? formatIDR(prevMonthGross) : 'Tidak tersedia'}\n` +
+                `• Selisih Nominal: ${prevMonthGross > 0 ? diffSign + formatIDR(diffGrossAmt) + ' (' + diffSign + diffGrossPct + '%)' : 'N/A'}\n` +
+                `• Kekurangan Bulan Lalu: ${formatIDR(totalKekuranganBlnLalu)}\n` +
+                `• Total Lemburan: ${formatIDR(totalLemburan)}`,
+                { x: 7.0, y: 2.5, w: 5.3, h: 3.6, fontSize: 12, color: SLATE_DARK }
+            );
+
+            // SLIDE 9
             let slide9 = pptx.addSlide();
-            slide9.background = { color: BG_DARK };
-            slide9.addText("TERIMA KASIH", { x: 1.5, y: 2.2, w: 10, h: 0.8, fontSize: 36, bold: true, color: AMBER });
-            slide9.addText("Sesi Tanya Jawab & Diskusi (Q&A)", { x: 1.5, y: 3.0, w: 10, h: 0.8, fontSize: 22, bold: true, color: WHITE });
-            slide9.addText("PT Raja Emas Indonesia • Portal Report Payroll & Finance", { x: 1.5, y: 4.2, w: 10, h: 0.5, fontSize: 14, color: "CBD5E1" });
+            slide9.addText("9. Tiket Payroll Complaint & Penutup", { x: 0.8, y: 0.4, w: 11.7, h: 0.8, fontSize: 22, bold: true, color: SLATE_DARK });
+            slide9.addText("Rekapitulasi tindak lanjut pengaduan & rekonsiliasi gaji", { x: 0.8, y: 1.0, w: 11.7, h: 0.4, fontSize: 12, color: SLATE_MUTED });
 
-            pptx.writeFile({ fileName: `Laporan_Payroll_Raja_Emas_${periodeText.replace(/\s+/g, '_')}.pptx` });
-            showToast('File presentasi PowerPoint (.pptx) berhasil diunduh.', 'success');
+            slide9.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 1.6, w: 2.7, h: 1.6, fill: { color: SLATE_LIGHT }, line: { color: "CBD5E1" } });
+            slide9.addText("TOTAL TIKET", { x: 1.0, y: 1.8, w: 2.3, h: 0.3, fontSize: 10, bold: true, color: SLATE_MUTED });
+            slide9.addText(`${totalKomplain}`, { x: 1.0, y: 2.2, w: 2.3, h: 0.7, fontSize: 28, bold: true, color: SLATE_DARK });
+
+            slide9.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 3.8, y: 1.6, w: 2.7, h: 1.6, fill: { color: "FFE4E6" }, line: { color: "FDA4AF" } });
+            slide9.addText("OPEN", { x: 4.0, y: 1.8, w: 2.3, h: 0.3, fontSize: 10, bold: true, color: "9F1239" });
+            slide9.addText(`${openKomplain}`, { x: 4.0, y: 2.2, w: 2.3, h: 0.7, fontSize: 28, bold: true, color: "E11D48" });
+
+            slide9.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 6.8, y: 1.6, w: 2.7, h: 1.6, fill: { color: "FEF3C7" }, line: { color: "FCD34D" } });
+            slide9.addText("PROSES", { x: 7.0, y: 1.8, w: 2.3, h: 0.3, fontSize: 10, bold: true, color: "92400E" });
+            slide9.addText(`${prosesKomplain}`, { x: 7.0, y: 2.2, w: 2.3, h: 0.7, fontSize: 28, bold: true, color: "D97706" });
+
+            slide9.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 9.8, y: 1.6, w: 2.7, h: 1.6, fill: { color: "ECFDF5" }, line: { color: "6EE7B7" } });
+            slide9.addText("SELESAI", { x: 10.0, y: 1.8, w: 2.3, h: 0.3, fontSize: 10, bold: true, color: "065F46" });
+            slide9.addText(`${selesaiKomplain}`, { x: 10.0, y: 2.2, w: 2.3, h: 0.7, fontSize: 28, bold: true, color: "059669" });
+
+            slide9.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x: 0.8, y: 3.8, w: 11.7, h: 2.6, fill: { color: BG_DARK } });
+            slide9.addText("Terima Kasih", { x: 1.2, y: 4.2, w: 10.9, h: 0.7, fontSize: 24, bold: true, color: AMBER });
+            slide9.addText("Laporan ini dihasilkan secara otomatis dari sistem Portal Report Payroll PT Raja Emas Indonesia.", { x: 1.2, y: 5.0, w: 10.9, h: 0.5, fontSize: 13, color: "CBD5E1" });
+
+            let safeFileName = `Laporan_Payroll_Raja_Emas_${periodeText.replace(/[^a-zA-Z0-9]/g, '_')}.pptx`;
+            pptx.writeFile({ fileName: safeFileName });
+            showToast(`Presentasi PowerPoint (${safeFileName}) berhasil diunduh.`, 'success');
         } catch (err) {
-            console.error(err);
-            showToast('Terjadi kesalahan saat membuat file PowerPoint: ' + err.message, 'error');
+            console.error("Error generating PPTX:", err);
+            showToast("Terjadi kesalahan saat generate PowerPoint: " + err.message, 'error');
         }
     }
 
-    function downloadReportExcel(reportType) {
-        const filteredData = getFilteredData();
-        
-        const fPeriodeSelect = document.getElementById('filter-periode');
-        const selectedPeriode = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text : 'Semua Bulan';
-        const selectedTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'Semua Tahun';
-        const activePeriodeText = selectedPeriode !== 'Semua Bulan' ? selectedPeriode : 'Semua Bulan';
-        const activeTahunText = selectedTahun !== 'ALL' ? selectedTahun : 'Semua Tahun';
+    function downloadReportExcel(type) {
+        const filtered = getFilteredData();
+        if (filtered.length === 0 && type !== 'loan') {
+            showToast('Tidak ada data untuk diunduh sesuai filter saat ini.', 'warning');
+            return;
+        }
 
-        let rawRowsForSheet = [];
-        let fileName = `Laporan_${reportType}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        let exportArray = [];
+        let fileName = `Report_Payroll_${type}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-        if (reportType === 'summary') {
-            rawRowsForSheet = filteredData.map(row => ({
-                "ID Karyawan": row[3] || '',
-                "Nama Karyawan": row[2] || '',
-                "Perusahaan": row[4] || '',
-                "Divisi": row[27] || '',
-                "Posisi": row[5] || '',
-                "Cabang": row[6] || '',
-                "Gapok (Rp)": calcRowGapok(row),
-                "Gross (Rp)": calcRowGross(row),
-                "Lembur (Rp)": parseNum(row[10]) + parseNum(row[11]),
-                "THP (Rp)": parseNum(row[26])
-            }));
-            fileName = `Payroll_Summary_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
-        } else if (reportType === 'allowance') {
-            rawRowsForSheet = filteredData.map(row => {
-                let obj = { 
-                    "ID Karyawan": row[3] || '', 
-                    "Nama Karyawan": row[2] || '',
-                    "Divisi": row[27] || '',
-                    "Posisi": row[5] || ''
-                };
-                let total = 0;
-                allowanceIndices.forEach((idx, i) => {
-                    let val = parseNum(row[idx]);
-                    obj[allowanceHeaders[i] || `Col_${idx}`] = val;
-                    total += val;
-                });
-                obj["Total Gross (H-Q) (Rp)"] = total;
-                return obj;
-            });
-            fileName = `Allowance_Benefit_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
-        } else if (reportType === 'kewajiban') {
-            rawRowsForSheet = filteredData.map(row => {
-                let obj = { 
-                    "ID Karyawan": row[3] || '', 
-                    "Nama Karyawan": row[2] || '',
-                    "Divisi": row[27] || '',
-                    "Posisi": row[5] || ''
-                };
-                let total = 0;
-                kewajibanHeaders.forEach((h, idx) => {
-                    let val = parseNum(row[kewajibanIndices[idx]]);
-                    obj[h] = val;
-                    total += val;
-                });
-                obj["Total Kewajiban (Rp)"] = total;
-                return obj;
-            });
-            fileName = `Kewajiban_Potongan_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
-        } else if (reportType === 'loan') {
-            const filteredLoan = getFilteredLoanData();
-            const empMetaMap = getEmployeeMetaMap();
-            rawRowsForSheet = filteredLoan.map((row, idx) => {
-                const nip = row[3] ? row[3].trim() : '';
-                const meta = empMetaMap[nip.toLowerCase()] || { divisi: '', posisi: '' };
+        if (type === 'loan') {
+            exportLoanToExcel();
+            return;
+        } else if (type === 'summary') {
+            exportArray = filtered.map(row => {
+                const gapokVal = calcRowGapok(row);
+                const lemburVal = parseNum(row[10]) + parseNum(row[11]);
+                const tunjanganVal = calcRowTunjangan(row);
+                const kewajibanVal = calcRowKewajiban(row);
+                const grossVal = calcRowGross(row);
+                const thpVal = parseNum(row[26]);
                 return {
-                    "Nomor": idx + 1,
-                    "Nama Karyawan": row[4] ? row[4].trim() : '',
-                    "NIP": nip,
-                    "Divisi": meta.divisi || '',
-                    "Posisi": meta.posisi || '',
-                    "Bulan / Periode": getLoanRowPeriodLabel(row),
-                    "Total Kewajiban / Pinjaman (Rp)": parseNum(row[8]),
-                    "Total Pembayaran Setahun (Rp)": parseNum(row[9]),
-                    "Total Tenor": row[6] ? row[6].trim() : '',
-                    "Angsuran per Bulan (Rp)": parseNum(row[9]),
-                    "Sisa Tenor": row[7] ? row[7].trim() : '',
-                    "Sisa Pinjaman (Rp)": parseNum(row[10]),
-                    "Status": row[14] ? row[14].trim() : ''
+                    "ID Karyawan": row[3] || '',
+                    "Nama Karyawan": row[2] || '',
+                    "Perusahaan": row[4] || '',
+                    "Divisi": row[27] ? row[27].trim() : '',
+                    "Posisi": row[5] ? row[5].trim() : '',
+                    "Cabang": row[6] || '',
+                    "Total Salary/Gapok": gapokVal,
+                    "Total Lembur": lemburVal,
+                    "Total Tunjangan": tunjanganVal,
+                    "Total Kewajiban": kewajibanVal,
+                    "Total Gross": grossVal,
+                    "Take Home Pay (THP)": thpVal
                 };
             });
-            fileName = `Laporan_Loan_Karyawan_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
-        } else if (reportType === 'overtime') {
-            const otFiltered = filteredData.filter(row => (parseNum(row[10]) + parseNum(row[11])) > 0);
-            rawRowsForSheet = otFiltered.map(row => ({
-                "ID Karyawan": row[3] || '',
-                "Nama Karyawan": row[2] || '',
+        } else if (type === 'allowance') {
+            exportArray = filtered.map(row => {
+                let rowTotal = 0;
+                let obj = { 
+                    "ID": row[3] || '', 
+                    "Nama": row[2] || '', 
+                    "Divisi": row[27] ? row[27].trim() : '',
+                    "Posisi": row[5] ? row[5].trim() : ''
+                };
+                allowanceIndices.forEach((colIdx, i) => {
+                    const val = parseNum(row[colIdx]);
+                    rowTotal += val;
+                    obj[allowanceHeaders[i]] = val;
+                });
+                obj["Total Gross (H-Q)"] = rowTotal;
+                return obj;
+            });
+        } else if (type === 'kewajiban') {
+            exportArray = filtered.map(row => {
+                let rowTotal = 0;
+                let obj = { 
+                    "ID": row[3] || '', 
+                    "Nama": row[2] || '', 
+                    "Divisi": row[27] ? row[27].trim() : '',
+                    "Posisi": row[5] ? row[5].trim() : ''
+                };
+                kewajibanIndices.forEach((colIdx, i) => {
+                    const val = parseNum(row[colIdx]);
+                    rowTotal += val;
+                    obj[kewajibanHeaders[i]] = val;
+                });
+                obj["Total Kewajiban"] = rowTotal;
+                return obj;
+            });
+        } else if (type === 'overtime') {
+            exportArray = filtered.filter(row => (parseNum(row[10]) + parseNum(row[11])) > 0).map(row => ({
+                "ID": row[3] || '',
+                "Nama": row[2] || '',
                 "Perusahaan": row[4] || '',
-                "Posisi": row[5] || '',
-                "Divisi": row[27] || '',
-                "Nominal Lembur (Rp)": parseNum(row[10]) + parseNum(row[11])
+                "Posisi": row[5] ? row[5].trim() : '',
+                "Divisi": row[27] ? row[27].trim() : '',
+                "Nominal Lembur": parseNum(row[10]) + parseNum(row[11])
             }));
-            fileName = `Overtime_Cost_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
-        } else if (reportType === 'cost') {
-            let costMap = {};
-            filteredData.forEach(row => {
+        } else if (type === 'cost') {
+            const costMap = {};
+            filtered.forEach(row => {
                 const divisi = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Unassigned');
-                const id = row[3] ? row[3].trim() : '';
-                if (!costMap[divisi]) costMap[divisi] = { karyawan: new Set(), gapok: 0, tunjangan: 0, kewajiban: 0, lembur: 0, thp: 0 };
-                if (id) costMap[divisi].karyawan.add(id);
+                const idKaryawan = row[3] ? row[3].trim() : '';
+                if (!costMap[divisi]) {
+                    costMap[divisi] = { karyawan: new Set(), gapok: 0, tunjangan: 0, kewajiban: 0, lembur: 0, thp: 0 };
+                }
+                if (idKaryawan) costMap[divisi].karyawan.add(idKaryawan);
                 costMap[divisi].gapok += calcRowGapok(row);
                 costMap[divisi].tunjangan += calcRowTunjangan(row);
                 costMap[divisi].kewajiban += calcRowKewajiban(row);
                 costMap[divisi].lembur += (parseNum(row[10]) + parseNum(row[11]));
                 costMap[divisi].thp += parseNum(row[26]);
             });
-            rawRowsForSheet = Object.entries(costMap).map(([div, info]) => ({
-                "Nama Divisi": div,
-                "Jumlah Karyawan": info.karyawan.size,
-                "Total Gapok (Rp)": info.gapok,
-                "Total Tunjangan (Rp)": info.tunjangan,
-                "Total Kewajiban (Rp)": info.kewajiban,
-                "Total Lemburan (Rp)": info.lembur,
-                "Total THP (Rp)": info.thp
-            }));
-            fileName = `Cost_Analysis_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}.xlsx`;
-        } else if (reportType === 'database') {
-            rawRowsForSheet = filteredData.map(row => {
+            exportArray = Object.entries(costMap).map(([divisi, info]) => {
+                return {
+                    "Nama Divisi": divisi,
+                    "Jumlah Karyawan": info.karyawan.size || 1,
+                    "Total Gapok": info.gapok,
+                    "Total Tunjangan": info.tunjangan,
+                    "Total Kewajiban": info.kewajiban,
+                    "Total Lemburan": info.lembur,
+                    "Total THP": info.thp
+                };
+            });
+        } else if (type === 'database') {
+            exportArray = filtered.map(row => {
                 let obj = {};
-                headerRow.forEach((h, idx) => {
-                    obj[h || `Col_${idx}`] = row[idx] || '';
-                });
+                headerRow.forEach((h, i) => obj[h || `Col_${i}`] = row[i] || '');
                 return obj;
             });
-            fileName = `Database_Payroll_${activePeriodeText.replace(/\s+/g, '_')}_${activeTahunText}_${Date.now()}.xlsx`;
         }
 
-        if (reportType === 'timeline') {
-            exportTimelineToExcel();
-            return;
-        }
-        if (reportType === 'adjustment') {
-            exportAdjustmentToExcel();
-            return;
-        }
-
-        if (rawRowsForSheet.length === 0) {
-            showToast('Tidak ada data untuk diunduh pada filter saat ini.', 'warning');
-            return;
-        }
-
-        const worksheet = XLSX.utils.json_to_sheet([]);
-        
-        XLSX.utils.sheet_add_aoa(worksheet, [
-            ["PT RAJA EMAS INDONESIA - LAPORAN PAYROLL"],
-            [`Periode Bulan: ${activePeriodeText} | Tahun: ${activeTahunText}`],
-            []
-        ], { origin: "A1" });
-
-        XLSX.utils.sheet_add_json(worksheet, rawRowsForSheet, { origin: "A4", skipHeader: false });
-
+        const worksheet = XLSX.utils.json_to_sheet(exportArray);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Payroll");
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Report Data");
         XLSX.writeFile(workbook, fileName);
         showToast(`File Excel (${fileName}) berhasil diunduh.`, 'success');
     }
