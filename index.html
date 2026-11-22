@@ -12,8 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <!-- PapaParse CDN for parsing CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <!-- SheetJS (xlsx) CDN for Excel Export -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- SheetJS with Style Support (xlsx-js-style) CDN for Styled Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <!-- PptxGenJS CDN for PowerPoint Export -->
     <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <!-- html2pdf.js CDN untuk Download Slip Gaji PDF Langsung -->
@@ -83,7 +83,10 @@
 
         /* Compact Login Background */
         .login-compact-bg {
-            background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 55%, #020617 100%);
+            background:
+                radial-gradient(circle at 12% 18%, rgba(245, 158, 11, 0.16) 0%, transparent 38%),
+                radial-gradient(circle at 88% 82%, rgba(217, 119, 6, 0.12) 0%, transparent 42%),
+                linear-gradient(145deg, #0b1120 0%, #0f172a 55%, #020617 100%);
         }
 
         /* Card & Surface Elevation */
@@ -172,86 +175,116 @@
 
 <!-- ================= SECTION 1: RINGKAS & BERSIH LOGIN ================= -->
 <div id="login-section" class="min-h-screen login-compact-bg flex items-center justify-center p-4 sm:p-6">
-    <div class="w-full max-w-sm bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200/80">
-        <!-- Brand Header (Logo REI Raja Emas .id) -->
-        <div class="flex flex-col items-center text-center mb-6">
-            <svg viewBox="0 0 260 225" class="w-36 h-auto mb-1 drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="reiGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#FFF3A8"/>
-                        <stop offset="28%" stop-color="#D4AF37"/>
-                        <stop offset="55%" stop-color="#AA771C"/>
-                        <stop offset="80%" stop-color="#F7E27B"/>
-                        <stop offset="100%" stop-color="#9A6B16"/>
-                    </linearGradient>
-                    <linearGradient id="reiTextGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#FCE883"/>
-                        <stop offset="45%" stop-color="#D4AF37"/>
-                        <stop offset="100%" stop-color="#8C6214"/>
-                    </linearGradient>
-                    <filter id="reiShadow" x="-15%" y="-15%" width="130%" height="130%">
-                        <feDropShadow dx="0.8" dy="1.4" stdDeviation="1.2" flood-color="#1e1202" flood-opacity="0.32"/>
-                    </filter>
-                </defs>
-                <g filter="url(#reiShadow)">
-                    <!-- Mahkota 3 Ujung -->
-                    <path d="M111 42 L103 19 L120 31 L130 13 L140 31 L157 19 L149 42 Z" fill="url(#reiGoldGrad)"/>
-                    <!-- Berlian Segi Lima -->
-                    <polygon points="116,45 144,45 151,54 130,73 109,54" fill="url(#reiGoldGrad)"/>
-                    <!-- Lengkungan Cincin Atas (Terbelah di bawah berlian) -->
-                    <path d="M118 68 A 40 40 0 0 0 92 92 L104 92 A 29 29 0 0 1 124 74 Z" fill="url(#reiGoldGrad)"/>
-                    <path d="M142 68 A 40 40 0 0 1 168 92 L156 92 A 29 29 0 0 0 136 74 Z" fill="url(#reiGoldGrad)"/>
-                    <!-- Huruf REI Serif -->
-                    <text x="130" y="133" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="44" letter-spacing="1" fill="url(#reiTextGrad)">REI</text>
-                    <!-- Lengkungan Cincin Bawah -->
-                    <path d="M93 139 A 40 40 0 0 0 167 139 L159 139 A 32 32 0 0 1 101 139 Z" fill="url(#reiGoldGrad)"/>
-                </g>
-                <!-- Tulisan RAJA EMAS .id -->
-                <text x="130" y="186" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="23" letter-spacing="0.8" fill="url(#reiTextGrad)" filter="url(#reiShadow)">RAJA EMAS .id</text>
-                <!-- Tagline -->
-                <text x="130" y="207" text-anchor="middle" font-family="'Plus Jakarta Sans', Inter, sans-serif" font-weight="600" font-size="11.5" fill="#1e293b">“Terima Emas Harga Tinggi”</text>
-            </svg>
-            <h1 class="text-base font-extrabold text-slate-900 tracking-tight mt-1">PT RAJA EMAS <span class="text-amber-600">INDONESIA</span></h1>
-            <p class="text-xs font-semibold text-slate-500 mt-0.5">Portal Report Payroll • HR Payroll</p>
-        </div>
-
-        <!-- Error Alert -->
-        <div id="error-alert" class="hidden mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
-            <i class="fa-solid fa-circle-exclamation text-rose-500 shrink-0"></i>
-            <span id="error-alert-text">Username atau Password salah!</span>
-        </div>
-
-        <form onsubmit="handleLogin(event)" class="space-y-4">
-            <div>
-                <label for="username" class="block text-xs font-bold text-slate-700 mb-1.5">Username</label>
-                <div class="relative flex items-center">
-                    <span class="absolute left-3.5 text-slate-400"><i class="fa-regular fa-user text-xs"></i></span>
-                    <input type="text" id="username" required autocomplete="username" placeholder="Masukkan username" 
-                        class="w-full bg-slate-50 border border-slate-300 rounded-xl py-2.5 pl-10 pr-3.5 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 transition-all">
+    <div class="w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+        <!-- Kolom Kiri: Identitas Perusahaan & Ringkasan Keamanan (5 Kolom di Desktop) -->
+        <div class="lg:col-span-5 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-slate-800">
+            <div class="relative z-10 flex flex-col items-center text-center">
+                <div class="w-full flex items-center justify-center mb-3">
+                    <div class="bg-white/95 rounded-2xl px-4 py-2.5 shadow-lg border border-amber-300/70 inline-flex flex-col items-center justify-center">
+                        <svg viewBox="0 0 260 212" class="w-28 h-auto drop-shadow-xs" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="reiGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#FFF3A8"/>
+                                    <stop offset="28%" stop-color="#D4AF37"/>
+                                    <stop offset="55%" stop-color="#AA771C"/>
+                                    <stop offset="80%" stop-color="#F7E27B"/>
+                                    <stop offset="100%" stop-color="#9A6B16"/>
+                                </linearGradient>
+                                <linearGradient id="reiTextGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#FCE883"/>
+                                    <stop offset="45%" stop-color="#D4AF37"/>
+                                    <stop offset="100%" stop-color="#8C6214"/>
+                                </linearGradient>
+                                <filter id="reiShadow" x="-15%" y="-15%" width="130%" height="130%">
+                                    <feDropShadow dx="0.8" dy="1.4" stdDeviation="1.2" flood-color="#1e1202" flood-opacity="0.32"/>
+                                </filter>
+                            </defs>
+                            <g filter="url(#reiShadow)">
+                                <path d="M111 42 L103 19 L120 31 L130 13 L140 31 L157 19 L149 42 Z" fill="url(#reiGoldGrad)"/>
+                                <polygon points="116,45 144,45 151,54 130,73 109,54" fill="url(#reiGoldGrad)"/>
+                                <path d="M118 68 A 40 40 0 0 0 92 92 L104 92 A 29 29 0 0 1 124 74 Z" fill="url(#reiGoldGrad)"/>
+                                <path d="M142 68 A 40 40 0 0 1 168 92 L156 92 A 29 29 0 0 0 136 74 Z" fill="url(#reiGoldGrad)"/>
+                                <text x="130" y="133" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="44" letter-spacing="1" fill="url(#reiTextGrad)">REI</text>
+                                <path d="M93 139 A 40 40 0 0 0 167 139 L159 139 A 32 32 0 0 1 101 139 Z" fill="url(#reiGoldGrad)"/>
+                            </g>
+                            <text x="130" y="186" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="23" letter-spacing="0.8" fill="url(#reiTextGrad)" filter="url(#reiShadow)">RAJA EMAS .id</text>
+                        </svg>
+                        <span class="text-[10.5px] font-semibold text-slate-700 mt-0.5">“Terima Emas Harga Tinggi”</span>
+                    </div>
                 </div>
+
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-[10px] font-bold uppercase tracking-wider mt-1">
+                    <i class="fa-solid fa-shield-halved"></i> HR Payroll Enterprise Portal
+                </span>
+                <h2 class="text-lg font-extrabold text-white tracking-tight mt-2.5">PT RAJA EMAS <span class="text-amber-400">INDONESIA</span></h2>
+                <p class="text-xs text-slate-300/90 mt-1.5 leading-relaxed">
+                    Sistem pelaporan penggajian, slip gaji, pinjaman karyawan, dan analisis biaya terintegrasi.
+                </p>
             </div>
 
-            <div>
-                <label for="password" class="block text-xs font-bold text-slate-700 mb-1.5">Password</label>
-                <div class="relative flex items-center">
-                    <span class="absolute left-3.5 text-slate-400"><i class="fa-solid fa-lock text-xs"></i></span>
-                    <input type="password" id="password" required autocomplete="current-password" placeholder="Masukkan password" 
-                        class="w-full bg-slate-50 border border-slate-300 rounded-xl py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 transition-all">
-                    <button type="button" onclick="togglePassword()" aria-label="Tampilkan Password" class="absolute right-3 text-slate-400 hover:text-slate-700 p-1 transition-colors focus:outline-none">
-                        <i id="toggle-icon" class="fa-regular fa-eye text-xs"></i>
-                    </button>
+            <div class="relative z-10 mt-6 pt-4 border-t border-slate-800 space-y-2 text-[11px] text-slate-300">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-5 h-5 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-clock text-[10px]"></i>
+                    </span>
+                    <span>Durasi sesi aktif otomatis selama <strong>30 menit</strong></span>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <span class="w-5 h-5 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-lock text-[10px]"></i>
+                    </span>
+                    <span>Akses terbatas untuk tim <strong>HR Payroll terotorisasi</strong></span>
                 </div>
             </div>
+        </div>
 
-            <button type="submit" 
-                class="w-full mt-1 bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white font-bold text-sm py-3 px-4 rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
-                <span>Masuk Portal</span>
-                <i class="fa-solid fa-arrow-right text-xs text-amber-400 group-hover:translate-x-1 transition-transform"></i>
-            </button>
-        </form>
+        <!-- Kolom Kanan: Formulir Masuk (7 Kolom di Desktop) -->
+        <div class="lg:col-span-7 p-6 sm:p-9 flex flex-col justify-center bg-white">
+            <div class="mb-6">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Autentikasi Akun</p>
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">Masuk ke Portal Payroll</h1>
+                <p class="text-xs text-slate-500 mt-1">Gunakan kredensial HR Payroll Anda untuk melanjutkan ke dashboard.</p>
+            </div>
 
-        <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400">
-            &copy; PT Raja Emas Indonesia • Sesi Otomatis 30 Menit
+            <!-- Error Alert -->
+            <div id="error-alert" role="alert" class="hidden mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-start gap-2.5">
+                <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm mt-0.5 shrink-0"></i>
+                <span id="error-alert-text">Username atau Password salah! Silakan periksa kembali kredensial Anda.</span>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-xs font-bold text-slate-700 mb-1.5">Username</label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-3.5 text-slate-400 pointer-events-none"><i class="fa-regular fa-user text-xs"></i></span>
+                        <input type="text" id="username" required autocomplete="username" placeholder="Masukkan username HR Payroll" 
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl py-2.5 pl-10 pr-3.5 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-xs font-bold text-slate-700 mb-1.5">Password</label>
+                    <div class="relative flex items-center">
+                        <span class="absolute left-3.5 text-slate-400 pointer-events-none"><i class="fa-solid fa-lock text-xs"></i></span>
+                        <input type="password" id="password" required autocomplete="current-password" placeholder="Masukkan password" 
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl py-2.5 pl-10 pr-11 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 transition-all">
+                        <button type="button" onclick="togglePassword()" aria-label="Tampilkan atau sembunyikan password" class="absolute right-2.5 text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/30 cursor-pointer">
+                            <i id="toggle-icon" class="fa-regular fa-eye text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" 
+                    class="w-full mt-2 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:from-amber-600 hover:to-amber-700 active:scale-[0.99] text-white font-bold text-sm py-3 px-4 rounded-xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer">
+                    <span>Masuk ke Dashboard</span>
+                    <i class="fa-solid fa-arrow-right text-xs text-amber-400 group-hover:text-white group-hover:translate-x-1 transition-all"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400">
+                <span>&copy; PT Raja Emas Indonesia</span>
+                <span>Keamanan Sesi Terkelola Otomatis</span>
+            </div>
         </div>
     </div>
 </div>
@@ -843,7 +876,7 @@
                     <div class="surface-card rounded-2xl p-5 sm:p-6">
                         <div class="mb-4">
                             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-gift text-emerald-500"></i> Proporsi Benefit & Tunjangan
+                                <i class="fa-solid fa-gift text-amber-500"></i> Proporsi Benefit & Tunjangan
                             </h2>
                             <p class="text-xs text-slate-500 mt-0.5">Distribusi komponen tunjangan di luar gaji pokok</p>
                         </div>
@@ -857,7 +890,7 @@
                     <div class="surface-card rounded-2xl p-5 sm:p-6">
                         <div class="mb-4">
                             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                                <i class="fa-solid fa-chart-pie text-rose-500"></i> Proporsi Kewajiban & Potongan
+                                <i class="fa-solid fa-chart-pie text-indigo-500"></i> Proporsi Kewajiban & Potongan
                             </h2>
                             <p class="text-xs text-slate-500 mt-0.5">Rincian pemotongan gaji berdasarkan kategori</p>
                         </div>
@@ -3046,39 +3079,6 @@
         }
     }
 
-    function exportLoanToExcel() {
-        const filtered = getFilteredLoanData();
-        if (filtered.length === 0) {
-            showToast('Tidak ada data loan untuk diunduh pada filter saat ini.', 'warning');
-            return;
-        }
-        const empMetaMap = getEmployeeMetaMap();
-        const exportArray = filtered.map((row, idx) => {
-            const nip = row[3] ? row[3].trim() : '';
-            const meta = empMetaMap[nip.toLowerCase()] || { divisi: '', posisi: '' };
-            return {
-                "Nomor": idx + 1,
-                "Nama Karyawan": row[4] ? row[4].trim() : '',
-                "NIP": nip,
-                "Divisi": meta.divisi || '',
-                "Posisi": meta.posisi || '',
-                "Bulan / Periode": getLoanRowPeriodLabel(row),
-                "Total Kewajiban / Pinjaman (Rp)": parseNum(row[8]),
-                "Total Pembayaran Setahun (Rp)": parseNum(row[9]),
-                "Total Tenor": row[6] ? row[6].trim() : '',
-                "Angsuran per Bulan (Rp)": parseNum(row[9]),
-                "Sisa Tenor": row[7] ? row[7].trim() : '',
-                "Sisa Pinjaman (Rp)": parseNum(row[10]),
-                "Status": row[14] ? row[14].trim() : ''
-            };
-        });
-        const worksheet = XLSX.utils.json_to_sheet(exportArray);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Data Loan Karyawan");
-        XLSX.writeFile(workbook, `Laporan_Loan_Karyawan_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast('Laporan Loan Karyawan berhasil diunduh.', 'success');
-    }
-
     function renderSummaryComparisonCards(filteredData) {
         const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
         const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
@@ -3857,20 +3857,9 @@
                 };
             chartOvertimeInstance.data.labels = showAllOTEmployees
                 ? sorted.map(i => `${i.nama} (${i.divisi})`)
-                : sorted.map(i => [i.nama, `(${i.nip} - ${i.divisi})`]);
+                : sorted.map(i => i.nama);
             chartOvertimeInstance.data.datasets[0].data = sorted.map(i => i.total);
-            chartOvertimeInstance.options.plugins.tooltip.callbacks = {
-                title: (items) => {
-                    const item = sorted[items[0].dataIndex];
-                    return item ? `${item.nama} (NIP: ${item.nip})` : '';
-                },
-                afterTitle: (items) => {
-                    const item = sorted[items[0].dataIndex];
-                    return item ? `Divisi: ${item.divisi}` : '';
-                },
-                label: (item) => `Total Lembur: ${formatIDR(item.raw)}`
-            };
-            chartOvertimeInstance.resize();
+            chartOvertimeInstance._otMeta = sorted;
             chartOvertimeInstance.update('none');
             return;
         }
@@ -3878,45 +3867,43 @@
         const ctx = canvas.getContext('2d');
         chartOvertimeInstance = new Chart(ctx, {
             type: 'bar',
-            data: { 
-                labels: showAllOTEmployees
-                    ? sorted.map(i => `${i.nama} (${i.divisi})`)
-                    : sorted.map(i => [i.nama, `(${i.nip} - ${i.divisi})`]), 
-                datasets: [{ data: sorted.map(i => i.total), backgroundColor: '#9333ea', borderRadius: 8 }] 
+            data: {
+                labels: sorted.map(i => i.nama),
+                datasets: [{
+                    label: 'Total Lembur (Rp)',
+                    data: sorted.map(i => i.total),
+                    backgroundColor: '#8b5cf6',
+                    borderRadius: 6
+                }]
             },
             options: {
-                indexAxis: showAllOTEmployees ? 'y' : 'x',
                 responsive: true, maintainAspectRatio: false,
                 animation: false,
-                layout: { padding: showAllOTEmployees ? { right: 55, top: 10 } : { top: 25 } },
-                plugins: { 
-                    legend: { display: false }, 
+                layout: { padding: { top: 25 } },
+                plugins: {
+                    legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            title: (items) => {
-                                const item = sorted[items[0].dataIndex];
-                                return item ? `${item.nama} (NIP: ${item.nip})` : '';
-                            },
-                            afterTitle: (items) => {
-                                const item = sorted[items[0].dataIndex];
-                                return item ? `Divisi: ${item.divisi}` : '';
-                            },
-                            label: (item) => `Total Lembur: ${formatIDR(item.raw)}`
+                            label: (item) => {
+                                const meta = (chartOvertimeInstance._otMeta || sorted)[item.dataIndex];
+                                return `${meta ? meta.nama + ' [' + meta.divisi + ']' : ''}: ${formatIDR(item.raw)}`;
+                            }
                         }
                     },
-                    datalabels: { anchor: 'end', align: showAllOTEmployees ? 'end' : 'top', formatter: (val) => formatCompact(val), font: { weight: 'bold', size: 11 }, color: '#6b21a8' } 
+                    datalabels: {
+                        anchor: 'end', align: 'top',
+                        formatter: (val) => val > 0 ? formatCompact(val) : '',
+                        font: { weight: 'bold', size: 10 },
+                        color: '#5b21b6'
+                    }
                 },
-                scales: showAllOTEmployees
-                    ? { 
-                        x: { grace: '18%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } }, 
-                        y: { grid: { display: false }, ticks: { font: { size: 10 } } } 
-                    }
-                    : { 
-                        y: { grace: '15%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } }, 
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } } } 
-                    }
+                scales: {
+                    y: { grace: '15%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } },
+                    x: { grid: { display: false } }
+                }
             }
         });
+        chartOvertimeInstance._otMeta = sorted;
     }
 
     function renderChartOvertimeDivision(dataMap) {
@@ -3931,9 +3918,20 @@
         }
         
         if (chartOvertimeDivisionInstance) {
+            chartOvertimeDivisionInstance.options.indexAxis = showAllOTDivisions ? 'y' : 'x';
+            chartOvertimeDivisionInstance.options.layout.padding = showAllOTDivisions ? { right: 55, top: 10 } : { top: 25 };
+            chartOvertimeDivisionInstance.options.plugins.datalabels.align = showAllOTDivisions ? 'end' : 'top';
+            chartOvertimeDivisionInstance.options.scales = showAllOTDivisions
+                ? {
+                    x: { grace: '18%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } },
+                    y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                }
+                : {
+                    y: { grace: '15%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                };
             chartOvertimeDivisionInstance.data.labels = sorted.map(i => i[0]);
             chartOvertimeDivisionInstance.data.datasets[0].data = sorted.map(i => i[1]);
-            chartOvertimeDivisionInstance.resize();
             chartOvertimeDivisionInstance.update('none');
             return;
         }
@@ -3941,342 +3939,928 @@
         const ctx = canvas.getContext('2d');
         chartOvertimeDivisionInstance = new Chart(ctx, {
             type: 'bar',
-            data: { labels: sorted.map(i => i[0]), datasets: [{ data: sorted.map(i => i[1]), backgroundColor: '#4f46e5', borderRadius: 8 }] },
+            data: {
+                labels: sorted.map(i => i[0]),
+                datasets: [{
+                    label: 'Total Lembur Divisi (Rp)',
+                    data: sorted.map(i => i[1]),
+                    backgroundColor: '#6366f1',
+                    borderRadius: 6
+                }]
+            },
             options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 animation: false,
-                layout: { padding: { right: 45 } },
-                plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: (val) => formatCompact(val), font: { weight: 'bold', size: 11 }, color: '#312e81' } },
-                scales: { x: { grace: '15%', grid: { display: false }, ticks: { callback: (val) => formatCompact(val) } }, y: { grid: { display: false } } }
+                layout: { padding: { top: 25 } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (item) => `Total Lembur Divisi: ${formatIDR(item.raw)}` } },
+                    datalabels: {
+                        anchor: 'end', align: 'top',
+                        formatter: (val) => val > 0 ? formatCompact(val) : '',
+                        font: { weight: 'bold', size: 10 },
+                        color: '#4338ca'
+                    }
+                },
+                scales: {
+                    y: { grace: '15%', grid: { borderDash: [4, 4] }, ticks: { callback: (val) => formatCompact(val) } },
+                    x: { grid: { display: false } }
+                }
             }
         });
     }
 
-    function renderChartBenefit(labels, values) {
+    function renderChartBenefit(labels, totals) {
         const canvas = document.getElementById('chartBenefit');
-        if(!canvas || typeof Chart === 'undefined') return;
-        const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#14b8a6', '#6366f1', '#f43f5e', '#84cc16'];
-        
+        const listEl = document.getElementById('benefit-list');
+        if(!canvas || !listEl || typeof Chart === 'undefined') return;
+        const palette = ['#10b981', '#0ea5e9', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16', '#eab308'];
+        const colors = labels.map((_, idx) => palette[idx % palette.length]);
+        const grandTotal = totals.reduce((a, b) => a + b, 0);
+
         if (chartBenefitInstance) {
             chartBenefitInstance.data.labels = labels;
-            chartBenefitInstance.data.datasets[0].data = values;
+            chartBenefitInstance.data.datasets[0].data = totals;
+            chartBenefitInstance.data.datasets[0].backgroundColor = colors;
             chartBenefitInstance.update('none');
         } else {
             const ctx = canvas.getContext('2d');
             chartBenefitInstance = new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }] },
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: totals,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     animation: false,
+                    cutout: '62%',
                     plugins: {
                         legend: { display: false },
+                        tooltip: { callbacks: { label: (item) => `${item.label}: ${formatIDR(item.raw)}` } },
                         datalabels: {
-                            formatter: (value, ctx) => {
-                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                if (sum === 0 || value === 0) return '';
-                                const pct = (value * 100 / sum);
-                                return pct >= 4 ? pct.toFixed(1) + "%" : '';
-                            }, color: '#fff', font: { weight: 'bold', size: 10 }
+                            color: '#ffffff',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: (val) => {
+                                if(grandTotal === 0) return '';
+                                const pct = (val / grandTotal) * 100;
+                                return pct >= 5 ? pct.toFixed(1) + '%' : '';
+                            }
                         }
-                    }, cutout: '65%'
+                    }
                 }
             });
         }
 
-        const listContainer = document.getElementById('benefit-list');
-        if(listContainer) {
-            const itemsHTML = labels.map((label, idx) => `<div class="flex justify-between items-center text-xs"><span class="flex items-center gap-2 text-slate-700 truncate"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${colors[idx % colors.length]}"></span><span class="truncate">${label}</span></span><span class="font-bold text-slate-900 shrink-0 ml-2">${formatIDR(values[idx])}</span></div>`).join('');
-            listContainer.innerHTML = '<h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Rincian Nominal</h4>' + itemsHTML;
-        }
+        listEl.innerHTML = '';
+        labels.forEach((lbl, idx) => {
+            const val = totals[idx];
+            const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : '0.0';
+            listEl.innerHTML += `
+                <div class="flex items-center justify-between text-xs border-b border-slate-200/70 pb-1.5 last:border-none last:pb-0">
+                    <div class="flex items-center gap-2 truncate pr-2">
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:${colors[idx]}"></span>
+                        <span class="text-slate-700 font-medium truncate">${lbl}</span>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="font-bold text-slate-900">${formatIDR(val)}</span>
+                        <span class="text-[10px] font-bold ml-1" style="color:${colors[idx]}">(${pct}%)</span>
+                    </div>
+                </div>
+            `;
+        });
     }
 
-    function renderChartKewajiban(labels, values) {
+    function renderChartKewajiban(labels, totals) {
         const canvas = document.getElementById('chartKewajiban');
-        if(!canvas || typeof Chart === 'undefined') return;
-        const colors = ['#e11d48', '#9333ea', '#2563eb', '#0891b2', '#d97706', '#4f46e5', '#db2777'];
-        
+        const listEl = document.getElementById('kewajiban-list');
+        if(!canvas || !listEl || typeof Chart === 'undefined') return;
+        const palette = ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ec4899', '#06b6d4', '#f97316', '#6366f1', '#64748b'];
+        const colors = labels.map((_, idx) => palette[idx % palette.length]);
+        const grandTotal = totals.reduce((a, b) => a + b, 0);
+
         if (chartKewajibanInstance) {
             chartKewajibanInstance.data.labels = labels;
-            chartKewajibanInstance.data.datasets[0].data = values;
+            chartKewajibanInstance.data.datasets[0].data = totals;
+            chartKewajibanInstance.data.datasets[0].backgroundColor = colors;
             chartKewajibanInstance.update('none');
         } else {
             const ctx = canvas.getContext('2d');
             chartKewajibanInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }] },
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: totals,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     animation: false,
                     plugins: {
                         legend: { display: false },
+                        tooltip: { callbacks: { label: (item) => `${item.label}: ${formatIDR(item.raw)}` } },
                         datalabels: {
-                            formatter: (value, ctx) => {
-                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                if (sum === 0 || value === 0) return '';
-                                const pct = (value * 100 / sum);
-                                return pct >= 4 ? pct.toFixed(1) + "%" : '';
-                            }, color: '#fff', font: { weight: 'bold', size: 10 }
+                            color: '#ffffff',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: (val) => {
+                                if(grandTotal === 0) return '';
+                                const pct = (val / grandTotal) * 100;
+                                return pct >= 5 ? pct.toFixed(1) + '%' : '';
+                            }
                         }
-                    }, cutout: '65%'
+                    }
                 }
             });
         }
 
-        const listContainer = document.getElementById('kewajiban-list');
-        if(listContainer) {
-            const itemsHTML = labels.map((label, idx) => `<div class="flex justify-between items-center text-xs"><span class="flex items-center gap-2 text-slate-700 truncate"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${colors[idx]}"></span><span class="truncate">${label}</span></span><span class="font-bold text-slate-900 shrink-0 ml-2">${formatIDR(values[idx])}</span></div>`).join('');
-            listContainer.innerHTML = '<h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Rincian Nominal</h4>' + itemsHTML;
-        }
+        listEl.innerHTML = '';
+        labels.forEach((lbl, idx) => {
+            const val = totals[idx];
+            const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : '0.0';
+            listEl.innerHTML += `
+                <div class="flex items-center justify-between text-xs border-b border-slate-200/70 pb-1.5 last:border-none last:pb-0">
+                    <div class="flex items-center gap-2 truncate pr-2">
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:${colors[idx]}"></span>
+                        <span class="text-slate-700 font-medium truncate">${lbl}</span>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="font-bold text-slate-900">${formatIDR(val)}</span>
+                        <span class="text-[10px] font-bold ml-1" style="color:${colors[idx]}">(${pct}%)</span>
+                    </div>
+                </div>
+            `;
+        });
     }
 
-    function loadTimelineRecords(manualNotify = false) {
+    // ================= PAYROLL TIMELINE (READ-ONLY REPORTING) =================
+    function loadTimelineRecords(showSuccessToast = false) {
         const tbody = document.getElementById('timeline-table-body');
         if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-6 text-center text-slate-400">Memuat data payroll timeline...</td></tr>';
 
         fetch(TIMELINE_CSV_URL)
-            .then(response => { if (!response.ok) throw new Error('Network error'); return response.text(); })
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.text();
+            })
             .then(csvText => {
                 Papa.parse(csvText, {
-                    header: false, skipEmptyLines: true,
+                    header: false,
+                    skipEmptyLines: true,
                     complete: function (results) {
                         if (results.data && results.data.length > 0) {
-                            rawTimelineHeaders = results.data[0];
-                            localTimelineRecords = results.data.slice(1);
+                            rawTimelineHeaders = results.data[0].map(h => (h || '').toString().trim());
+                            localTimelineRecords = results.data.slice(1).filter(row => row.some(cell => (cell || '').toString().trim() !== ''));
+                        } else {
+                            rawTimelineHeaders = [];
+                            localTimelineRecords = [];
+                        }
+                        if (currentActiveTab === 'timeline') {
                             renderTimelineTable();
-                            if (manualNotify) showToast('Data Payroll Timeline berhasil diperbarui.', 'success');
+                        }
+                        if (showSuccessToast) {
+                            showToast('Data Payroll Timeline berhasil disinkronkan.', 'success');
                         }
                     }
                 });
             })
-            .catch(() => { if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-6 text-center text-rose-500">Gagal memuat data Payroll Timeline.</td></tr>'; });
+            .catch(err => {
+                console.error("Error loading TIMELINE_CSV_URL:", err);
+                if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-6 text-center text-rose-500">Gagal memuat data payroll timeline dari Google Sheets.</td></tr>';
+            });
     }
 
-    function renderTimelineTable() { filterTimelineTable(); }
-
-    function getFilteredTimelineData() {
-        const searchText = (document.getElementById('timeline-search-filter') ? document.getElementById('timeline-search-filter').value : "").toLowerCase();
-        const statusVal = (document.getElementById('timeline-status-filter') ? document.getElementById('timeline-status-filter').value : "").toLowerCase();
-        const fTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'ALL';
-        const fPeriode = document.getElementById('filter-periode') ? document.getElementById('filter-periode').value : 'ALL';
-        
-        const fPeriodeSelect = document.getElementById('filter-periode');
-        const selectedPeriodeText = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text.toLowerCase() : '';
-
-        return localTimelineRecords.filter(row => {
-            const rowStr = row.join(" ").toLowerCase();
-            const matchTahun = fTahun === 'ALL' || rowStr.includes(fTahun.toLowerCase());
-            
-            let matchPeriode = true;
-            if (fPeriode !== 'ALL') {
-                let monthNumberStr = "";
-                const monthIndex = monthsNameList.findIndex(m => selectedPeriodeText.includes(m));
-                if (monthIndex !== -1) {
-                    monthNumberStr = String(monthIndex + 1).padStart(2, '0');
-                }
-                
-                matchPeriode = rowStr.includes(fPeriode.toLowerCase()) || 
-                               (selectedPeriodeText !== 'semua bulan' && rowStr.includes(selectedPeriodeText)) ||
-                               (monthNumberStr !== "" && (rowStr.includes(`-${monthNumberStr}-`) || rowStr.includes(`/${monthNumberStr}/`) || rowStr.includes(`2026.${monthNumberStr}`)));
+    function getTimelineRowValue(record, keywords, fallbackIndex = -1) {
+        for (let i = 0; i < rawTimelineHeaders.length; i++) {
+            const h = rawTimelineHeaders[i].toLowerCase();
+            if (keywords.some(kw => h.includes(kw))) {
+                return (record[i] || '').toString().trim();
             }
+        }
+        if (fallbackIndex >= 0 && record[fallbackIndex] !== undefined) {
+            return (record[fallbackIndex] || '').toString().trim();
+        }
+        return '';
+    }
 
-            const matchSearch = searchText === "" || rowStr.includes(searchText);
-            let matchStatus = true;
-            if (statusVal !== "") {
-                if (statusVal === 'sla') matchStatus = rowStr.includes('sla') && !rowStr.includes('oversla');
-                else if (statusVal === 'oversla') matchStatus = rowStr.includes('oversla');
-            }
-            return matchTahun && matchPeriode && matchSearch && matchStatus;
-        });
+    function renderTimelineTable() {
+        filterTimelineTable();
     }
 
     function filterTimelineTable() {
         const thead = document.getElementById('timeline-table-head');
-        if (thead && rawTimelineHeaders.length > 0) {
-            thead.innerHTML = '<tr>' + rawTimelineHeaders.map(h => `<th>${h}</th>`).join('') + '</tr>';
-        }
-
-        const filtered = getFilteredTimelineData();
         const tbody = document.getElementById('timeline-table-body');
         const countEl = document.getElementById('timeline-record-count');
-        if (countEl) countEl.innerText = `${filtered.length} Data`;
         if (!tbody) return;
 
+        const searchQ = (document.getElementById('timeline-search-filter')?.value || '').toLowerCase().trim();
+        const statusFilter = (document.getElementById('timeline-status-filter')?.value || '').toLowerCase().trim();
+
+        const filtered = localTimelineRecords.filter(record => {
+            const rowStr = record.join(' ').toLowerCase();
+            const statusVal = getTimelineRowValue(record, ['sla', 'status', 'ketepatan', 'keterangan'], 6).toLowerCase();
+
+            const matchSearch = searchQ === '' || rowStr.includes(searchQ);
+            const matchStatus = statusFilter === '' || statusVal.includes(statusFilter);
+            return matchSearch && matchStatus;
+        });
+
+        if (countEl) countEl.innerText = `${filtered.length} Data`;
+
+        if (rawTimelineHeaders.length > 0 && thead) {
+            const headersToShow = rawTimelineHeaders.filter(h => h !== '');
+            thead.innerHTML = '<tr>' + headersToShow.map(h => `<th>${h}</th>`).join('') + '</tr>';
+        }
+
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="15" class="p-6 text-center text-slate-400">Data tidak ditemukan.</td></tr>';
+            const colSpan = Math.max(1, rawTimelineHeaders.filter(h => h !== '').length);
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="p-6 text-center text-slate-400">Tidak ada data payroll timeline yang cocok dengan filter.</td></tr>`;
             return;
         }
 
-        const rowsHTML = filtered.map(row => {
-            const cellsHTML = row.map(val => {
-                const cellValStr = (val !== undefined && val !== null) ? val.toString().trim() : '';
-                const lowerVal = cellValStr.toLowerCase();
-                
-                if (lowerVal === 'sla' || lowerVal === 'oversla') {
-                    let badgeClass = "px-2.5 py-0.5 rounded-full text-[11px] font-bold border ";
-                    if (lowerVal === 'sla') {
-                        badgeClass += "bg-emerald-50 text-emerald-700 border-emerald-200";
-                    } else if (lowerVal === 'oversla') {
-                        badgeClass += "bg-rose-50 text-rose-700 border-rose-200";
+        const nonEmptyHeaderIndices = rawTimelineHeaders
+            .map((h, idx) => ({ h, idx }))
+            .filter(item => item.h !== '')
+            .map(item => item.idx);
+
+        tbody.innerHTML = filtered.map(record => {
+            const cellsHTML = nonEmptyHeaderIndices.map(colIdx => {
+                const val = (record[colIdx] || '').toString().trim();
+                const hLower = (rawTimelineHeaders[colIdx] || '').toLowerCase();
+
+                if (hLower.includes('sla') || hLower.includes('status') || hLower.includes('ketepatan')) {
+                    const lowerVal = val.toLowerCase();
+                    if (lowerVal.includes('oversla') || lowerVal.includes('over sla') || lowerVal.includes('terlambat') || lowerVal.includes('late')) {
+                        return `<td class="whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">${val || 'OverSLA'}</span></td>`;
                     }
-                    return `<td><span class="${badgeClass}">${cellValStr}</span></td>`;
-                } else {
-                    return `<td>${cellValStr || '-'}</td>`;
+                    if (lowerVal.includes('sla') || lowerVal.includes('tepat') || lowerVal.includes('ontime') || lowerVal.includes('on time')) {
+                        return `<td class="whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">${val || 'SLA'}</span></td>`;
+                    }
                 }
+                return `<td>${val || '-'}</td>`;
             }).join('');
+
             return `<tr class="hover:bg-slate-50 transition-colors">${cellsHTML}</tr>`;
-        });
-        tbody.innerHTML = rowsHTML.join('');
+        }).join('');
     }
 
-    function loadAdjustmentRecords(manualNotify = false) {
+    // ================= PAYROLL COMPLAINT / ADJUSTMENT (READ-ONLY REPORTING) =================
+    function loadAdjustmentRecords(showSuccessToast = false) {
         const tbody = document.getElementById('adj-table-body');
         if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-6 text-center text-slate-400">Memuat data komplain...</td></tr>';
 
         fetch(COMPLAIN_CSV_URL)
-            .then(response => { if (!response.ok) throw new Error('Network error'); return response.text(); })
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.text();
+            })
             .then(csvText => {
                 Papa.parse(csvText, {
-                    header: false, skipEmptyLines: true,
+                    header: false,
+                    skipEmptyLines: true,
                     complete: function (results) {
                         if (results.data && results.data.length > 0) {
-                            rawComplainHeaders = results.data[0];
-                            localAdjustmentRecords = results.data.slice(1);
+                            rawComplainHeaders = results.data[0].map(h => (h || '').toString().trim());
+                            localAdjustmentRecords = results.data.slice(1).filter(row => row.some(cell => (cell || '').toString().trim() !== ''));
+                        } else {
+                            rawComplainHeaders = [];
+                            localAdjustmentRecords = [];
+                        }
+                        if (currentActiveTab === 'adjustment') {
                             renderAdjustmentTable();
-                            if (manualNotify) showToast('Data Payroll Complaint berhasil diperbarui.', 'success');
+                        }
+                        if (showSuccessToast) {
+                            showToast('Data Payroll Complaint berhasil disinkronkan.', 'success');
                         }
                     }
                 });
             })
-            .catch(() => { if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-6 text-center text-rose-500">Gagal memuat data komplain.</td></tr>'; });
+            .catch(err => {
+                console.error("Error loading COMPLAIN_CSV_URL:", err);
+                if (tbody) tbody.innerHTML = '<tr><td colspan="15" class="p-6 text-center text-rose-500">Gagal memuat data komplain dari Google Sheets.</td></tr>';
+            });
     }
 
-    function renderAdjustmentTable() { filterAdjustmentTable(); }
-
-    function getFilteredComplainanData() {
-        const searchText = (document.getElementById('adj-search-filter') ? document.getElementById('adj-search-filter').value : "").toLowerCase();
-        const statusVal = (document.getElementById('adj-status-filter') ? document.getElementById('adj-status-filter').value : "").toLowerCase();
-        const fTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'ALL';
-        const fPeriode = document.getElementById('filter-periode') ? document.getElementById('filter-periode').value : 'ALL';
-        
-        const fPeriodeSelect = document.getElementById('filter-periode');
-        const selectedPeriodeText = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text.toLowerCase() : '';
-
-        return localAdjustmentRecords.filter(row => {
-            const rowStr = row.join(" ").toLowerCase();
-            const tgl = row[1] ? row[1].trim() : '';
-            const matchTahun = fTahun === 'ALL' || tgl.includes(fTahun) || rowStr.includes(fTahun);
-            
-            let matchPeriode = true;
-            if (fPeriode !== 'ALL') {
-                let monthNumberStr = "";
-                const monthIndex = monthsNameList.findIndex(m => selectedPeriodeText.includes(m));
-                if (monthIndex !== -1) {
-                    monthNumberStr = String(monthIndex + 1).padStart(2, '0');
-                }
-
-                const shortMonthName = monthIndex !== -1 ? monthsNameList[monthIndex].substring(0, 3) : '';
-
-                matchPeriode = tgl.toLowerCase().includes(fPeriode.toLowerCase()) || 
-                               tgl.toLowerCase().includes(selectedPeriodeText) || 
-                               rowStr.includes(selectedPeriodeText) ||
-                               (shortMonthName !== "" && (tgl.toLowerCase().includes(shortMonthName) || rowStr.includes(shortMonthName))) ||
-                               (monthNumberStr !== "" && (tgl.includes(`-${monthNumberStr}-`) || tgl.includes(`/${monthNumberStr}/`) || tgl.includes(`.${monthNumberStr}.`) || rowStr.includes(`-${monthNumberStr}-`) || rowStr.includes(`/${monthNumberStr}/`)));
+    function getComplainRowValue(record, keywords, fallbackIndex = -1) {
+        for (let i = 0; i < rawComplainHeaders.length; i++) {
+            const h = rawComplainHeaders[i].toLowerCase();
+            if (keywords.some(kw => h.includes(kw))) {
+                return (record[i] || '').toString().trim();
             }
+        }
+        if (fallbackIndex >= 0 && record[fallbackIndex] !== undefined) {
+            return (record[fallbackIndex] || '').toString().trim();
+        }
+        return '';
+    }
 
-            const matchSearch = searchText === "" || rowStr.includes(searchText);
-            const matchStatus = statusVal === "" || rowStr.includes(statusVal);
-            return matchTahun && matchPeriode && matchSearch && matchStatus;
-        });
+    function renderAdjustmentTable() {
+        filterAdjustmentTable();
     }
 
     function filterAdjustmentTable() {
         const thead = document.getElementById('adj-table-head');
-        if (thead && rawComplainHeaders.length > 0) {
-            thead.innerHTML = '<tr>' + rawComplainHeaders.map(h => `<th>${h}</th>`).join('') + '</tr>';
-        }
-
-        const filtered = getFilteredComplainanData();
         const tbody = document.getElementById('adj-table-body');
         const countEl = document.getElementById('adj-record-count');
-        if (countEl) countEl.innerText = `${filtered.length} Data`;
         if (!tbody) return;
 
+        const searchQ = (document.getElementById('adj-search-filter')?.value || '').toLowerCase().trim();
+        const statusFilter = (document.getElementById('adj-status-filter')?.value || '').toLowerCase().trim();
+
+        const filtered = localAdjustmentRecords.filter(record => {
+            const rowStr = record.join(' ').toLowerCase();
+            const statusVal = getComplainRowValue(record, ['status'], 7).toLowerCase();
+
+            const matchSearch = searchQ === '' || rowStr.includes(searchQ);
+            const matchStatus = statusFilter === '' || statusVal.includes(statusFilter);
+            return matchSearch && matchStatus;
+        });
+
+        if (countEl) countEl.innerText = `${filtered.length} Data`;
+
+        if (rawComplainHeaders.length > 0 && thead) {
+            const headersToShow = rawComplainHeaders.filter(h => h !== '');
+            thead.innerHTML = '<tr>' + headersToShow.map(h => `<th>${h}</th>`).join('') + '</tr>';
+        }
+
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="15" class="p-6 text-center text-slate-400">Data komplain tidak ditemukan.</td></tr>';
+            const colSpan = Math.max(1, rawComplainHeaders.filter(h => h !== '').length);
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="p-6 text-center text-slate-400">Tidak ada data komplain yang cocok dengan filter.</td></tr>`;
             return;
         }
 
-        const rowsHTML = filtered.map(row => {
-            const cellsHTML = row.map((val) => {
-                const cellValStr = (val !== undefined && val !== null) ? val.toString().trim() : '';
-                const lowerVal = cellValStr.toLowerCase();
-                
-                if (lowerVal === 'open' || lowerVal === 'proses' || lowerVal === 'selesai') {
-                    let badgeClass = "px-2.5 py-0.5 rounded-full text-[11px] font-bold border ";
-                    if (lowerVal === 'open') {
-                        badgeClass += "bg-rose-50 text-rose-700 border-rose-200";
-                    } else if (lowerVal === 'proses') {
-                        badgeClass += "bg-amber-50 text-amber-700 border-amber-200";
-                    } else if (lowerVal === 'selesai') {
-                        badgeClass += "bg-emerald-50 text-emerald-700 border-emerald-200";
+        const nonEmptyHeaderIndices = rawComplainHeaders
+            .map((h, idx) => ({ h, idx }))
+            .filter(item => item.h !== '')
+            .map(item => item.idx);
+
+        tbody.innerHTML = filtered.map(record => {
+            const cellsHTML = nonEmptyHeaderIndices.map(colIdx => {
+                const val = (record[colIdx] || '').toString().trim();
+                const hLower = (rawComplainHeaders[colIdx] || '').toLowerCase();
+
+                if (hLower.includes('status')) {
+                    const stLower = val.toLowerCase();
+                    let badgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+                    if (stLower.includes('selesai') || stLower.includes('done') || stLower.includes('closed')) {
+                        badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    } else if (stLower.includes('proses') || stLower.includes('progress')) {
+                        badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                    } else if (stLower.includes('open') || stLower.includes('baru')) {
+                        badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
                     }
-                    return `<td><span class="${badgeClass}">${cellValStr}</span></td>`;
-                } else {
-                    return `<td>${cellValStr || '-'}</td>`;
+                    return `<td class="whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${badgeClass}">${val || '-'}</span></td>`;
                 }
+                return `<td>${val || '-'}</td>`;
             }).join('');
+
             return `<tr class="hover:bg-slate-50 transition-colors">${cellsHTML}</tr>`;
-        });
-        tbody.innerHTML = rowsHTML.join('');
+        }).join('');
+    }
+
+    // ================= STYLING & TABLE HELPER EXCEL EXPORT (.XLSX) =================
+    /**
+     * Mengambil informasi filter aktif agar tercantum pada kop laporan Excel.
+     */
+    function getActiveFilterContextText() {
+        const tahun = document.getElementById('filter-tahun')?.value || 'ALL';
+        const periodeSelect = document.getElementById('filter-periode');
+        const periode = (periodeSelect && periodeSelect.value !== 'ALL')
+            ? periodeSelect.options[periodeSelect.selectedIndex].text
+            : 'Semua Bulan';
+        const perusahaan = document.getElementById('filter-perusahaan')?.value || 'ALL';
+        const divisi = document.getElementById('filter-divisi')?.value || 'ALL';
+        const cari = (document.getElementById('search-query')?.value || '').trim();
+
+        const parts = [
+            `Tahun: ${tahun === 'ALL' ? 'Semua Tahun' : tahun}`,
+            `Periode: ${periode}`,
+            `Perusahaan: ${perusahaan === 'ALL' ? 'Semua Perusahaan' : perusahaan}`,
+            `Divisi: ${divisi === 'ALL' ? 'Semua Divisi' : divisi}`
+        ];
+        if (cari) parts.push(`Pencarian: "${cari}"`);
+        return parts.join('  |  ');
+    }
+
+    /**
+     * Membangun worksheet Excel berbentuk tabel rapi dengan judul berwarna,
+     * metadata filter, border sel, header berwarna emas/navy, baris zebra, dan baris total.
+     */
+    function buildStyledTableWorksheet(options) {
+        const {
+            title,
+            subtitle,
+            headers,
+            rows,
+            numericCols = [],
+            totalRow = null,
+            headerBgColor = 'B45309',   // Emas gelap elegan
+            headerTextColor = 'FFFFFF',
+            bannerBgColor = '1E293B',   // Navy gelap elegan
+            totalBgColor = 'FEF3C7'     // Emas muda untuk baris total
+        } = options;
+
+        const aoa = [];
+        // Baris 0: Judul Laporan
+        aoa.push([title]);
+        // Baris 1: Subjudul / Info Periode & Filter
+        aoa.push([subtitle || getActiveFilterContextText()]);
+        // Baris 2: Waktu Cetak
+        aoa.push([`Dicetak pada: ${new Date().toLocaleString('id-ID')}`]);
+        // Baris 3: Spasi kosong pemisah
+        aoa.push([]);
+
+        const headerRowIdx = aoa.length; // index 4
+        aoa.push(headers);
+
+        const dataStartRowIdx = aoa.length; // index 5
+        rows.forEach(r => aoa.push(r));
+
+        const dataEndRowIdx = aoa.length - 1;
+        let totalRowIdx = -1;
+        if (Array.isArray(totalRow) && totalRow.length === headers.length) {
+            totalRowIdx = aoa.length;
+            aoa.push(totalRow);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const colCount = headers.length;
+        const lastRowIdx = aoa.length - 1;
+
+        // Merge judul & info header di seluruh lebar tabel
+        if (colCount > 1) {
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } },
+                { s: { r: 2, c: 0 }, e: { r: 2, c: colCount - 1 } }
+            ];
+        }
+
+        const thinBorder = {
+            top: { style: 'thin', color: { rgb: 'CBD5E1' } },
+            bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+            left: { style: 'thin', color: { rgb: 'CBD5E1' } },
+            right: { style: 'thin', color: { rgb: 'CBD5E1' } }
+        };
+
+        const headerBorder = {
+            top: { style: 'medium', color: { rgb: '78350F' } },
+            bottom: { style: 'medium', color: { rgb: '78350F' } },
+            left: { style: 'thin', color: { rgb: 'FDE68A' } },
+            right: { style: 'thin', color: { rgb: 'FDE68A' } }
+        };
+
+        // Style Banner Judul (Row 0) - wajib menyertakan patternType: 'solid'
+        if (ws[XLSX.utils.encode_cell({ r: 0, c: 0 })]) {
+            ws[XLSX.utils.encode_cell({ r: 0, c: 0 })].s = {
+                font: { name: 'Calibri', sz: 14, bold: true, color: { rgb: 'FDE68A' } },
+                fill: { patternType: 'solid', fgColor: { rgb: bannerBgColor } },
+                alignment: { horizontal: 'left', vertical: 'center' }
+            };
+        }
+
+        // Style Subjudul Filter (Row 1)
+        if (ws[XLSX.utils.encode_cell({ r: 1, c: 0 })]) {
+            ws[XLSX.utils.encode_cell({ r: 1, c: 0 })].s = {
+                font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: '1E293B' } },
+                fill: { patternType: 'solid', fgColor: { rgb: 'FFFBEB' } },
+                alignment: { horizontal: 'left', vertical: 'center', wrapText: true }
+            };
+        }
+
+        // Style Timestamp (Row 2)
+        if (ws[XLSX.utils.encode_cell({ r: 2, c: 0 })]) {
+            ws[XLSX.utils.encode_cell({ r: 2, c: 0 })].s = {
+                font: { name: 'Calibri', sz: 9, italic: true, color: { rgb: '64748B' } },
+                fill: { patternType: 'solid', fgColor: { rgb: 'F8FAFC' } },
+                alignment: { horizontal: 'left', vertical: 'center' }
+            };
+        }
+
+        // Style Kolom Judul / Table Header (Row 4)
+        for (let c = 0; c < colCount; c++) {
+            const addr = XLSX.utils.encode_cell({ r: headerRowIdx, c });
+            if (ws[addr]) {
+                ws[addr].s = {
+                    font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: headerTextColor } },
+                    fill: { patternType: 'solid', fgColor: { rgb: headerBgColor } },
+                    border: headerBorder,
+                    alignment: {
+                        horizontal: numericCols.includes(c) ? 'right' : 'center',
+                        vertical: 'center',
+                        wrapText: true
+                    }
+                };
+            }
+        }
+
+        // Style Isi Data (Row 5 .. dataEndRowIdx)
+        for (let r = dataStartRowIdx; r <= dataEndRowIdx; r++) {
+            const isEven = (r - dataStartRowIdx) % 2 === 1;
+            const rowBg = isEven ? 'F8FAFC' : 'FFFFFF';
+            for (let c = 0; c < colCount; c++) {
+                const addr = XLSX.utils.encode_cell({ r, c });
+                const cell = ws[addr];
+                if (!cell) continue;
+                const isNum = numericCols.includes(c) && typeof cell.v === 'number';
+                if (isNum) {
+                    cell.t = 'n';
+                    cell.z = '#,##0';
+                }
+                cell.s = {
+                    font: { name: 'Calibri', sz: 10, bold: false, color: { rgb: '0F172A' } },
+                    fill: { patternType: 'solid', fgColor: { rgb: rowBg } },
+                    border: thinBorder,
+                    alignment: {
+                        horizontal: isNum ? 'right' : (c === 0 ? 'center' : 'left'),
+                        vertical: 'center'
+                    }
+                };
+            }
+        }
+
+        // Style Baris Total (jika ada)
+        if (totalRowIdx !== -1) {
+            for (let c = 0; c < colCount; c++) {
+                const addr = XLSX.utils.encode_cell({ r: totalRowIdx, c });
+                const cell = ws[addr];
+                if (!cell) continue;
+                const isNum = numericCols.includes(c) && typeof cell.v === 'number';
+                if (isNum) {
+                    cell.t = 'n';
+                    cell.z = '#,##0';
+                }
+                cell.s = {
+                    font: { name: 'Calibri', sz: 10.5, bold: true, color: { rgb: '78350F' } },
+                    fill: { patternType: 'solid', fgColor: { rgb: totalBgColor } },
+                    border: {
+                        top: { style: 'double', color: { rgb: 'B45309' } },
+                        bottom: { style: 'medium', color: { rgb: '78350F' } },
+                        left: { style: 'thin', color: { rgb: 'F59E0B' } },
+                        right: { style: 'thin', color: { rgb: 'F59E0B' } }
+                    },
+                    alignment: {
+                        horizontal: isNum ? 'right' : (c === 0 ? 'center' : 'left'),
+                        vertical: 'center'
+                    }
+                };
+            }
+        }
+
+        // Hitung lebar kolom otomatis agar teks & angka tidak terpotong (###)
+        const colWidths = [];
+        for (let c = 0; c < colCount; c++) {
+            let maxLen = headers[c] ? headers[c].toString().length + 4 : 12;
+            for (let r = dataStartRowIdx; r <= lastRowIdx; r++) {
+                const cell = ws[XLSX.utils.encode_cell({ r, c })];
+                if (cell && cell.v !== undefined && cell.v !== null) {
+                    const formattedStr = typeof cell.v === 'number'
+                        ? Math.round(cell.v).toLocaleString('id-ID')
+                        : cell.v.toString();
+                    maxLen = Math.max(maxLen, formattedStr.length + 3);
+                }
+            }
+            colWidths.push({ wch: Math.min(Math.max(maxLen, 12), 45) });
+        }
+        ws['!cols'] = colWidths;
+
+        // Tinggi baris agar judul & header lega
+        const rowHeights = [
+            { hpt: 28 },
+            { hpt: 20 },
+            { hpt: 17 },
+            { hpt: 10 },
+            { hpt: 26 }
+        ];
+        for (let r = dataStartRowIdx; r <= dataEndRowIdx; r++) {
+            rowHeights.push({ hpt: 20 });
+        }
+        if (totalRowIdx !== -1) {
+            rowHeights.push({ hpt: 24 });
+        }
+        ws['!rows'] = rowHeights;
+
+        return ws;
     }
 
     function exportTimelineToExcel() {
-        const filtered = getFilteredTimelineData();
+        const searchQ = (document.getElementById('timeline-search-filter')?.value || '').toLowerCase().trim();
+        const statusFilter = (document.getElementById('timeline-status-filter')?.value || '').toLowerCase().trim();
+
+        const filtered = localTimelineRecords.filter(record => {
+            const rowStr = record.join(' ').toLowerCase();
+            const statusVal = getTimelineRowValue(record, ['sla', 'status', 'ketepatan', 'keterangan'], 6).toLowerCase();
+            return (searchQ === '' || rowStr.includes(searchQ)) && (statusFilter === '' || statusVal.includes(statusFilter));
+        });
+
         if (filtered.length === 0) {
-            showToast('Tidak ada data timeline untuk diunduh.', 'warning');
+            showToast('Tidak ada data payroll timeline untuk diunduh.', 'warning');
             return;
         }
-        let exportArray = filtered.map(row => {
-            let obj = {};
-            rawTimelineHeaders.forEach((h, idx) => {
-                obj[h || `Col_${idx}`] = row[idx] || '';
-            });
-            return obj;
+
+        const activeCols = rawTimelineHeaders
+            .map((h, idx) => ({ h: h || `Kolom ${idx + 1}`, idx }))
+            .filter(item => rawTimelineHeaders[item.idx] !== '');
+
+        const headers = ['No', ...activeCols.map(c => c.h)];
+        const rows = filtered.map((rec, i) => [
+            i + 1,
+            ...activeCols.map(c => (rec[c.idx] || '').toString().trim())
+        ]);
+
+        const ws = buildStyledTableWorksheet({
+            title: 'LAPORAN PAYROLL TIMELINE & SLA — PT RAJA EMAS INDONESIA',
+            headers,
+            rows,
+            numericCols: [0],
+            headerBgColor: '0E7490', // Cyan gelap
+            bannerBgColor: '0F172A'
         });
-        const worksheet = XLSX.utils.json_to_sheet(exportArray);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Timeline");
-        XLSX.writeFile(workbook, `Laporan_Payroll_Timeline_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast('Laporan Payroll Timeline berhasil diunduh.', 'success');
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Payroll Timeline');
+        XLSX.writeFile(wb, `Laporan_Payroll_Timeline_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('Laporan Payroll Timeline berhasil diunduh dalam format tabel rapi.', 'success');
     }
 
     function exportAdjustmentToExcel() {
-        const filtered = getFilteredComplainanData();
+        const searchQ = (document.getElementById('adj-search-filter')?.value || '').toLowerCase().trim();
+        const statusFilter = (document.getElementById('adj-status-filter')?.value || '').toLowerCase().trim();
+
+        const filtered = localAdjustmentRecords.filter(record => {
+            const rowStr = record.join(' ').toLowerCase();
+            const statusVal = getComplainRowValue(record, ['status'], 7).toLowerCase();
+            return (searchQ === '' || rowStr.includes(searchQ)) && (statusFilter === '' || statusVal.includes(statusFilter));
+        });
+
         if (filtered.length === 0) {
             showToast('Tidak ada data komplain untuk diunduh.', 'warning');
             return;
         }
-        let exportArray = filtered.map(row => {
-            let obj = {};
-            rawComplainHeaders.forEach((h, idx) => {
-                obj[h || `Col_${idx}`] = row[idx] || '';
-            });
-            return obj;
+
+        const activeCols = rawComplainHeaders
+            .map((h, idx) => ({ h: h || `Kolom ${idx + 1}`, idx }))
+            .filter(item => rawComplainHeaders[item.idx] !== '');
+
+        const headers = ['No', ...activeCols.map(c => c.h)];
+        const rows = filtered.map((rec, i) => [
+            i + 1,
+            ...activeCols.map(c => (rec[c.idx] || '').toString().trim())
+        ]);
+
+        const ws = buildStyledTableWorksheet({
+            title: 'LAPORAN PAYROLL COMPLAINT & PENYESUAIAN — PT RAJA EMAS INDONESIA',
+            headers,
+            rows,
+            numericCols: [0],
+            headerBgColor: 'B45309', // Amber/Emas gelap
+            bannerBgColor: '1E293B'
         });
-        const worksheet = XLSX.utils.json_to_sheet(exportArray);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Complaint");
-        XLSX.writeFile(workbook, `Laporan_Payroll_Complaint_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast('Laporan Payroll Complaint berhasil diunduh.', 'success');
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Payroll Complaint');
+        XLSX.writeFile(wb, `Laporan_Payroll_Complaint_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('Laporan Payroll Complaint berhasil diunduh dalam format tabel rapi.', 'success');
     }
 
-    // ================= EXPORT POWERPOINT (.PPTX) =================
-    function downloadPPTX() {
+    function downloadReportExcel(type) {
+        const filtered = getFilteredData();
+        let headers = [];
+        let rows = [];
+        let numericCols = [];
+        let totalRow = null;
+        let fileName = 'Laporan_Payroll.xlsx';
+        let sheetName = 'Laporan';
+        let title = 'LAPORAN PAYROLL — PT RAJA EMAS INDONESIA';
+        let headerBgColor = 'B45309';
+        const dateStr = new Date().toISOString().split('T')[0];
+
+        if (type === 'summary') {
+            if (filtered.length === 0) { showToast('Tidak ada data untuk diunduh.', 'warning'); return; }
+            headers = ['No', 'Periode', 'ID Karyawan', 'Nama Karyawan', 'Perusahaan', 'Divisi', 'Posisi', 'Cabang', 'Gapok', 'Lembur', 'Tunjangan', 'Kewajiban', 'Total Gross', 'THP'];
+            numericCols = [0, 8, 9, 10, 11, 12, 13];
+            let sumGapok = 0, sumLembur = 0, sumTunj = 0, sumKew = 0, sumGross = 0, sumThp = 0;
+
+            rows = filtered.map((r, idx) => {
+                const gapok = calcRowGapok(r);
+                const lembur = parseNum(r[10]) + parseNum(r[11]);
+                const tunj = calcRowTunjangan(r);
+                const kew = calcRowKewajiban(r);
+                const gross = calcRowGross(r);
+                const thp = parseNum(r[26]);
+
+                sumGapok += gapok;
+                sumLembur += lembur;
+                sumTunj += tunj;
+                sumKew += kew;
+                sumGross += gross;
+                sumThp += thp;
+
+                return [idx + 1, r[1] || '-', r[3] || '-', r[2] || '-', r[4] || '-', r[27] || '-', r[5] || '-', r[6] || '-', gapok, lembur, tunj, kew, gross, thp];
+            });
+
+            totalRow = ['', 'TOTAL', '', `${filtered.length} Karyawan`, '', '', '', '', sumGapok, sumLembur, sumTunj, sumKew, sumGross, sumThp];
+            title = 'LAPORAN PAYROLL SUMMARY — PT RAJA EMAS INDONESIA';
+            headerBgColor = 'B45309';
+            fileName = `Payroll_Summary_${dateStr}.xlsx`;
+            sheetName = 'Payroll Summary';
+
+        } else if (type === 'allowance') {
+            if (filtered.length === 0) { showToast('Tidak ada data untuk diunduh.', 'warning'); return; }
+            headers = ['No', 'Periode', 'ID Karyawan', 'Nama Karyawan', 'Divisi', 'Posisi', ...allowanceHeaders, 'Total Gross (H-Q)'];
+            const startNumCol = 6;
+            const totalColIdx = startNumCol + allowanceIndices.length;
+            numericCols = [0];
+            for (let c = startNumCol; c <= totalColIdx; c++) numericCols.push(c);
+
+            const colSums = new Array(allowanceIndices.length).fill(0);
+            let grandTotal = 0;
+
+            rows = filtered.map((r, idx) => {
+                let rowTotal = 0;
+                const vals = allowanceIndices.map((cIdx, pos) => {
+                    const v = parseNum(r[cIdx]);
+                    rowTotal += v;
+                    colSums[pos] += v;
+                    return v;
+                });
+                grandTotal += rowTotal;
+                return [idx + 1, r[1] || '-', r[3] || '-', r[2] || '-', r[27] || '-', r[5] || '-', ...vals, rowTotal];
+            });
+
+            totalRow = ['', 'TOTAL', '', `${filtered.length} Karyawan`, '', '', ...colSums, grandTotal];
+            title = 'LAPORAN ALLOWANCE & BENEFIT (H - Q) — PT RAJA EMAS INDONESIA';
+            headerBgColor = '047857'; // Emerald gelap
+            fileName = `Allowance_Benefit_${dateStr}.xlsx`;
+            sheetName = 'Allowance & Benefit';
+
+        } else if (type === 'kewajiban') {
+            if (filtered.length === 0) { showToast('Tidak ada data untuk diunduh.', 'warning'); return; }
+            headers = ['No', 'Periode', 'ID Karyawan', 'Nama Karyawan', 'Divisi', 'Posisi', ...kewajibanHeaders, 'Total Kewajiban'];
+            const startNumCol = 6;
+            const totalColIdx = startNumCol + kewajibanIndices.length;
+            numericCols = [0];
+            for (let c = startNumCol; c <= totalColIdx; c++) numericCols.push(c);
+
+            const colSums = new Array(kewajibanIndices.length).fill(0);
+            let grandTotal = 0;
+
+            rows = filtered.map((r, idx) => {
+                let rowTotal = 0;
+                const vals = kewajibanIndices.map((cIdx, pos) => {
+                    const v = parseNum(r[cIdx]);
+                    rowTotal += v;
+                    colSums[pos] += v;
+                    return v;
+                });
+                grandTotal += rowTotal;
+                return [idx + 1, r[1] || '-', r[3] || '-', r[2] || '-', r[27] || '-', r[5] || '-', ...vals, rowTotal];
+            });
+
+            totalRow = ['', 'TOTAL', '', `${filtered.length} Karyawan`, '', '', ...colSums, grandTotal];
+            title = 'LAPORAN KEWAJIBAN & POTONGAN KARYAWAN — PT RAJA EMAS INDONESIA';
+            headerBgColor = 'BE123C'; // Rose gelap
+            fileName = `Kewajiban_Potongan_${dateStr}.xlsx`;
+            sheetName = 'Kewajiban & Potongan';
+
+        } else if (type === 'loan') {
+            const loanRows = getFilteredLoanData();
+            if (loanRows.length === 0) { showToast('Tidak ada data loan untuk diunduh.', 'warning'); return; }
+            const empMetaMap = getEmployeeMetaMap();
+            headers = ['No', 'Nama Karyawan', 'NIP', 'Divisi', 'Posisi', 'Periode', 'Total Pinjaman', 'Total Dibayar', 'Tenor', 'Angsuran / Bln', 'Sisa Tenor', 'Sisa Pinjaman', 'Status'];
+            numericCols = [0, 6, 7, 9, 11];
+            let sumPinj = 0, sumBayar = 0, sumAngs = 0, sumSisa = 0;
+
+            rows = loanRows.map((r, idx) => {
+                const nip = r[3] ? r[3].trim() : '-';
+                const meta = empMetaMap[nip.toLowerCase()] || { divisi: '-', posisi: '-' };
+                const pinj = parseNum(r[8]);
+                const bayar = parseNum(r[9]);
+                const angs = parseNum(r[9]);
+                const sisa = parseNum(r[10]);
+                sumPinj += pinj;
+                sumBayar += bayar;
+                sumAngs += angs;
+                sumSisa += sisa;
+
+                return [
+                    idx + 1,
+                    r[4] ? r[4].trim() : '-',
+                    nip,
+                    meta.divisi || '-',
+                    meta.posisi || '-',
+                    getLoanRowPeriodLabel(r),
+                    pinj,
+                    bayar,
+                    r[6] ? r[6].trim() : '-',
+                    angs,
+                    r[7] ? r[7].trim() : '-',
+                    sisa,
+                    r[14] ? r[14].trim() : '-'
+                ];
+            });
+
+            totalRow = ['', 'TOTAL', '', `${loanRows.length} Transaksi`, '', '', sumPinj, sumBayar, '', sumAngs, '', sumSisa, ''];
+            title = 'LAPORAN PINJAMAN KARYAWAN (LOAN) — PT RAJA EMAS INDONESIA';
+            headerBgColor = 'C2410C'; // Orange gelap
+            fileName = `Laporan_Loan_${dateStr}.xlsx`;
+            sheetName = 'Data Loan';
+
+        } else if (type === 'overtime') {
+            const otRows = filtered.map(r => ({ r, lembur: parseNum(r[10]) + parseNum(r[11]) })).filter(x => x.lembur > 0);
+            if (otRows.length === 0) { showToast('Tidak ada data lembur untuk diunduh.', 'warning'); return; }
+            headers = ['No', 'Periode', 'ID Karyawan', 'Nama Karyawan', 'Perusahaan', 'Divisi', 'Posisi', 'Nominal Lembur'];
+            numericCols = [0, 7];
+            let sumLembur = 0;
+
+            rows = otRows.map(({ r, lembur }, idx) => {
+                sumLembur += lembur;
+                return [idx + 1, r[1] || '-', r[3] || '-', r[2] || '-', r[4] || '-', r[27] || '-', r[5] || '-', lembur];
+            });
+
+            totalRow = ['', 'TOTAL', '', `${otRows.length} Karyawan`, '', '', '', sumLembur];
+            title = 'LAPORAN BIAYA LEMBUR (OVERTIME COST) — PT RAJA EMAS INDONESIA';
+            headerBgColor = '6D28D9'; // Purple gelap
+            fileName = `Overtime_Cost_${dateStr}.xlsx`;
+            sheetName = 'Overtime Cost';
+
+        } else if (type === 'cost') {
+            buildAndRenderCostAnalysis(filtered);
+            const entries = Object.entries(cachedCostMap).sort((a, b) => b[1].thp - a[1].thp);
+            if (entries.length === 0) { showToast('Tidak ada data analisis biaya per divisi.', 'warning'); return; }
+            headers = ['No', 'Nama Divisi', 'Jumlah Karyawan', 'Total Gapok', 'Total Tunjangan', 'Total Kewajiban', 'Total Lemburan', 'Total THP'];
+            numericCols = [0, 2, 3, 4, 5, 6, 7];
+            let sumKar = 0, sumGapok = 0, sumTunj = 0, sumKew = 0, sumLembur = 0, sumThp = 0;
+
+            rows = entries.map(([div, info], idx) => {
+                sumKar += info.kar.size;
+                sumGapok += info.gapok;
+                sumTunj += info.tunj;
+                sumKew += info.kew;
+                sumLembur += info.lembur;
+                sumThp += info.thp;
+                return [idx + 1, div, info.kar.size, info.gapok, info.tunj, info.kew, info.lembur, info.thp];
+            });
+
+            totalRow = ['', 'TOTAL SEMUA DIVISI', sumKar, sumGapok, sumTunj, sumKew, sumLembur, sumThp];
+            title = 'LAPORAN ANALISIS BIAYA PAYROLL PER DIVISI — PT RAJA EMAS INDONESIA';
+            headerBgColor = '4338CA'; // Indigo gelap
+            fileName = `Cost_Analysis_Divisi_${dateStr}.xlsx`;
+            sheetName = 'Cost Analysis';
+
+        } else if (type === 'database') {
+            if (filtered.length === 0) { showToast('Tidak ada data database untuk diunduh.', 'warning'); return; }
+            headers = ['No', ...headerRow.map((h, i) => h ? h.trim() : `Kolom ${i + 1}`)];
+            numericCols = [0];
+            rows = filtered.map((r, idx) => [
+                idx + 1,
+                ...headerRow.map((_, i) => {
+                    const rawVal = r[i] !== undefined ? r[i].toString().trim() : '';
+                    if (i >= 7 && i <= 26 && rawVal !== '' && !isNaN(parseNum(rawVal))) {
+                        if (!numericCols.includes(i + 1)) numericCols.push(i + 1);
+                        return parseNum(rawVal);
+                    }
+                    return rawVal;
+                })
+            ]);
+            title = 'DATABASE MENTAH PAYROLL LENGKAP — PT RAJA EMAS INDONESIA';
+            headerBgColor = '0369A1'; // Sky gelap
+            fileName = `Database_Payroll_Lengkap_${dateStr}.xlsx`;
+            sheetName = 'Database Payroll';
+        }
+
+        const ws = buildStyledTableWorksheet({
+            title,
+            headers,
+            rows,
+            numericCols,
+            totalRow,
+            headerBgColor,
+            bannerBgColor: '0F172A'
+        });
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        XLSX.writeFile(wb, fileName);
+        showToast(`${sheetName} berhasil diunduh dalam bentuk tabel rapi & kolom judul berwarna.`, 'success');
+    }
+
+    // ================= GENERATOR PRESENTASI PPTX (.PPTX) =================
+    async function downloadPPTX() {
+        const btn = document.getElementById('btn-download-pptx');
+        const originalHTML = btn ? btn.innerHTML : '';
+
         try {
-            const filtered = getFilteredData();
-            if (filtered.length === 0) {
-                showToast('Tidak ada data untuk dibuatkan presentasi PPT pada filter saat ini.', 'warning');
+            if (typeof PptxGenJS === 'undefined') {
+                showToast('Library PptxGenJS belum termuat. Periksa koneksi internet Anda.', 'error');
                 return;
             }
 
@@ -4286,1124 +4870,597 @@
             );
 
             if (selectedSlides.size === 0) {
-                showToast('Pilih minimal 1 slide terlebih dahulu sebelum mengunduh PPT.', 'warning');
+                showToast('Pilih minimal 1 slide presentasi terlebih dahulu.', 'warning');
                 return;
             }
 
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyusun Deck PPT...';
+            }
+            showToast('Menyusun file presentasi PowerPoint (.pptx) sesuai filter aktif...', 'info');
+
+            const filtered = getFilteredData();
             const fPeriodeSelect = document.getElementById('filter-periode');
             const selectedPeriode = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text : 'Semua Bulan';
-            const selectedTahun = document.getElementById('filter-tahun').value;
+            const selectedTahun = document.getElementById('filter-tahun')?.value || 'ALL';
             const selectedPerusahaan = document.getElementById('filter-perusahaan')?.value || 'ALL';
-            const periodeText = selectedPeriode !== 'Semua Bulan' ? selectedPeriode : (selectedTahun !== 'ALL' ? selectedTahun : 'Periode Aktif');
-            const scopeText = selectedPerusahaan !== 'ALL' ? `${periodeText} • ${selectedPerusahaan}` : `${periodeText} • Seluruh Perusahaan`;
+            const periodeLabel = selectedPeriode !== 'Semua Bulan' ? selectedPeriode : (selectedTahun !== 'ALL' ? selectedTahun : 'Semua Periode');
 
-            let totalGross = 0, totalTHP = 0, totalPotongan = 0;
-            let totalKekuranganBlnLalu = 0, totalLemburan = 0, totalTunjanganBenefit = 0;
-            
-            const karyawanSet = new Set();
-            const perusahaanSet = new Set();
-            const divisiSet = new Set();
-            const cabangSet = new Set();
-
+            // Hitung metrik utama dari data terfilter
+            let totalGapok = 0, totalGross = 0, totalTunjangan = 0, totalLemburan = 0, totalKekurangan = 0, totalKewajiban = 0, totalTHP = 0;
+            const karyawanSet = new Set(), perusahaanSet = new Set(), divisiSet = new Set(), cabangSet = new Set();
             const companyMap = {};
-            const divisiLemburMap = {};
-            const karyawanLemburMap = {};
-            
-            let colTotals = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            const kewajibanTotalsArr = [0, 0, 0, 0, 0, 0, 0];
+            const divMap = {};
+            const otEmpMap = {};
+            const otDivMap = {};
+            const benefitTotals = new Array(9).fill(0);
+            const kewajibanTotals = new Array(kewajibanIndices.length).fill(0);
 
             filtered.forEach(row => {
-                const karId = row[3] ? row[3].trim() : '';
-                const karNama = row[2] ? row[2].trim() : 'Tanpa Nama';
-                const comp = row[4] ? row[4].trim() : 'Lainnya';
-                const div = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Lainnya');
-                const cab = row[6] ? row[6].trim() : 'Lainnya';
+                const nip = row[3] ? row[3].toString().trim() : '';
+                const nama = row[2] ? row[2].toString().trim() : 'Tanpa Nama';
+                const comp = row[4] ? row[4].toString().trim() : 'Unassigned';
+                const div = row[27] ? row[27].toString().trim() : (row[5] ? row[5].toString().trim() : 'Unassigned');
+                const cab = row[6] ? row[6].toString().trim() : 'Unassigned';
 
-                if (karId) karyawanSet.add(karId);
+                if (nip) karyawanSet.add(nip);
                 if (row[4]) perusahaanSet.add(comp);
                 if (row[27]) divisiSet.add(div);
                 if (row[6]) cabangSet.add(cab);
 
                 const gapok = calcRowGapok(row);
                 const gross = calcRowGross(row);
-                const kewajiban = calcRowKewajiban(row);
-                const thp = parseNum(row[26]);
-                
-                const kekurangan = parseNum(row[9]);
+                let rowTunj = 0;
+                for (let i = 8; i <= 16; i++) {
+                    const v = parseNum(row[i]);
+                    benefitTotals[i - 8] += v;
+                    if (i !== 9 && i !== 10 && i !== 11) rowTunj += v;
+                }
+                const kurang = parseNum(row[9]);
                 const lembur = parseNum(row[10]) + parseNum(row[11]);
-                const tunjangan = calcRowTunjangan(row);
+                const kew = calcRowKewajiban(row);
+                kewajibanIndices.forEach((kIdx, pos) => {
+                    kewajibanTotals[pos] += parseNum(row[kIdx]);
+                });
+                const thp = parseNum(row[26]);
 
+                totalGapok += gapok;
                 totalGross += gross;
-                totalTHP += thp;
-                totalPotongan += kewajiban;
-                totalKekuranganBlnLalu += kekurangan;
+                totalTunjangan += rowTunj;
                 totalLemburan += lembur;
-                totalTunjanganBenefit += tunjangan;
+                totalKekurangan += kurang;
+                totalKewajiban += kew;
+                totalTHP += thp;
 
-                if (!companyMap[comp]) companyMap[comp] = { karyawan: new Set(), cabang: new Set(), gapok: 0, tunjangan: 0, lembur: 0, kekurangan: 0, kewajiban: 0, gross: 0, thp: 0 };
-                if (karId) companyMap[comp].karyawan.add(karId);
-                if (cab) companyMap[comp].cabang.add(cab);
+                if (!companyMap[comp]) companyMap[comp] = { emp: new Set(), cab: new Set(), gapok: 0, tunj: 0, lembur: 0, kew: 0, thp: 0 };
+                if (nip) companyMap[comp].emp.add(nip);
+                if (row[6]) companyMap[comp].cab.add(cab);
                 companyMap[comp].gapok += gapok;
-                companyMap[comp].tunjangan += tunjangan;
+                companyMap[comp].tunj += rowTunj;
                 companyMap[comp].lembur += lembur;
-                companyMap[comp].kekurangan += kekurangan;
-                companyMap[comp].kewajiban += kewajiban;
-                companyMap[comp].gross += gross;
+                companyMap[comp].kew += kew;
                 companyMap[comp].thp += thp;
 
+                if (!divMap[div]) divMap[div] = { emp: new Set(), gapok: 0, tunj: 0, lembur: 0, kew: 0, thp: 0 };
+                if (nip) divMap[div].emp.add(nip);
+                divMap[div].gapok += gapok;
+                divMap[div].tunj += rowTunj;
+                divMap[div].lembur += lembur;
+                divMap[div].kew += kew;
+                divMap[div].thp += thp;
+
                 if (lembur > 0) {
-                    const divNorm = div.toLowerCase();
-                    const mergedDiv = (divNorm === 'content creator' || divNorm === 'conten creator' || divNorm === 'customer service') ? 'Content Creator & CS' : div;
-                    divisiLemburMap[mergedDiv] = (divisiLemburMap[mergedDiv] || 0) + lembur;
-                    
-                    const empKey = `${karId}||${karNama}||${div}`;
-                    if (!karyawanLemburMap[empKey]) karyawanLemburMap[empKey] = { nama: karNama, divisi: div, total: 0 };
-                    karyawanLemburMap[empKey].total += lembur;
+                    const empKey = `${nip}||${nama}||${div}`;
+                    if (!otEmpMap[empKey]) otEmpMap[empKey] = { nama, div, total: 0 };
+                    otEmpMap[empKey].total += lembur;
+                    otDivMap[div] = (otDivMap[div] || 0) + lembur;
                 }
-
-                for (let c = 0; c <= 9; c++) {
-                    colTotals[c] += parseNum(row[7 + c]);
-                }
-
-                kewajibanIndices.forEach((kIdx, kPos) => {
-                    kewajibanTotalsArr[kPos] += parseNum(row[kIdx]);
-                });
             });
 
-            let prevPeriodeLabel = "Bulan Lalu";
-            let prevGross = 0, prevTHP = 0, prevKewajiban = 0, prevKekurangan = 0, prevLembur = 0, prevTunjangan = 0, prevGapok = 0;
-            const prevEmpSet = new Set();
-            let hasPrevMonth = false;
+            const pptx = new PptxGenJS();
+            pptx.layout = 'LAYOUT_WIDE';
+            pptx.author = 'Kiki Putriani & Arlina Rozzafitri — HR Payroll';
+            pptx.company = 'PT Raja Emas Indonesia';
+            pptx.subject = `Report HR Payroll - ${periodeLabel}`;
 
-            const currentMonthIdx = detectMonthIndexFromText(periodeText);
-            if (currentMonthIdx > 0) {
-                prevPeriodeLabel = standardMonthsOrder[currentMonthIdx - 1];
-                const fTahun = document.getElementById('filter-tahun') ? document.getElementById('filter-tahun').value : 'ALL';
-                const fPerusahaan = document.getElementById('filter-perusahaan') ? document.getElementById('filter-perusahaan').value : 'ALL';
-                const fDivisi = document.getElementById('filter-divisi') ? document.getElementById('filter-divisi').value : 'ALL';
-
-                rawData.forEach(row => {
-                    const kolomBVal = row[1] ? row[1].trim() : '';
-                    const rowMIdx = detectMonthIndexFromText(kolomBVal);
-                    const matchTahun = fTahun === 'ALL' || kolomBVal.includes(fTahun);
-                    const matchPerusahaan = fPerusahaan === 'ALL' || (row[4] && row[4].trim() === fPerusahaan);
-                    const matchDivisi = fDivisi === 'ALL' || (row[27] && row[27].trim() === fDivisi);
-
-                    if (rowMIdx === (currentMonthIdx - 1) && matchTahun && matchPerusahaan && matchDivisi) {
-                        hasPrevMonth = true;
-                        const kId = row[3] ? row[3].trim() : '';
-                        if (kId) prevEmpSet.add(kId);
-                        prevGapok += calcRowGapok(row);
-                        prevGross += calcRowGross(row);
-                        prevTHP += parseNum(row[26]);
-                        prevKewajiban += calcRowKewajiban(row);
-                        prevKekurangan += parseNum(row[9]);
-                        prevLembur += (parseNum(row[10]) + parseNum(row[11]));
-                        prevTunjangan += calcRowTunjangan(row);
-                    }
-                });
-            }
-
-            if (typeof PptxGenJS === 'undefined') {
-                showToast("Library PptxGenJS belum siap. Silakan periksa koneksi internet.", 'error');
-                return;
-            }
-
-            const pres = new PptxGenJS();
-            pres.layout = 'LAYOUT_WIDE';
-
-            const C_DARK = '0F172A';
-            const C_SLATE = '1E293B';
-            const C_GOLD = 'B45309';
-            const C_GOLD_LIGHT = 'F59E0B';
-            const C_BG = 'F8FAFC';
+            const C_NAVY = '0F172A';
+            const C_SLATE = '475569';
+            const C_LIGHT = 'F8FAFC';
+            const C_GOLD = 'D97706';
+            const C_GOLD_SOFT = 'FEF3C7';
+            const C_INDIGO = '4F46E5';
             const C_WHITE = 'FFFFFF';
-            const C_TEXT = '1E293B';
-            const C_MUTED = '64748B';
-            const C_EMERALD = '059669';
-            const C_ROSE = 'E11D48';
+            const C_BORDER = 'CBD5E1';
 
-            let slideCounter = 0;
+            const addSlideHeader = (slide, tag, title, subtitle) => {
+                slide.background = { color: C_LIGHT };
+                slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.333, h: 0.92, fill: { color: C_NAVY } });
+                slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0.92, w: 13.333, h: 0.05, fill: { color: C_GOLD } });
+                slide.addText(tag, {
+                    x: 0.6, y: 0.12, w: 6, h: 0.22,
+                    fontSize: 8.5, bold: true, color: 'FBBF24', fontFace: 'Calibri'
+                });
+                slide.addText(title, {
+                    x: 0.6, y: 0.33, w: 9.5, h: 0.42,
+                    fontSize: 17, bold: true, color: C_WHITE, fontFace: 'Calibri'
+                });
+                slide.addText(`${periodeLabel}  |  ${subtitle || 'PT Raja Emas Indonesia'}`, {
+                    x: 8.2, y: 0.36, w: 4.55, h: 0.35,
+                    fontSize: 9.5, color: 'CBD5E1', align: 'right', fontFace: 'Calibri'
+                });
+            };
 
-            function addSlideHeader(slide, titleText, subtitleText) {
-                slideCounter += 1;
-                slide.background = { color: C_BG };
-                slide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 13.333, h: 0.12, fill: { color: C_GOLD_LIGHT } });
-                slide.addShape(pres.ShapeType.rect, { x: 0, y: 0.12, w: 13.333, h: 1.05, fill: { color: C_DARK } });
-                slide.addText(titleText, { x: 0.55, y: 0.22, w: 9.3, h: 0.45, fontSize: 19, bold: true, color: C_WHITE });
-                slide.addText(subtitleText, { x: 0.55, y: 0.68, w: 9.3, h: 0.3, fontSize: 10.5, color: 'CBD5E1' });
-                slide.addText(`${scopeText}\nPT Raja Emas Indonesia`, { x: 9.9, y: 0.25, w: 2.9, h: 0.72, fontSize: 9.5, color: 'FCD34D', align: 'right', bold: true });
-                slide.addText(`REPORT HR PAYROLL • Kiki Putriani & Arlina Rozzafitri`, { x: 0.55, y: 7.05, w: 8.5, h: 0.25, fontSize: 8.5, color: C_MUTED });
-                slide.addText(`Slide ${slideCounter}`, { x: 11.3, y: 7.05, w: 1.48, h: 0.25, fontSize: 8.5, bold: true, color: C_MUTED, align: 'right' });
-            }
+            const addSlideFooter = (slide, pageNum) => {
+                slide.addShape(pptx.ShapeType.line, {
+                    x: 0.6, y: 7.05, w: 12.133, h: 0,
+                    line: { color: C_BORDER, width: 0.75 }
+                });
+                slide.addText('REPORT HR PAYROLL  •  Disusun oleh: Kiki Putriani & Arlina Rozzafitri', {
+                    x: 0.6, y: 7.12, w: 8.5, h: 0.25,
+                    fontSize: 8.5, color: C_SLATE, fontFace: 'Calibri'
+                });
+                slide.addText(`Halaman ${pageNum}`, {
+                    x: 10.5, y: 7.12, w: 2.233, h: 0.25,
+                    fontSize: 8.5, bold: true, color: C_SLATE, align: 'right', fontFace: 'Calibri'
+                });
+            };
 
-            // COVER SLIDE (Halaman 1)
-            const slide1 = pres.addSlide();
-            slide1.background = { color: C_DARK };
-            slide1.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 0.28, h: 7.5, fill: { color: C_GOLD_LIGHT } });
-            slide1.addShape(pres.ShapeType.roundRect, { x: 0.9, y: 0.9, w: 2.8, h: 0.42, fill: { color: '1E293B' }, line: { color: C_GOLD_LIGHT, width: 1 } });
-            slide1.addText('REPORT HR PAYROLL', { x: 0.9, y: 0.92, w: 2.8, h: 0.38, fontSize: 10, bold: true, color: 'FCD34D', align: 'center' });
-            slide1.addText('LAPORAN REKAPITULASI & ANALISIS\nPENGGAJIAN KARYAWAN', { x: 0.9, y: 1.55, w: 11.2, h: 1.35, fontSize: 30, bold: true, color: C_WHITE });
-            slide1.addText(`Periode: ${scopeText}`, { x: 0.9, y: 3.05, w: 11.0, h: 0.42, fontSize: 15, bold: true, color: 'FCD34D' });
-            slide1.addText(`Cakupan: ${karyawanSet.size} Karyawan Aktif  •  Total Gross: ${formatIDR(totalGross)}  •  Total THP: ${formatIDR(totalTHP)}`, { x: 0.9, y: 3.52, w: 11.8, h: 0.38, fontSize: 12, bold: true, color: 'E2E8F0' });
-            slide1.addShape(pres.ShapeType.roundRect, { x: 0.9, y: 4.25, w: 6.5, h: 1.05, fill: { color: '1E293B' }, line: { color: '334155', width: 1 } });
-            slide1.addText('Dibuat oleh: Kiki Putriani & Arlina Rozzafitri\nPT Raja Emas Indonesia • Divisi Human Resources & Payroll Operations', { x: 1.12, y: 4.35, w: 6.1, h: 0.85, fontSize: 11.5, bold: true, color: C_WHITE });
-            slide1.addText(`Dibuat pada: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}`, { x: 0.9, y: 6.65, w: 10.5, h: 0.35, fontSize: 10.5, color: '94A3B8' });
+            // Cover Slide
+            const coverSlide = pptx.addSlide();
+            coverSlide.background = { color: C_NAVY };
+            coverSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.25, h: 7.5, fill: { color: C_GOLD } });
+            coverSlide.addShape(pptx.ShapeType.roundRect, {
+                x: 0.85, y: 1.15, w: 3.1, h: 0.42, rectRadius: 0.08,
+                fill: { color: '1E293B' }, line: { color: C_GOLD, width: 1 }
+            });
+            coverSlide.addText('REPORT HR PAYROLL • EXECUTIVE DECK', {
+                x: 0.95, y: 1.22, w: 2.9, h: 0.28,
+                fontSize: 9, bold: true, color: 'FBBF24', align: 'center', fontFace: 'Calibri'
+            });
+            coverSlide.addText('Laporan Penggajian &\nAnalisis Biaya HR Payroll', {
+                x: 0.85, y: 1.85, w: 8.8, h: 1.45,
+                fontSize: 34, bold: true, color: C_WHITE, fontFace: 'Calibri'
+            });
+            coverSlide.addText('PT RAJA EMAS INDONESIA  •  “Terima Emas Harga Tinggi”', {
+                x: 0.85, y: 3.35, w: 8.5, h: 0.4,
+                fontSize: 14, bold: true, color: 'FCD34D', fontFace: 'Calibri'
+            });
 
-            // SLIDE 1 (Halaman 2): RINGKASAN EKSEKUTIF & KPI PENGGAJIAN
+            // Highlight Box di Cover
+            coverSlide.addShape(pptx.ShapeType.roundRect, {
+                x: 0.85, y: 4.1, w: 11.5, h: 1.65, rectRadius: 0.12,
+                fill: { color: '1E293B' }, line: { color: '334155', width: 1 }
+            });
+            const coverStats = [
+                { label: 'PERIODE LAPORAN', val: periodeLabel },
+                { label: 'TOTAL KARYAWAN', val: `${karyawanSet.size} Orang` },
+                { label: 'TOTAL GROSS', val: formatCompact(totalGross) },
+                { label: 'TOTAL TAKE HOME PAY', val: formatIDR(totalTHP) }
+            ];
+            coverStats.forEach((st, i) => {
+                const xPos = 1.15 + i * 2.82;
+                coverSlide.addText(st.label, { x: xPos, y: 4.3, w: 2.6, h: 0.25, fontSize: 8.5, bold: true, color: '94A3B8', fontFace: 'Calibri' });
+                coverSlide.addText(st.val, { x: xPos, y: 4.62, w: 2.6, h: 0.55, fontSize: 16, bold: true, color: i === 3 ? 'FBBF24' : C_WHITE, fontFace: 'Calibri' });
+            });
+
+            coverSlide.addText(`Disusun oleh: Kiki Putriani & Arlina Rozzafitri   |   Perusahaan Filter: ${selectedPerusahaan === 'ALL' ? 'Semua Perusahaan' : selectedPerusahaan}   |   Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, {
+                x: 0.85, y: 6.45, w: 11.6, h: 0.35,
+                fontSize: 10, color: '94A3B8', fontFace: 'Calibri'
+            });
+
+            let pageCounter = 1;
+
+            // SLIDE 01: Ringkasan Eksekutif & KPI
             if (selectedSlides.has('summary')) {
-                const slide2 = pres.addSlide();
-                addSlideHeader(slide2, '1. Ringkasan Eksekutif & KPI Penggajian', 'Ikhtisar struktur biaya payroll, efisiensi THP, dan perbandingan periode sebelumnya');
+                pageCounter++;
+                const s1 = pptx.addSlide();
+                addSlideHeader(s1, 'SLIDE 01 • RINGKASAN EKSEKUTIF', 'Ringkasan Demografi & Indikator Utama Payroll', `Perusahaan: ${selectedPerusahaan === 'ALL' ? 'Semua' : selectedPerusahaan}`);
 
-                const avgTHP = karyawanSet.size > 0 ? `${(totalTHP / karyawanSet.size / 1e6).toFixed(1)} Jt` : '0 Jt';
-                const potPct = totalGross > 0 ? ((totalPotongan / totalGross) * 100).toFixed(1) : '0.0';
-                const thpPct = totalGross > 0 ? ((totalTHP / totalGross) * 100).toFixed(1) : '0.0';
-
-                const demoItems = [
-                    { label: 'KARYAWAN TERFILTER', val: `${karyawanSet.size} Orang`, sub: `Rata-rata THP: ${avgTHP}`, col: C_DARK },
-                    { label: 'PERUSAHAAN / ENTITAS', val: `${perusahaanSet.size} Entitas`, sub: 'Cakupan badan usaha aktif', col: '2563EB' },
-                    { label: 'TOTAL DIVISI', val: `${divisiSet.size} Divisi`, sub: 'Unit kerja tercatat', col: '4F46E5' },
-                    { label: 'TOTAL CABANG / STORE', val: `${cabangSet.size} Cabang`, sub: 'Lokasi operasional', col: C_EMERALD }
+                const kpiCards = [
+                    { title: 'TOTAL KARYAWAN', val: `${karyawanSet.size} Orang`, sub: `${perusahaanSet.size} Perusahaan • ${divisiSet.size} Divisi`, accent: C_INDIGO },
+                    { title: 'TOTAL GROSS PAYROLL', val: formatIDR(totalGross), sub: 'Pendapatan kotor sebelum potongan', accent: '2563EB' },
+                    { title: 'TOTAL KEWAJIBAN', val: formatIDR(totalKewajiban), sub: 'Pinjaman, BPJS, JHT & potongan', accent: 'E11D48' },
+                    { title: 'TOTAL TAKE HOME PAY', val: formatIDR(totalTHP), sub: `${cabangSet.size} Cabang / Store aktif`, accent: C_GOLD }
                 ];
-                demoItems.forEach((d, i) => {
-                    const x = 0.55 + (i * 3.12);
-                    slide2.addShape(pres.ShapeType.roundRect, { x, y: 1.35, w: 2.92, h: 1.05, fill: { color: C_WHITE }, line: { color: 'E2E8F0', width: 1 } });
-                    slide2.addText(d.label, { x: x + 0.16, y: 1.42, w: 2.6, h: 0.2, fontSize: 8.5, bold: true, color: C_MUTED });
-                    slide2.addText(d.val, { x: x + 0.16, y: 1.66, w: 2.6, h: 0.4, fontSize: 16.5, bold: true, color: d.col });
-                    slide2.addText(d.sub, { x: x + 0.16, y: 2.08, w: 2.6, h: 0.24, fontSize: 8.5, color: C_MUTED });
+
+                kpiCards.forEach((c, idx) => {
+                    const col = idx % 2;
+                    const row = Math.floor(idx / 2);
+                    const x = 0.6 + col * 6.15;
+                    const y = 1.2 + row * 1.85;
+                    s1.addShape(pptx.ShapeType.roundRect, {
+                        x, y, w: 5.95, h: 1.62, rectRadius: 0.1,
+                        fill: { color: C_WHITE }, line: { color: C_BORDER, width: 1 }
+                    });
+                    s1.addShape(pptx.ShapeType.rect, { x, y, w: 0.12, h: 1.62, fill: { color: c.accent } });
+                    s1.addText(c.title, { x: x + 0.28, y: y + 0.16, w: 5.4, h: 0.25, fontSize: 9, bold: true, color: C_SLATE, fontFace: 'Calibri' });
+                    s1.addText(c.val, { x: x + 0.28, y: y + 0.48, w: 5.4, h: 0.55, fontSize: 20, bold: true, color: C_NAVY, fontFace: 'Calibri' });
+                    s1.addText(c.sub, { x: x + 0.28, y: y + 1.1, w: 5.4, h: 0.28, fontSize: 9.5, color: C_SLATE, fontFace: 'Calibri' });
                 });
 
-                const mainKpis = [
-                    { title: 'TOTAL GROSS PAYROLL', val: formatIDR(totalGross), sub: '100% Pendapatan kotor sebelum potongan', col: '2563EB' },
-                    { title: `TOTAL POTONGAN (${potPct}%)`, val: formatIDR(totalPotongan), sub: 'Pinjaman, BPJS, JHT & potongan lain', col: C_ROSE },
-                    { title: `TOTAL TAKE HOME PAY (${thpPct}%)`, val: formatIDR(totalTHP), sub: 'Gaji bersih dibayarkan ke karyawan', col: C_GOLD }
-                ];
-                mainKpis.forEach((k, i) => {
-                    const x = 0.55 + (i * 4.15);
-                    slide2.addShape(pres.ShapeType.roundRect, { x, y: 2.52, w: 3.95, h: 1.4, fill: { color: i === 2 ? C_DARK : C_WHITE }, line: { color: i === 2 ? C_GOLD_LIGHT : 'CBD5E1', width: i === 2 ? 1.5 : 1 } });
-                    slide2.addText(k.title, { x: x + 0.18, y: 2.62, w: 3.6, h: 0.24, fontSize: 8.5, bold: true, color: i === 2 ? 'FCD34D' : C_MUTED });
-                    slide2.addText(k.val, { x: x + 0.18, y: 2.9, w: 3.6, h: 0.46, fontSize: 17.5, bold: true, color: i === 2 ? C_WHITE : k.col });
-                    slide2.addText(k.sub, { x: x + 0.18, y: 3.45, w: 3.6, h: 0.28, fontSize: 9, color: i === 2 ? 'CBD5E1' : C_MUTED });
+                const ratioNet = totalGross > 0 ? ((totalTHP / totalGross) * 100).toFixed(1) : '0.0';
+                const ratioDed = totalGross > 0 ? ((totalKewajiban / totalGross) * 100).toFixed(1) : '0.0';
+                s1.addShape(pptx.ShapeType.roundRect, {
+                    x: 0.6, y: 5.05, w: 12.1, h: 1.65, rectRadius: 0.1,
+                    fill: { color: C_GOLD_SOFT }, line: { color: 'F59E0B', width: 1 }
                 });
+                s1.addText('CATATAN ANALISIS EKSEKUTIF', { x: 0.85, y: 5.2, w: 11.5, h: 0.3, fontSize: 10, bold: true, color: '92400E', fontFace: 'Calibri' });
+                s1.addText(
+                    `• Rasio Net Take Home Pay terhadap Gross sebesar ${ratioNet}%, sedangkan proporsi potongan/kewajiban sebesar ${ratioDed}%.\n` +
+                    `• Rata-rata THP per karyawan pada cakupan data saat ini adalah ${formatIDR(karyawanSet.size > 0 ? totalTHP / karyawanSet.size : 0)}.\n` +
+                    `• Komponen utama gaji terdiri dari Gaji Pokok (${formatCompact(totalGapok)}), Tunjangan (${formatCompact(totalTunjangan)}), dan Lembur (${formatCompact(totalLemburan)}).`,
+                    { x: 0.85, y: 5.52, w: 11.6, h: 1.05, fontSize: 10, color: C_NAVY, fontFace: 'Calibri' }
+                );
 
-                const compTable = [
-                    [
-                        { text: 'Komponen Utama Payroll', options: { bold: true, fill: C_SLATE, color: C_WHITE } },
-                        { text: periodeText, options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } },
-                        { text: hasPrevMonth ? prevPeriodeLabel : 'Bln Lalu', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } },
-                        { text: 'Selisih Nominal', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } }
-                    ]
-                ];
-                const rowsComp = [
-                    ['Total Gaji Pokok', colTotals[0] || 0, prevGapok],
-                    ['Total Tunjangan & Benefit', totalTunjanganBenefit, prevTunjangan],
-                    ['Total Biaya Lembur (Overtime)', totalLemburan, prevLembur],
-                    ['Total Kekurangan Bulan Lalu', totalKekuranganBlnLalu, prevKekurangan]
-                ];
-                rowsComp.forEach(([lbl, cur, prev]) => {
-                    const diffVal = cur - prev;
-                    compTable.push([
-                        { text: lbl, options: { bold: true } },
-                        { text: formatIDR(cur), options: { align: 'right', bold: true } },
-                        { text: hasPrevMonth ? formatIDR(prev) : '-', options: { align: 'right', color: C_MUTED } },
-                        { text: hasPrevMonth ? formatIDR(diffVal) : '-', options: { align: 'right', bold: true, color: C_GOLD } }
-                    ]);
-                });
-                slide2.addTable(compTable, {
-                    x: 0.55, y: 4.08, w: 12.23,
-                    fontSize: 9.5, color: C_TEXT,
-                    border: { pt: 0.5, color: 'CBD5E1' },
-                    fill: { color: C_WHITE },
-                    colW: [4.23, 2.75, 2.65, 2.6]
-                });
+                addSlideFooter(s1, pageCounter);
             }
 
-            // SLIDE 2 (Halaman 3): DISTRIBUSI PER PERUSAHAAN
+            // SLIDE 02: Distribusi per Perusahaan
             if (selectedSlides.has('company')) {
-                const slide3 = pres.addSlide();
-                addSlideHeader(slide3, '2. Distribusi Penggajian per Perusahaan', 'Rekapitulasi jumlah karyawan, cabang, komponen gaji, potongan, dan THP per entitas');
+                pageCounter++;
+                const s2 = pptx.addSlide();
+                addSlideHeader(s2, 'SLIDE 02 • DISTRIBUSI PERUSAHAAN', 'Rekapitulasi Payroll per Entitas Perusahaan', 'Urutan berdasarkan Total THP');
 
-                const compTbl = [
+                const compSorted = Object.entries(companyMap).sort((a, b) => b[1].thp - a[1].thp).slice(0, 8);
+                const tableRows = [
                     [
-                        { text: 'Nama Perusahaan', options: { bold: true, fill: C_DARK, color: C_WHITE } },
-                        { text: 'Karyawan', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'center' } },
-                        { text: 'Cabang', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'center' } },
-                        { text: 'Gaji Pokok', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } },
-                        { text: 'Tunjangan & Lembur', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } },
-                        { text: 'Total Gross', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } },
-                        { text: 'Total Potongan', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } },
-                        { text: 'Total THP', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } }
+                        { text: 'Perusahaan', options: { bold: true, fill: C_NAVY, color: C_WHITE } },
+                        { text: 'Karyawan', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'center' } },
+                        { text: 'Cabang', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'center' } },
+                        { text: 'Gapok', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Tunjangan', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Lembur', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Potongan', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Total THP', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } }
                     ]
                 ];
-                let sumGapokComp = 0, sumTunjLemburComp = 0, sumGrossComp = 0, sumPotComp = 0, sumTHPComp = 0;
-                Object.entries(companyMap).sort((a, b) => b[1].thp - a[1].thp).forEach(([cName, info]) => {
-                    const tunjLembur = info.tunjangan + info.lembur + info.kekurangan;
-                    sumGapokComp += info.gapok;
-                    sumTunjLemburComp += tunjLembur;
-                    sumGrossComp += info.gross;
-                    sumPotComp += info.kewajiban;
-                    sumTHPComp += info.thp;
-                    compTbl.push([
-                        { text: cName, options: { bold: true } },
-                        { text: `${info.karyawan.size}`, options: { align: 'center' } },
-                        { text: `${info.cabang.size}`, options: { align: 'center' } },
-                        { text: formatIDR(info.gapok), options: { align: 'right' } },
-                        { text: formatIDR(tunjLembur), options: { align: 'right' } },
-                        { text: formatIDR(info.gross), options: { align: 'right', bold: true } },
-                        { text: formatIDR(info.kewajiban), options: { align: 'right', color: C_ROSE } },
-                        { text: formatIDR(info.thp), options: { align: 'right', bold: true, color: C_DARK } }
+
+                compSorted.forEach(([name, info], idx) => {
+                    const bg = idx % 2 === 0 ? C_WHITE : 'F1F5F9';
+                    tableRows.push([
+                        { text: name, options: { bold: true, fill: bg, color: C_NAVY } },
+                        { text: `${info.emp.size}`, options: { fill: bg, align: 'center' } },
+                        { text: `${info.cab.size}`, options: { fill: bg, align: 'center' } },
+                        { text: formatIDR(info.gapok), options: { fill: bg, align: 'right' } },
+                        { text: formatIDR(info.tunj), options: { fill: bg, align: 'right' } },
+                        { text: formatIDR(info.lembur), options: { fill: bg, align: 'right' } },
+                        { text: formatIDR(info.kew), options: { fill: bg, align: 'right', color: 'BE123C' } },
+                        { text: formatIDR(info.thp), options: { bold: true, fill: bg, align: 'right', color: 'B45309' } }
                     ]);
                 });
-                compTbl.push([
-                    { text: 'GRAND TOTAL', options: { bold: true, fill: 'F1F5F9', color: C_DARK } },
-                    { text: `${karyawanSet.size}`, options: { bold: true, fill: 'F1F5F9', align: 'center' } },
-                    { text: `${cabangSet.size}`, options: { bold: true, fill: 'F1F5F9', align: 'center' } },
-                    { text: formatIDR(sumGapokComp), options: { bold: true, fill: 'F1F5F9', align: 'right' } },
-                    { text: formatIDR(sumTunjLemburComp), options: { bold: true, fill: 'F1F5F9', align: 'right' } },
-                    { text: formatIDR(sumGrossComp), options: { bold: true, fill: 'F1F5F9', align: 'right' } },
-                    { text: formatIDR(sumPotComp), options: { bold: true, fill: 'F1F5F9', align: 'right', color: C_ROSE } },
-                    { text: formatIDR(sumTHPComp), options: { bold: true, fill: 'FEF3C7', align: 'right', color: C_DARK } }
-                ]);
-                slide3.addTable(compTbl, {
-                    x: 0.55, y: 1.42, w: 12.23,
-                    fontSize: 9.5, color: C_TEXT,
-                    border: { pt: 0.5, color: 'CBD5E1' },
-                    fill: { color: C_WHITE },
-                    colW: [2.78, 0.95, 0.9, 1.55, 1.55, 1.5, 1.5, 1.6]
+
+                s2.addTable(tableRows, {
+                    x: 0.6, y: 1.25, w: 12.133,
+                    border: { type: 'solid', pt: 0.5, color: C_BORDER },
+                    fontSize: 9.5, fontFace: 'Calibri',
+                    colW: [2.733, 1.0, 0.9, 1.5, 1.5, 1.4, 1.5, 1.6]
                 });
+
+                addSlideFooter(s2, pageCounter);
             }
 
-            // SLIDE 3 (Halaman 4): RINCIAN KOMPONEN PENDAPATAN (GROSS)
+            // SLIDE 03: Komponen Pendapatan (Gross)
             if (selectedSlides.has('income')) {
-                const slide4 = pres.addSlide();
-                addSlideHeader(slide4, '3. Rincian Komponen Pendapatan (Gross)', 'Detail alokasi setiap komponen gaji pokok, tunjangan, bonus, dan lembur');
+                pageCounter++;
+                const s3 = pptx.addSlide();
+                addSlideHeader(s3, 'SLIDE 03 • KOMPONEN PENDAPATAN', 'Struktur Pendapatan Kotor (Gross Payroll)', 'Rincian kolom tunjangan & pendapatan (H - Q)');
 
-                const incomeTableData = [
+                const benefitRows = [
                     [
-                        { text: 'No', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'center' } },
-                        { text: 'Nama Komponen Pendapatan', options: { bold: true, fill: C_SLATE, color: C_WHITE } },
-                        { text: 'Total Nominal (Rp)', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } },
-                        { text: 'Kontribusi (%)', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } }
+                        { text: 'Komponen Pendapatan (Kolom H - Q)', options: { bold: true, fill: C_NAVY, color: C_WHITE } },
+                        { text: 'Nominal (Rp)', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Porsi (%)', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } }
                     ]
                 ];
-                allowanceHeaders.forEach((hName, idx) => {
-                    const val = colTotals[idx] || 0;
-                    const pct = totalGross > 0 ? ((val / totalGross) * 100).toFixed(2) + '%' : '0.00%';
-                    incomeTableData.push([
-                        { text: `${idx + 1}`, options: { align: 'center', color: C_MUTED } },
-                        { text: hName, options: { bold: idx === 0 } },
-                        { text: formatIDR(val), options: { align: 'right', bold: idx === 0 } },
-                        { text: pct, options: { align: 'right', color: C_MUTED } }
+
+                for (let i = 7; i <= 16; i++) {
+                    const label = headerRow[i] ? headerRow[i].trim() : `Kolom ${i}`;
+                    const val = i === 7 ? totalGapok : (benefitTotals[i - 8] || 0);
+                    const pct = totalGross > 0 ? ((val / totalGross) * 100).toFixed(1) + '%' : '0.0%';
+                    const bg = (i - 7) % 2 === 0 ? C_WHITE : 'F8FAFC';
+                    benefitRows.push([
+                        { text: label, options: { bold: i === 7, fill: bg, color: C_NAVY } },
+                        { text: formatIDR(val), options: { bold: i === 7, fill: bg, align: 'right' } },
+                        { text: pct, options: { bold: true, fill: bg, align: 'right', color: '047857' } }
                     ]);
-                });
-                incomeTableData.push([
-                    { text: '', options: { fill: 'ECFDF5' } },
-                    { text: 'TOTAL GROSS PAYROLL', options: { bold: true, fill: 'ECFDF5', color: C_EMERALD } },
-                    { text: formatIDR(totalGross), options: { bold: true, fill: 'ECFDF5', color: C_EMERALD, align: 'right' } },
-                    { text: '100.00%', options: { bold: true, fill: 'ECFDF5', color: C_EMERALD, align: 'right' } }
+                }
+
+                benefitRows.push([
+                    { text: 'TOTAL GROSS PAYROLL', options: { bold: true, fill: C_GOLD_SOFT, color: '78350F' } },
+                    { text: formatIDR(totalGross), options: { bold: true, fill: C_GOLD_SOFT, color: '78350F', align: 'right' } },
+                    { text: '100.0%', options: { bold: true, fill: C_GOLD_SOFT, color: '78350F', align: 'right' } }
                 ]);
-                slide4.addTable(incomeTableData, {
-                    x: 0.55, y: 1.42, w: 12.23,
-                    fontSize: 9.5, color: C_TEXT,
-                    border: { pt: 0.5, color: 'CBD5E1' },
-                    fill: { color: C_WHITE },
-                    colW: [0.73, 5.8, 3.3, 2.4]
+
+                s3.addTable(benefitRows, {
+                    x: 0.6, y: 1.2, w: 12.133,
+                    border: { type: 'solid', pt: 0.5, color: C_BORDER },
+                    fontSize: 9.5, fontFace: 'Calibri',
+                    colW: [7.533, 2.8, 1.8]
                 });
+
+                addSlideFooter(s3, pageCounter);
             }
 
-            // SLIDE 4 (Halaman 5): RINCIAN KOMPONEN KEWAJIBAN & POTONGAN
+            // SLIDE 04: Kewajiban & Potongan Gaji
             if (selectedSlides.has('deduction')) {
-                const slide5 = pres.addSlide();
-                addSlideHeader(slide5, '4. Rincian Komponen Kewajiban & Potongan', 'Rekapitulasi pemotongan gaji karyawan (Pinjaman, BPJS, JHT, PPh21, dll)');
+                pageCounter++;
+                const s4 = pptx.addSlide();
+                addSlideHeader(s4, 'SLIDE 04 • KEWAJIBAN & POTONGAN', 'Rekapitulasi Kategori Kewajiban & Potongan Karyawan', 'Komponen pemotongan gaji periode aktif');
 
-                const dedTableData = [
+                const dedRows = [
                     [
-                        { text: 'No', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'center' } },
-                        { text: 'Kategori Kewajiban / Potongan', options: { bold: true, fill: C_SLATE, color: C_WHITE } },
-                        { text: 'Total Nominal (Rp)', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } },
-                        { text: 'Proporsi Potongan (%)', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } }
+                        { text: 'Kategori Kewajiban / Potongan', options: { bold: true, fill: '881337', color: C_WHITE } },
+                        { text: 'Nominal Potongan (Rp)', options: { bold: true, fill: '881337', color: C_WHITE, align: 'right' } },
+                        { text: 'Porsi Potongan (%)', options: { bold: true, fill: '881337', color: C_WHITE, align: 'right' } }
                     ]
                 ];
-                kewajibanHeaders.forEach((kName, idx) => {
-                    const val = kewajibanTotalsArr[idx] || 0;
-                    const pct = totalPotongan > 0 ? ((val / totalPotongan) * 100).toFixed(2) + '%' : '0.00%';
-                    dedTableData.push([
-                        { text: `${idx + 1}`, options: { align: 'center', color: C_MUTED } },
-                        { text: kName },
-                        { text: formatIDR(val), options: { align: 'right', color: C_ROSE } },
-                        { text: pct, options: { align: 'right', color: C_MUTED } }
+
+                kewajibanHeaders.forEach((lbl, idx) => {
+                    const val = kewajibanTotals[idx] || 0;
+                    const pct = totalKewajiban > 0 ? ((val / totalKewajiban) * 100).toFixed(1) + '%' : '0.0%';
+                    const bg = idx % 2 === 0 ? C_WHITE : 'FFF1F2';
+                    dedRows.push([
+                        { text: lbl, options: { bold: true, fill: bg, color: C_NAVY } },
+                        { text: formatIDR(val), options: { fill: bg, align: 'right', color: 'BE123C' } },
+                        { text: pct, options: { bold: true, fill: bg, align: 'right', color: '9F1239' } }
                     ]);
                 });
-                dedTableData.push([
-                    { text: '', options: { fill: 'FFF1F2' } },
-                    { text: 'TOTAL KEWAJIBAN / POTONGAN', options: { bold: true, fill: 'FFF1F2', color: C_ROSE } },
-                    { text: formatIDR(totalPotongan), options: { bold: true, fill: 'FFF1F2', color: C_ROSE, align: 'right' } },
-                    { text: '100.00%', options: { bold: true, fill: 'FFF1F2', color: C_ROSE, align: 'right' } }
+
+                dedRows.push([
+                    { text: 'TOTAL KEWAJIBAN / POTONGAN', options: { bold: true, fill: 'FFE4E6', color: '881337' } },
+                    { text: formatIDR(totalKewajiban), options: { bold: true, fill: 'FFE4E6', color: '881337', align: 'right' } },
+                    { text: '100.0%', options: { bold: true, fill: 'FFE4E6', color: '881337', align: 'right' } }
                 ]);
-                slide5.addTable(dedTableData, {
-                    x: 0.55, y: 1.42, w: 12.23,
-                    fontSize: 9.8, color: C_TEXT,
-                    border: { pt: 0.5, color: 'CBD5E1' },
-                    fill: { color: C_WHITE },
-                    colW: [0.73, 5.8, 3.3, 2.4]
+
+                s4.addTable(dedRows, {
+                    x: 0.6, y: 1.3, w: 12.133,
+                    border: { type: 'solid', pt: 0.5, color: C_BORDER },
+                    fontSize: 10.5, fontFace: 'Calibri',
+                    colW: [7.533, 2.8, 1.8]
                 });
+
+                addSlideFooter(s4, pageCounter);
             }
 
-            // SLIDE 5 (Halaman 6): MONITORING PINJAMAN KARYAWAN (LOAN)
+            // SLIDE 05: Monitoring Pinjaman (Loan)
             if (selectedSlides.has('loan')) {
-                const slide6 = pres.addSlide();
-                addSlideHeader(slide6, '5. Monitoring Pinjaman Karyawan (Loan)', 'Status akumulasi pinjaman, pelunasan, dan daftar sisa kewajiban karyawan');
+                pageCounter++;
+                const s5 = pptx.addSlide();
+                addSlideHeader(s5, 'SLIDE 05 • MONITORING PINJAMAN (LOAN)', 'Status Pinjaman & Sisa Kewajiban Karyawan', 'Data pinjaman karyawan terfilter');
 
                 const loanRows = getFilteredLoanData();
-                let lTotal = 0, lSisa = 0, lDibayar = 0, lCountUnpaid = 0, lCountPaid = 0;
-
+                let sumPinj = 0, sumSisa = 0, sumBayar = 0, countUnpaid = 0, countPaid = 0;
                 loanRows.forEach(r => {
-                    lTotal += parseNum(r[8]);
-                    lDibayar += parseNum(r[9]);
-                    lSisa += parseNum(r[10]);
+                    sumPinj += parseNum(r[8]);
+                    sumBayar += parseNum(r[9]);
+                    sumSisa += parseNum(r[10]);
                     const st = (r[14] || '').toString().toLowerCase();
-                    if (st.includes('unpaid') || st.includes('belum')) {
-                        lCountUnpaid++;
-                    } else if (st.includes('paid') || st.includes('lunas') || st.includes('selesai')) {
-                        lCountPaid++;
-                    }
+                    if (st.includes('unpaid') || st.includes('belum')) countUnpaid++;
+                    else if (st.includes('paid') || st.includes('lunas') || st.includes('selesai')) countPaid++;
                 });
 
-                const fPeriodeSelectLoan = document.getElementById('filter-periode');
-                const fPeriodeLoan = fPeriodeSelectLoan ? fPeriodeSelectLoan.value : 'ALL';
-                let prevLoanTotal = 0;
-                if (fPeriodeLoan !== 'ALL' && fPeriodeSelectLoan && fPeriodeSelectLoan.selectedIndex > 1) {
-                    const prevOptVal = fPeriodeSelectLoan.options[fPeriodeSelectLoan.selectedIndex - 1].value;
-                    getFilteredLoanData(prevOptVal).forEach(r => {
-                        prevLoanTotal += parseNum(r[8]);
-                    });
-                }
-                const loanTrendText = prevLoanTotal > 0
-                    ? `${(((lTotal - prevLoanTotal) / prevLoanTotal) * 100) >= 0 ? '+' : ''}${(((lTotal - prevLoanTotal) / prevLoanTotal) * 100).toFixed(1)}% vs ${prevPeriodeLabel} (${loanRows.length} Transaksi)`
-                    : `${loanRows.length} Transaksi`;
-
-                const loanSummaryCards = [
-                    { title: 'TOTAL KEWAJIBAN / PINJAMAN', val: formatIDR(lTotal), desc: loanTrendText, col: 'EA580C' },
-                    { title: 'TOTAL SISA PINJAMAN', val: formatIDR(lSisa), desc: `${lCountUnpaid} Transaksi Unpaid`, col: C_ROSE },
-                    { title: 'TOTAL SUDAH DIBAYAR', val: formatIDR(lDibayar), desc: `${lCountPaid} Transaksi Paid`, col: C_EMERALD }
+                const loanSummaryBoxes = [
+                    { t: 'TOTAL PINJAMAN', v: formatIDR(sumPinj), c: C_NAVY },
+                    { t: 'TOTAL SISA PINJAMAN', v: formatIDR(sumSisa), c: 'BE123C' },
+                    { t: 'UNPAID / PAID', v: `${countUnpaid} / ${countPaid} Trx`, c: 'C2410C' }
                 ];
-                loanSummaryCards.forEach((lc, idx) => {
-                    const xPos = 0.55 + (idx * 4.15);
-                    slide6.addShape(pres.ShapeType.roundRect, { x: xPos, y: 1.38, w: 3.95, h: 1.25, fill: { color: C_WHITE }, line: { color: 'E2E8F0', width: 1 } });
-                    slide6.addShape(pres.ShapeType.rect, { x: xPos, y: 1.38, w: 0.08, h: 1.25, fill: { color: lc.col } });
-                    slide6.addText(lc.title, { x: xPos + 0.16, y: 1.46, w: 3.65, h: 0.2, fontSize: 8.5, bold: true, color: C_MUTED });
-                    slide6.addText(lc.val, { x: xPos + 0.16, y: 1.72, w: 3.65, h: 0.38, fontSize: 15.5, bold: true, color: lc.col });
-                    slide6.addText(lc.desc, { x: xPos + 0.16, y: 2.18, w: 3.65, h: 0.26, fontSize: 9, color: C_TEXT });
+                loanSummaryBoxes.forEach((b, i) => {
+                    const x = 0.6 + i * 4.12;
+                    s5.addShape(pptx.ShapeType.roundRect, {
+                        x, y: 1.15, w: 3.9, h: 1.15, rectRadius: 0.08,
+                        fill: { color: C_WHITE }, line: { color: C_BORDER, width: 1 }
+                    });
+                    s5.addText(b.t, { x: x + 0.2, y: 1.25, w: 3.5, h: 0.25, fontSize: 8.5, bold: true, color: C_SLATE, fontFace: 'Calibri' });
+                    s5.addText(b.v, { x: x + 0.2, y: 1.55, w: 3.5, h: 0.45, fontSize: 16, bold: true, color: b.c, fontFace: 'Calibri' });
                 });
 
-                const topLoans = loanRows.slice().sort((a, b) => parseNum(b[10]) - parseNum(a[10])).slice(0, 7);
+                const topLoans = loanRows
+                    .slice()
+                    .sort((a, b) => parseNum(b[10]) - parseNum(a[10]))
+                    .slice(0, 7);
+
                 const loanTbl = [
                     [
-                        { text: 'Nama Karyawan', options: { bold: true, fill: C_SLATE, color: C_WHITE } },
-                        { text: 'NIP', options: { bold: true, fill: C_SLATE, color: C_WHITE } },
-                        { text: 'Periode', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'center' } },
-                        { text: 'Total Pinjaman', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } },
-                        { text: 'Sisa Pinjaman', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'right' } },
-                        { text: 'Status', options: { bold: true, fill: C_SLATE, color: C_WHITE, align: 'center' } }
+                        { text: 'Nama Karyawan', options: { bold: true, fill: C_NAVY, color: C_WHITE } },
+                        { text: 'NIP', options: { bold: true, fill: C_NAVY, color: C_WHITE } },
+                        { text: 'Periode', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'center' } },
+                        { text: 'Total Pinjaman', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Sisa Pinjaman', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Status', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'center' } }
                     ]
                 ];
+
                 if (topLoans.length === 0) {
-                    loanTbl.push([{ text: 'Tidak ada data pinjaman.', options: { colspan: 6, align: 'center', italic: true } }]);
+                    loanTbl.push([{ text: 'Tidak ada data pinjaman pada periode/filter ini.', options: { colspan: 6, align: 'center', color: C_SLATE, fill: C_WHITE } }]);
                 } else {
-                    topLoans.forEach(r => {
+                    topLoans.forEach((r, idx) => {
+                        const bg = idx % 2 === 0 ? C_WHITE : 'F8FAFC';
                         loanTbl.push([
-                            { text: r[4] || '-', options: { bold: true } },
-                            { text: r[3] || '-' },
-                            { text: getLoanRowPeriodLabel(r), options: { align: 'center' } },
-                            { text: formatIDR(parseNum(r[8])), options: { align: 'right' } },
-                            { text: formatIDR(parseNum(r[10])), options: { align: 'right', bold: true, color: C_ROSE } },
-                            { text: (r[14] || '-').toUpperCase(), options: { align: 'center', bold: true } }
+                            { text: r[4] || '-', options: { bold: true, fill: bg } },
+                            { text: r[3] || '-', options: { fill: bg } },
+                            { text: getLoanRowPeriodLabel(r), options: { fill: bg, align: 'center' } },
+                            { text: formatIDR(parseNum(r[8])), options: { fill: bg, align: 'right' } },
+                            { text: formatIDR(parseNum(r[10])), options: { bold: true, fill: bg, align: 'right', color: 'BE123C' } },
+                            { text: r[14] || '-', options: { bold: true, fill: bg, align: 'center' } }
                         ]);
                     });
                 }
-                slide6.addTable(loanTbl, {
-                    x: 0.55, y: 2.82, w: 12.23,
-                    fontSize: 9.5, color: C_TEXT,
-                    border: { pt: 0.5, color: 'CBD5E1' },
-                    fill: { color: C_WHITE },
-                    colW: [3.18, 1.85, 1.5, 2.0, 2.1, 1.6]
+
+                s5.addTable(loanTbl, {
+                    x: 0.6, y: 2.5, w: 12.133,
+                    border: { type: 'solid', pt: 0.5, color: C_BORDER },
+                    fontSize: 9.5, fontFace: 'Calibri',
+                    colW: [3.433, 1.5, 1.5, 2.0, 2.0, 1.7]
                 });
+
+                addSlideFooter(s5, pageCounter);
             }
 
-            // SLIDE 6 (Halaman 7): ANALISIS BIAYA LEMBUR (OVERTIME COST)
+            // SLIDE 06: Analisis Biaya Lembur
             if (selectedSlides.has('overtime')) {
-                const slide7 = pres.addSlide();
-                addSlideHeader(slide7, '6. Analisis Biaya Lembur (Overtime Cost)', 'Top 5 divisi dan top 5 karyawan dengan biaya lembur tertinggi');
+                pageCounter++;
+                const s6 = pptx.addSlide();
+                addSlideHeader(s6, 'SLIDE 06 • ANALISIS BIAYA LEMBUR', `Top 5 Divisi & Karyawan Lembur Tertinggi (Total: ${formatIDR(totalLemburan)})`, 'Akumulasi lembur fullday & longshift');
 
-                const top5DivOT = Object.entries(divisiLemburMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                const tblDivOT = [
-                    [{ text: 'Top 5 Divisi Lembur Tertinggi', options: { bold: true, fill: '4F46E5', color: C_WHITE, colspan: 2 } }],
-                    [{ text: 'Divisi', options: { bold: true, fill: 'EEF2FF' } }, { text: 'Total Lembur', options: { bold: true, fill: 'EEF2FF', align: 'right' } }]
+                const topOtDiv = Object.entries(otDivMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                const topOtEmp = Object.values(otEmpMap).sort((a, b) => b.total - a.total).slice(0, 5);
+
+                const divOtTable = [
+                    [
+                        { text: 'Top 5 Divisi Lembur', options: { bold: true, fill: C_NAVY, color: C_WHITE } },
+                        { text: 'Nominal Lembur', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } }
+                    ]
                 ];
-                top5DivOT.forEach(([dName, val]) => {
-                    tblDivOT.push([{ text: dName, options: { bold: true } }, { text: formatIDR(val), options: { align: 'right', color: '4F46E5', bold: true } }]);
+                topOtDiv.forEach(([d, v], idx) => {
+                    const bg = idx % 2 === 0 ? C_WHITE : 'F8FAFC';
+                    divOtTable.push([
+                        { text: `${idx + 1}. ${d}`, options: { bold: true, fill: bg } },
+                        { text: formatIDR(v), options: { bold: true, fill: bg, align: 'right', color: '6D28D9' } }
+                    ]);
                 });
-                if (top5DivOT.length === 0) tblDivOT.push([{ text: 'Tidak ada data lembur', options: { colspan: 2, align: 'center' } }]);
+                if (topOtDiv.length === 0) divOtTable.push([{ text: 'Tidak ada data lembur divisi.', options: { colspan: 2, align: 'center', fill: C_WHITE } }]);
 
-                slide7.addTable(tblDivOT, {
-                    x: 0.55, y: 1.45, w: 5.85,
-                    fontSize: 10, color: C_TEXT,
-                    border: { pt: 0.5, color: 'CBD5E1' },
-                    fill: { color: C_WHITE },
+                const empOtTable = [
+                    [
+                        { text: 'Top 5 Karyawan Lembur', options: { bold: true, fill: '4C1D95', color: C_WHITE } },
+                        { text: 'Divisi', options: { bold: true, fill: '4C1D95', color: C_WHITE } },
+                        { text: 'Nominal', options: { bold: true, fill: '4C1D95', color: C_WHITE, align: 'right' } }
+                    ]
+                ];
+                topOtEmp.forEach((e, idx) => {
+                    const bg = idx % 2 === 0 ? C_WHITE : 'F5F3FF';
+                    empOtTable.push([
+                        { text: `${idx + 1}. ${e.nama}`, options: { bold: true, fill: bg } },
+                        { text: e.div, options: { fill: bg, color: C_SLATE } },
+                        { text: formatIDR(e.total), options: { bold: true, fill: bg, align: 'right', color: '5B21B6' } }
+                    ]);
+                });
+                if (topOtEmp.length === 0) empOtTable.push([{ text: 'Tidak ada data lembur karyawan.', options: { colspan: 3, align: 'center', fill: C_WHITE } }]);
+
+                s6.addTable(divOtTable, {
+                    x: 0.6, y: 1.35, w: 5.85,
+                    border: { type: 'solid', pt: 0.5, color: C_BORDER },
+                    fontSize: 10, fontFace: 'Calibri',
                     colW: [3.55, 2.3]
                 });
 
-                const top5EmpOT = Object.values(karyawanLemburMap).sort((a, b) => b.total - a.total).slice(0, 5);
-                const tblEmpOT = [
-                    [{ text: 'Top 5 Karyawan Lembur Tertinggi', options: { bold: true, fill: '7E22CE', color: C_WHITE, colspan: 3 } }],
-                    [
-                        { text: 'Nama Karyawan', options: { bold: true, fill: 'FAF5FF' } },
-                        { text: 'Divisi', options: { bold: true, fill: 'FAF5FF' } },
-                        { text: 'Total Lembur', options: { bold: true, fill: 'FAF5FF', align: 'right' } }
-                    ]
-                ];
-                top5EmpOT.forEach(emp => {
-                    tblEmpOT.push([
-                        { text: emp.nama, options: { bold: true } },
-                        { text: emp.divisi, options: { fontSize: 9 } },
-                        { text: formatIDR(emp.total), options: { align: 'right', color: '7E22CE', bold: true } }
-                    ]);
+                s6.addTable(empOtTable, {
+                    x: 6.85, y: 1.35, w: 5.883,
+                    border: { type: 'solid', pt: 0.5, color: C_BORDER },
+                    fontSize: 10, fontFace: 'Calibri',
+                    colW: [2.383, 1.7, 1.8]
                 });
-                if (top5EmpOT.length === 0) tblEmpOT.push([{ text: 'Tidak ada data lembur', options: { colspan: 3, align: 'center' } }]);
 
-                slide7.addTable(tblEmpOT, {
-                    x: 6.65, y: 1.45, w: 6.13,
-                    fontSize: 10, color: C_TEXT,
-                    border: { pt: 0.5, color: 'CBD5E1' },
-                    fill: { color: C_WHITE },
-                    colW: [2.25, 1.88, 2.0]
-                });
+                addSlideFooter(s6, pageCounter);
             }
 
-            // SLIDE 7 (Halaman 8): REKAPITULASI BIAYA PENGGAJIAN PER DIVISI (TOP 10)
+            // SLIDE 07: Rekapitulasi per Divisi (Top 10)
             if (selectedSlides.has('division')) {
-                const slide8 = pres.addSlide();
-                addSlideHeader(slide8, '7. Rekapitulasi Biaya Penggajian per Divisi (Top 10)', 'Perbandingan beban Gapok, Tunjangan, Lembur, Potongan, dan THP berdasarkan divisi');
+                pageCounter++;
+                const s7 = pptx.addSlide();
+                addSlideHeader(s7, 'SLIDE 07 • REKAPITULASI DIVISI', 'Top 10 Divisi Berdasarkan Total THP', 'Perbandingan beban biaya gaji per divisi');
 
-                const divAnalysisMap = {};
-                filtered.forEach(row => {
-                    const div = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Unassigned');
-                    const idK = row[3] ? row[3].trim() : '';
-                    if (!divAnalysisMap[div]) divAnalysisMap[div] = { kar: new Set(), gapok: 0, tunj: 0, lembur: 0, kew: 0, thp: 0 };
-                    if (idK) divAnalysisMap[div].kar.add(idK);
-                    divAnalysisMap[div].gapok += calcRowGapok(row);
-                    divAnalysisMap[div].tunj += calcRowTunjangan(row);
-                    divAnalysisMap[div].lembur += (parseNum(row[10]) + parseNum(row[11]));
-                    divAnalysisMap[div].kew += calcRowKewajiban(row);
-                    divAnalysisMap[div].thp += parseNum(row[26]);
-                });
-
-                const divTbl = [
+                const divSorted = Object.entries(divMap).sort((a, b) => b[1].thp - a[1].thp).slice(0, 10);
+                const divRows = [
                     [
-                        { text: 'Divisi', options: { bold: true, fill: C_DARK, color: C_WHITE } },
-                        { text: 'Jml', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'center' } },
-                        { text: 'Gaji Pokok', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } },
-                        { text: 'Tunjangan', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } },
-                        { text: 'Lembur', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } },
-                        { text: 'Potongan', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } },
-                        { text: 'Total THP', options: { bold: true, fill: C_DARK, color: C_WHITE, align: 'right' } }
+                        { text: 'Divisi', options: { bold: true, fill: C_NAVY, color: C_WHITE } },
+                        { text: 'Karyawan', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'center' } },
+                        { text: 'Gapok', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Tunjangan', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Lembur', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Potongan', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } },
+                        { text: 'Total THP', options: { bold: true, fill: C_NAVY, color: C_WHITE, align: 'right' } }
                     ]
                 ];
-                Object.entries(divAnalysisMap).sort((a, b) => b[1].thp - a[1].thp).slice(0, 10).forEach(([dName, info]) => {
-                    divTbl.push([
-                        { text: dName, options: { bold: true } },
-                        { text: `${info.kar.size}`, options: { align: 'center' } },
-                        { text: formatIDR(info.gapok), options: { align: 'right' } },
-                        { text: formatIDR(info.tunj), options: { align: 'right' } },
-                        { text: formatIDR(info.lembur), options: { align: 'right' } },
-                        { text: formatIDR(info.kew), options: { align: 'right', color: C_ROSE } },
-                        { text: formatIDR(info.thp), options: { align: 'right', bold: true, color: C_DARK } }
+
+                divSorted.forEach(([dName, info], idx) => {
+                    const bg = idx % 2 === 0 ? C_WHITE : 'F8FAFC';
+                    divRows.push([
+                        { text: dName, options: { bold: true, fill: bg } },
+                        { text: `${info.emp.size}`, options: { fill: bg, align: 'center' } },
+                        { text: formatIDR(info.gapok), options: { fill: bg, align: 'right' } },
+                        { text: formatIDR(info.tunj), options: { fill: bg, align: 'right' } },
+                        { text: formatIDR(info.lembur), options: { fill: bg, align: 'right' } },
+                        { text: formatIDR(info.kew), options: { fill: bg, align: 'right', color: 'BE123C' } },
+                        { text: formatIDR(info.thp), options: { bold: true, fill: bg, align: 'right', color: 'B45309' } }
                     ]);
                 });
-                slide8.addTable(divTbl, {
-                    x: 0.55, y: 1.4, w: 12.23,
-                    fontSize: 9.5, color: C_TEXT,
-                    border: { pt: 0.5, color: 'CBD5E1' },
-                    fill: { color: C_WHITE },
-                    colW: [3.08, 0.7, 1.75, 1.65, 1.55, 1.65, 1.9]
+
+                s7.addTable(divRows, {
+                    x: 0.6, y: 1.2, w: 12.133,
+                    border: { type: 'solid', pt: 0.5, color: C_BORDER },
+                    fontSize: 9, fontFace: 'Calibri',
+                    colW: [3.233, 1.0, 1.6, 1.6, 1.5, 1.5, 1.7]
                 });
+
+                addSlideFooter(s7, pageCounter);
             }
 
-            // SLIDE 8 (Halaman 9): RINGKASAN OPERASIONAL SLA & PENUTUP
+            // SLIDE 08: Ringkasan Operasional SLA & Penutup
             if (selectedSlides.has('sla')) {
-                const slide9 = pres.addSlide();
-                addSlideHeader(slide9, '8. Ringkasan Operasional SLA & Penutup', 'Evaluasi ketepatan jadwal proses payroll (SLA) dan penyelesaian tiket komplain');
+                pageCounter++;
+                const s8 = pptx.addSlide();
+                addSlideHeader(s8, 'SLIDE 08 • OPERASIONAL SLA & PENUTUP', 'Evaluasi SLA Payroll Timeline & Tiket Komplain', 'Ringkasan operasional HR Payroll');
 
-                const tlRows = getFilteredTimelineData();
-                let countSLA = 0, countOverSLA = 0;
-                tlRows.forEach(r => {
-                    const s = r.join(' ').toLowerCase();
-                    if (s.includes('oversla')) countOverSLA++;
-                    else if (s.includes('sla')) countSLA++;
+                let slaCount = 0, overSlaCount = 0;
+                localTimelineRecords.forEach(rec => {
+                    const st = getTimelineRowValue(rec, ['sla', 'status', 'ketepatan', 'keterangan'], 6).toLowerCase();
+                    if (st.includes('oversla') || st.includes('over sla') || st.includes('terlambat')) overSlaCount++;
+                    else if (st.includes('sla') || st.includes('tepat')) slaCount++;
                 });
 
-                const slaPct = tlRows.length > 0 ? ((countSLA / tlRows.length) * 100).toFixed(1) : '0.0';
-
-                const adjRows = getFilteredComplainanData();
-                let adjOpen = 0, adjProses = 0, adjSelesai = 0;
-                adjRows.forEach(r => {
-                    const s = r.join(' ').toLowerCase();
-                    if (s.includes('selesai')) adjSelesai++;
-                    else if (s.includes('proses')) adjProses++;
-                    else if (s.includes('open')) adjOpen++;
+                let openCount = 0, prosesCount = 0, selesaiCount = 0;
+                localAdjustmentRecords.forEach(rec => {
+                    const st = getComplainRowValue(rec, ['status'], 7).toLowerCase();
+                    if (st.includes('selesai') || st.includes('done') || st.includes('closed')) selesaiCount++;
+                    else if (st.includes('proses') || st.includes('progress')) prosesCount++;
+                    else if (st.includes('open') || st.includes('baru')) openCount++;
                 });
 
-                slide9.addShape(pres.ShapeType.roundRect, { x: 0.55, y: 1.48, w: 5.85, h: 2.35, fill: { color: C_WHITE }, line: { color: 'CBD5E1', width: 1 } });
-                slide9.addShape(pres.ShapeType.rect, { x: 0.55, y: 1.48, w: 5.85, h: 0.08, fill: { color: '0891B2' } });
-                slide9.addText(`Kinerja Payroll Timeline (${slaPct}% On-Time)`, { x: 0.8, y: 1.68, w: 5.35, h: 0.35, fontSize: 13, bold: true, color: C_DARK });
-                slide9.addText(`• Total Tahapan Tercatat: ${tlRows.length} Aktivitas\n• Tepat Waktu (SLA): ${countSLA} Aktivitas\n• Terlambat (OverSLA): ${countOverSLA} Aktivitas`, { x: 0.8, y: 2.15, w: 5.35, h: 1.4, fontSize: 11.5, color: C_TEXT, lineSpacing: 22 });
+                s8.addShape(pptx.ShapeType.roundRect, {
+                    x: 0.6, y: 1.3, w: 5.85, h: 2.75, rectRadius: 0.1,
+                    fill: { color: C_WHITE }, line: { color: C_BORDER, width: 1 }
+                });
+                s8.addText('PAYROLL TIMELINE (SLA)', { x: 0.85, y: 1.5, w: 5.3, h: 0.35, fontSize: 12, bold: true, color: C_NAVY, fontFace: 'Calibri' });
+                s8.addText(`• Tepat Waktu (SLA): ${slaCount} tahapan\n• Terlambat (OverSLA): ${overSlaCount} tahapan\n• Total Tahapan Tercatat: ${localTimelineRecords.length} data`, {
+                    x: 0.85, y: 1.98, w: 5.3, h: 1.75, fontSize: 11.5, color: C_SLATE, fontFace: 'Calibri'
+                });
 
-                slide9.addShape(pres.ShapeType.roundRect, { x: 6.65, y: 1.48, w: 6.13, h: 2.35, fill: { color: C_WHITE }, line: { color: 'CBD5E1', width: 1 } });
-                slide9.addShape(pres.ShapeType.rect, { x: 6.65, y: 1.48, w: 6.13, h: 0.08, fill: { color: C_GOLD_LIGHT } });
-                slide9.addText('Rekapitulasi Payroll Complaint', { x: 6.9, y: 1.68, w: 5.6, h: 0.35, fontSize: 13, bold: true, color: C_DARK });
-                slide9.addText(`• Total Tiket Komplain: ${adjRows.length} Tiket\n• Selesai Diproses: ${adjSelesai} Tiket\n• Dalam Proses / Open: ${adjProses + adjOpen} Tiket`, { x: 6.9, y: 2.15, w: 5.6, h: 1.4, fontSize: 11.5, color: C_TEXT, lineSpacing: 22 });
+                s8.addShape(pptx.ShapeType.roundRect, {
+                    x: 6.85, y: 1.3, w: 5.883, h: 2.75, rectRadius: 0.1,
+                    fill: { color: C_WHITE }, line: { color: C_BORDER, width: 1 }
+                });
+                s8.addText('TIKET KOMPLAIN / ADJUSTMENT', { x: 7.1, y: 1.5, w: 5.3, h: 0.35, fontSize: 12, bold: true, color: C_NAVY, fontFace: 'Calibri' });
+                s8.addText(`• Status Open: ${openCount} tiket\n• Status Proses: ${prosesCount} tiket\n• Status Selesai: ${selesaiCount} tiket`, {
+                    x: 7.1, y: 1.98, w: 5.3, h: 1.75, fontSize: 11.5, color: C_SLATE, fontFace: 'Calibri'
+                });
 
-                slide9.addShape(pres.ShapeType.roundRect, { x: 0.55, y: 4.15, w: 12.23, h: 2.3, fill: { color: C_DARK }, line: { color: C_GOLD_LIGHT, width: 1.5 } });
-                slide9.addText('TERIMA KASIH', { x: 0.55, y: 4.42, w: 12.23, h: 0.45, fontSize: 21, bold: true, color: C_GOLD_LIGHT, align: 'center' });
-                slide9.addText('Disusun oleh: Kiki Putriani & Arlina Rozzafitri', { x: 0.55, y: 4.92, w: 12.23, h: 0.35, fontSize: 12, bold: true, color: C_WHITE, align: 'center' });
-                slide9.addText(`Laporan HR Payroll ini dihasilkan secara otomatis untuk ${scopeText}.\nSeluruh angka telah disesuaikan dengan filter aktif pada Portal Report Payroll — PT Raja Emas Indonesia.`, { x: 1.0, y: 5.35, w: 11.33, h: 0.75, fontSize: 10.5, color: 'CBD5E1', align: 'center' });
+                s8.addShape(pptx.ShapeType.roundRect, {
+                    x: 0.6, y: 4.35, w: 12.133, h: 2.3, rectRadius: 0.12,
+                    fill: { color: C_NAVY }
+                });
+                s8.addText('Terima Kasih', { x: 0.9, y: 4.65, w: 11.5, h: 0.5, fontSize: 22, bold: true, color: 'FBBF24', fontFace: 'Calibri' });
+                s8.addText('REPORT HR PAYROLL  •  Disusun oleh: Kiki Putriani & Arlina Rozzafitri\nPT Raja Emas Indonesia — “Terima Emas Harga Tinggi”', {
+                    x: 0.9, y: 5.25, w: 11.5, h: 0.9, fontSize: 12, color: C_WHITE, fontFace: 'Calibri'
+                });
+
+                addSlideFooter(s8, pageCounter);
             }
 
-            const safeFileName = `HR_Payroll_Report_${scopeText.replace(/[^a-zA-Z0-9_-]/g, '_')}.pptx`;
-            if (typeof pres.writeFile === 'function') {
-                const writeResult = pres.writeFile({ fileName: safeFileName });
-                if (writeResult && typeof writeResult.then === 'function') {
-                    writeResult.then(() => {
-                        showToast(`Presentasi ${safeFileName} (${selectedSlides.size + 1} slide) berhasil diunduh.`, 'success');
-                    }).catch((writeErr) => {
-                        console.error('PPTX writeFile promise error:', writeErr);
-                        showToast('Gagal mengunduh file PPTX. Silakan coba lagi.', 'error');
-                    });
-                } else {
-                    showToast(`Presentasi ${safeFileName} (${selectedSlides.size + 1} slide) berhasil diunduh.`, 'success');
-                }
-            } else {
-                showToast('Fungsi writeFile tidak tersedia pada PptxGenJS.', 'error');
-            }
+            const safePeriod = periodeLabel.replace(/[^a-zA-Z0-9_-]/g, '_');
+            const fileName = `Report_HR_Payroll_${safePeriod}_${new Date().toISOString().split('T')[0]}.pptx`;
+            await pptx.writeFile({ fileName });
+            showToast(`Presentasi (${selectedSlides.size} slide) berhasil diunduh: ${fileName}`, 'success');
         } catch (err) {
-            console.error("PPTX generation error:", err);
-            showToast(`Terjadi kesalahan saat membuat file PowerPoint: ${err && err.message ? err.message : 'Error tidak diketahui'}`, 'error');
-        }
-    }
-
-    // ================= EXPORT EXCEL =================
-    function getActiveReportMetadata() {
-        const fPeriodeSelect = document.getElementById('filter-periode');
-        const selectedPeriode = fPeriodeSelect && fPeriodeSelect.selectedIndex >= 0 ? fPeriodeSelect.options[fPeriodeSelect.selectedIndex].text : 'Semua Bulan';
-        const selectedTahun = document.getElementById('filter-tahun')?.value || 'ALL';
-        const selectedPerusahaan = document.getElementById('filter-perusahaan')?.value || 'ALL';
-        const selectedDivisi = document.getElementById('filter-divisi')?.value || 'ALL';
-        const periodeLabel = selectedPeriode !== 'Semua Bulan' ? selectedPeriode : (selectedTahun !== 'ALL' ? selectedTahun : 'Semua Periode');
-        const entitasLabel = selectedPerusahaan !== 'ALL' ? selectedPerusahaan : 'Seluruh Perusahaan';
-        const divisiLabel = selectedDivisi !== 'ALL' ? selectedDivisi : 'Seluruh Divisi';
-        const generatedAt = new Date().toLocaleString('id-ID', {
-            weekday: 'long',
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        return {
-            companyName: 'PT RAJA EMAS INDONESIA',
-            departmentName: 'Divisi Human Resources & Payroll Operations (REPORT HR PAYROLL)',
-            preparedBy: 'Kiki Putriani & Arlina Rozzafitri',
-            periodeLabel,
-            entitasLabel,
-            divisiLabel,
-            generatedAt
-        };
-    }
-
-    function applyAutoColumnWidths(worksheet, rowsMatrix, minWidth = 12, maxWidth = 44) {
-        if (!worksheet || !Array.isArray(rowsMatrix) || rowsMatrix.length === 0) return;
-        const colCount = rowsMatrix.reduce((max, r) => Math.max(max, Array.isArray(r) ? r.length : 0), 0);
-        const colWidths = [];
-
-        for (let c = 0; c < colCount; c++) {
-            let maxLen = minWidth;
-            for (let r = 4; r < rowsMatrix.length; r++) {
-                const row = rowsMatrix[r];
-                if (!Array.isArray(row)) continue;
-                const cellVal = row[c];
-                if (cellVal === undefined || cellVal === null) continue;
-                const strLen = cellVal.toString().length + 3;
-                if (strLen > maxLen) maxLen = strLen;
+            console.error("downloadPPTX error:", err);
+            showToast('Gagal membuat file PPTX: ' + (err.message || err), 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML || '<i class="fa-solid fa-download"></i> Generate & Download (.pptx)';
             }
-            colWidths.push({ wch: Math.min(maxWidth, Math.max(minWidth, maxLen)) });
         }
-        worksheet['!cols'] = colWidths;
-    }
-
-    function createStyledReportWorkbook(sheetName, reportTitle, headers, bodyRows, totalRow, numericCols = []) {
-        const meta = getActiveReportMetadata();
-        const totalCols = Math.max(headers.length, 4);
-
-        const padRow = (arr) => {
-            const copy = arr.slice(0, totalCols);
-            while (copy.length < totalCols) copy.push('');
-            return copy;
-        };
-
-        const matrix = [
-            padRow([`${meta.companyName} — ${reportTitle.toUpperCase()}`]),
-            padRow([`Periode: ${meta.periodeLabel}  |  Entitas: ${meta.entitasLabel}  |  Divisi: ${meta.divisiLabel}`]),
-            padRow([`${meta.departmentName}  |  Disusun oleh: ${meta.preparedBy}`]),
-            padRow([`Dicetak pada: ${meta.generatedAt}  |  Total Baris Data: ${bodyRows.length}`]),
-            padRow(headers)
-        ];
-
-        bodyRows.forEach(r => matrix.push(padRow(r)));
-        if (totalRow && totalRow.length > 0) {
-            matrix.push(padRow(totalRow));
-        }
-
-        const worksheet = XLSX.utils.aoa_to_sheet(matrix);
-
-        // Merge kop laporan di baris 0..3 agar tampak seperti laporan resmi eksekutif
-        if (totalCols > 1) {
-            worksheet['!merges'] = [
-                { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } },
-                { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } },
-                { s: { r: 2, c: 0 }, e: { r: 2, c: totalCols - 1 } },
-                { s: { r: 3, c: 0 }, e: { r: 3, c: totalCols - 1 } }
-            ];
-        }
-
-        // Format numerik pada kolom angka (mulai baris header + 1 sampai akhir)
-        const startDataRow = 5;
-        const endRow = matrix.length - 1;
-        numericCols.forEach(colIdx => {
-            if (colIdx < 0 || colIdx >= totalCols) return;
-            for (let r = startDataRow; r <= endRow; r++) {
-                const cellRef = XLSX.utils.encode_cell({ r, c: colIdx });
-                const cell = worksheet[cellRef];
-                if (cell && typeof cell.v === 'number') {
-                    cell.t = 'n';
-                    cell.z = '#,##0';
-                }
-            }
-        });
-
-        applyAutoColumnWidths(worksheet, matrix);
-
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName.slice(0, 31));
-        return workbook;
-    }
-
-    function exportTimelineToExcel() {
-        const filtered = getFilteredTimelineData();
-        if (filtered.length === 0) {
-            showToast('Tidak ada data timeline untuk diunduh.', 'warning');
-            return;
-        }
-        const headers = ['No', ...(rawTimelineHeaders.length > 0 ? rawTimelineHeaders.map((h, i) => h || `Kolom ${i + 1}`) : ['Data'])];
-        const bodyRows = filtered.map((row, idx) => [
-            idx + 1,
-            ...headers.slice(1).map((_, i) => row[i] !== undefined && row[i] !== null ? row[i].toString().trim() : '')
-        ]);
-        const totalRow = ['TOTAL', `${filtered.length} Aktivitas Tercatat`, ...new Array(Math.max(0, headers.length - 2)).fill('')];
-
-        const workbook = createStyledReportWorkbook(
-            'Payroll Timeline',
-            'Laporan Monitoring SLA & Payroll Timeline',
-            headers,
-            bodyRows,
-            totalRow,
-            [0]
-        );
-        const fileName = `Laporan_Payroll_Timeline_${new Date().toISOString().split('T')[0]}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
-        showToast('Laporan Payroll Timeline berhasil diunduh.', 'success');
-    }
-
-    function exportAdjustmentToExcel() {
-        const filtered = getFilteredComplainanData();
-        if (filtered.length === 0) {
-            showToast('Tidak ada data komplain untuk diunduh.', 'warning');
-            return;
-        }
-        const headers = ['No', ...(rawComplainHeaders.length > 0 ? rawComplainHeaders.map((h, i) => h || `Kolom ${i + 1}`) : ['Data'])];
-        const bodyRows = filtered.map((row, idx) => [
-            idx + 1,
-            ...headers.slice(1).map((_, i) => row[i] !== undefined && row[i] !== null ? row[i].toString().trim() : '')
-        ]);
-        const totalRow = ['TOTAL', `${filtered.length} Tiket Komplain`, ...new Array(Math.max(0, headers.length - 2)).fill('')];
-
-        const workbook = createStyledReportWorkbook(
-            'Payroll Complaint',
-            'Laporan Tiket Komplain & Penyesuaian Gaji',
-            headers,
-            bodyRows,
-            totalRow,
-            [0]
-        );
-        const fileName = `Laporan_Payroll_Complaint_${new Date().toISOString().split('T')[0]}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
-        showToast('Laporan Payroll Complaint berhasil diunduh.', 'success');
-    }
-
-    function exportLoanToExcel() {
-        const filtered = getFilteredLoanData();
-        if (filtered.length === 0) {
-            showToast('Tidak ada data loan untuk diunduh pada filter saat ini.', 'warning');
-            return;
-        }
-        const empMetaMap = getEmployeeMetaMap();
-        const headers = [
-            'No',
-            'Nama Karyawan',
-            'NIP',
-            'Divisi',
-            'Posisi',
-            'Bulan / Periode',
-            'Total Kewajiban / Pinjaman (Rp)',
-            'Total Pembayaran Setahun (Rp)',
-            'Total Tenor',
-            'Angsuran per Bulan (Rp)',
-            'Sisa Tenor',
-            'Sisa Pinjaman (Rp)',
-            'Status'
-        ];
-
-        let sumPinjaman = 0, sumBayar = 0, sumAngsuran = 0, sumSisa = 0;
-
-        const bodyRows = filtered.map((row, idx) => {
-            const nip = row[3] ? row[3].trim() : '';
-            const meta = empMetaMap[nip.toLowerCase()] || { divisi: '-', posisi: '-' };
-            const pinjamanVal = parseNum(row[8]);
-            const bayarVal = parseNum(row[9]);
-            const angsuranVal = parseNum(row[9]);
-            const sisaVal = parseNum(row[10]);
-
-            sumPinjaman += pinjamanVal;
-            sumBayar += bayarVal;
-            sumAngsuran += angsuranVal;
-            sumSisa += sisaVal;
-
-            return [
-                idx + 1,
-                row[4] ? row[4].trim() : '-',
-                nip || '-',
-                meta.divisi || '-',
-                meta.posisi || '-',
-                getLoanRowPeriodLabel(row),
-                pinjamanVal,
-                bayarVal,
-                row[6] ? row[6].trim() : '-',
-                angsuranVal,
-                row[7] ? row[7].trim() : '-',
-                sisaVal,
-                row[14] ? row[14].trim() : '-'
-            ];
-        });
-
-        const totalRow = [
-            'GRAND TOTAL',
-            `${filtered.length} Transaksi`,
-            '', '', '', '',
-            sumPinjaman,
-            sumBayar,
-            '',
-            sumAngsuran,
-            '',
-            sumSisa,
-            ''
-        ];
-
-        const workbook = createStyledReportWorkbook(
-            'Data Loan Karyawan',
-            'Laporan Monitoring Pinjaman Karyawan (Loan)',
-            headers,
-            bodyRows,
-            totalRow,
-            [0, 6, 7, 9, 11]
-        );
-        const fileName = `Laporan_Loan_Karyawan_${new Date().toISOString().split('T')[0]}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
-        showToast('Laporan Loan Karyawan berhasil diunduh.', 'success');
-    }
-
-    function downloadReportExcel(type) {
-        const filtered = getFilteredData();
-        if (type === 'loan') {
-            exportLoanToExcel();
-            return;
-        }
-        if (filtered.length === 0) {
-            showToast('Tidak ada data untuk diunduh sesuai filter saat ini.', 'warning');
-            return;
-        }
-
-        const dateStamp = new Date().toISOString().split('T')[0];
-        let workbook = null;
-        let fileName = `Laporan_Payroll_${dateStamp}.xlsx`;
-
-        if (type === 'summary') {
-            fileName = `Laporan_Payroll_Summary_${dateStamp}.xlsx`;
-            const headers = [
-                'No', 'Periode', 'ID Karyawan', 'Nama Karyawan', 'Perusahaan', 'Divisi', 'Posisi', 'Cabang',
-                'Gaji Pokok (Rp)', 'Lembur (Rp)', 'Total Tunjangan (Rp)', 'Total Kewajiban (Rp)',
-                'Total Gross (Rp)', 'Take Home Pay (Rp)'
-            ];
-            let sumGapok = 0, sumLembur = 0, sumTunj = 0, sumKew = 0, sumGross = 0, sumThp = 0;
-
-            const bodyRows = filtered.map((row, idx) => {
-                const gapokVal = calcRowGapok(row);
-                const lemburVal = parseNum(row[10]) + parseNum(row[11]);
-                const tunjanganVal = calcRowTunjangan(row);
-                const kewajibanVal = calcRowKewajiban(row);
-                const grossVal = calcRowGross(row);
-                const thpVal = parseNum(row[26]);
-
-                sumGapok += gapokVal;
-                sumLembur += lemburVal;
-                sumTunj += tunjanganVal;
-                sumKew += kewajibanVal;
-                sumGross += grossVal;
-                sumThp += thpVal;
-
-                return [
-                    idx + 1, row[1] || '-', row[3] || '-', row[2] || '-',
-                    row[4] || '-', row[27] || '-', row[5] || '-', row[6] || '-',
-                    gapokVal, lemburVal, tunjanganVal, kewajibanVal, grossVal, thpVal
-                ];
-            });
-
-            const totalRow = [
-                'GRAND TOTAL', '', '', `${filtered.length} Karyawan`, '', '', '', '',
-                sumGapok, sumLembur, sumTunj, sumKew, sumGross, sumThp
-            ];
-
-            workbook = createStyledReportWorkbook(
-                'Payroll Summary',
-                'Laporan Ringkasan Penggajian Karyawan (Payroll Summary)',
-                headers,
-                bodyRows,
-                totalRow,
-                [0, 8, 9, 10, 11, 12, 13]
-            );
-        } else if (type === 'allowance') {
-            fileName = `Laporan_Allowance_Benefit_${dateStamp}.xlsx`;
-            const headers = [
-                'No', 'Periode', 'ID Karyawan', 'Nama Karyawan', 'Perusahaan', 'Divisi', 'Posisi',
-                ...allowanceHeaders,
-                'Total Gross (H-Q) (Rp)'
-            ];
-            const colSums = new Array(allowanceIndices.length).fill(0);
-            let grandGross = 0;
-
-            const bodyRows = filtered.map((row, idx) => {
-                let rowTotal = 0;
-                const vals = allowanceIndices.map((colIdx, i) => {
-                    const val = parseNum(row[colIdx]);
-                    colSums[i] += val;
-                    rowTotal += val;
-                    return val;
-                });
-                grandGross += rowTotal;
-
-                return [
-                    idx + 1, row[1] || '-', row[3] || '-', row[2] || '-',
-                    row[4] || '-', row[27] || '-', row[5] || '-',
-                    ...vals,
-                    rowTotal
-                ];
-            });
-
-            const totalRow = [
-                'GRAND TOTAL', '', '', `${filtered.length} Karyawan`, '', '', '',
-                ...colSums,
-                grandGross
-            ];
-            const numericCols = [0, ...allowanceIndices.map((_, i) => 7 + i), 7 + allowanceIndices.length];
-
-            workbook = createStyledReportWorkbook(
-                'Allowance & Benefit',
-                'Laporan Rincian Allowance & Benefit Karyawan',
-                headers,
-                bodyRows,
-                totalRow,
-                numericCols
-            );
-        } else if (type === 'kewajiban') {
-            fileName = `Laporan_Kewajiban_${dateStamp}.xlsx`;
-            const headers = [
-                'No', 'Periode', 'ID Karyawan', 'Nama Karyawan', 'Perusahaan', 'Divisi', 'Posisi',
-                ...kewajibanHeaders,
-                'Total Kewajiban (Rp)'
-            ];
-            const colSums = new Array(kewajibanIndices.length).fill(0);
-            let grandKew = 0;
-
-            const bodyRows = filtered.map((row, idx) => {
-                let rowTotal = 0;
-                const vals = kewajibanIndices.map((colIdx, i) => {
-                    const val = parseNum(row[colIdx]);
-                    colSums[i] += val;
-                    rowTotal += val;
-                    return val;
-                });
-                grandKew += rowTotal;
-
-                return [
-                    idx + 1, row[1] || '-', row[3] || '-', row[2] || '-',
-                    row[4] || '-', row[27] || '-', row[5] || '-',
-                    ...vals,
-                    rowTotal
-                ];
-            });
-
-            const totalRow = [
-                'GRAND TOTAL', '', '', `${filtered.length} Karyawan`, '', '', '',
-                ...colSums,
-                grandKew
-            ];
-            const numericCols = [0, ...kewajibanIndices.map((_, i) => 7 + i), 7 + kewajibanIndices.length];
-
-            workbook = createStyledReportWorkbook(
-                'Kewajiban',
-                'Laporan Rincian Kewajiban & Potongan Karyawan',
-                headers,
-                bodyRows,
-                totalRow,
-                numericCols
-            );
-        } else if (type === 'overtime') {
-            fileName = `Laporan_Overtime_Cost_${dateStamp}.xlsx`;
-            const otFiltered = filtered
-                .map(row => ({
-                    row,
-                    fullday: parseNum(row[10]),
-                    longshift: parseNum(row[11]),
-                    total: parseNum(row[10]) + parseNum(row[11])
-                }))
-                .filter(item => item.total > 0)
-                .sort((a, b) => b.total - a.total);
-
-            if (otFiltered.length === 0) {
-                showToast('Tidak ada data biaya lembur pada filter saat ini.', 'warning');
-                return;
-            }
-
-            const headers = [
-                'No', 'Periode', 'ID Karyawan', 'Nama Karyawan', 'Perusahaan', 'Divisi', 'Posisi',
-                'Lembur Fullday (Rp)', 'Lembur Longshift (Rp)', 'Total Lembur (Rp)'
-            ];
-            let sumFull = 0, sumLong = 0, sumTot = 0;
-
-            const bodyRows = otFiltered.map(({ row, fullday, longshift, total }, idx) => {
-                sumFull += fullday;
-                sumLong += longshift;
-                sumTot += total;
-                return [
-                    idx + 1, row[1] || '-', row[3] || '-', row[2] || '-',
-                    row[4] || '-', row[27] || '-', row[5] || '-',
-                    fullday, longshift, total
-                ];
-            });
-
-            const totalRow = [
-                'GRAND TOTAL', '', '', `${otFiltered.length} Karyawan Lembur`, '', '', '',
-                sumFull, sumLong, sumTot
-            ];
-
-            workbook = createStyledReportWorkbook(
-                'Overtime Cost',
-                'Laporan Analisis Biaya Lembur (Overtime Cost)',
-                headers,
-                bodyRows,
-                totalRow,
-                [0, 7, 8, 9]
-            );
-        } else if (type === 'cost') {
-            fileName = `Laporan_Cost_Analysis_${dateStamp}.xlsx`;
-            const costMap = {};
-            let grandTHP = 0;
-
-            filtered.forEach(row => {
-                const idK = row[3] ? row[3].trim() : '';
-                const div = row[27] ? row[27].trim() : (row[5] ? row[5].trim() : 'Unassigned');
-                if (!costMap[div]) costMap[div] = { kar: new Set(), gapok: 0, tunj: 0, kew: 0, lembur: 0, thp: 0 };
-                if (idK) costMap[div].kar.add(idK);
-                const thpRow = parseNum(row[26]);
-                costMap[div].gapok += calcRowGapok(row);
-                costMap[div].tunj += calcRowTunjangan(row);
-                costMap[div].kew += calcRowKewajiban(row);
-                costMap[div].lembur += (parseNum(row[10]) + parseNum(row[11]));
-                costMap[div].thp += thpRow;
-                grandTHP += thpRow;
-            });
-
-            const sortedDivs = Object.entries(costMap).sort((a, b) => b[1].thp - a[1].thp);
-            const headers = [
-                'Rank', 'Nama Divisi', 'Jumlah Karyawan', 'Total Gapok (Rp)',
-                'Total Tunjangan (Rp)', 'Total Kewajiban (Rp)', 'Total Lemburan (Rp)',
-                'Total THP (Rp)', 'Kontribusi THP (%)'
-            ];
-
-            let sumKar = 0, sumGapok = 0, sumTunj = 0, sumKew = 0, sumLembur = 0, sumThp = 0;
-            const bodyRows = sortedDivs.map(([div, info], idx) => {
-                sumKar += info.kar.size;
-                sumGapok += info.gapok;
-                sumTunj += info.tunj;
-                sumKew += info.kew;
-                sumLembur += info.lembur;
-                sumThp += info.thp;
-                const sharePct = grandTHP > 0 ? Number(((info.thp / grandTHP) * 100).toFixed(2)) : 0;
-                return [
-                    idx + 1, div, info.kar.size, info.gapok,
-                    info.tunj, info.kew, info.lembur, info.thp, `${sharePct.toFixed(2)}%`
-                ];
-            });
-
-            const totalRow = [
-                'GRAND TOTAL', `${sortedDivs.length} Divisi`, sumKar, sumGapok,
-                sumTunj, sumKew, sumLembur, sumThp, '100.00%'
-            ];
-
-            workbook = createStyledReportWorkbook(
-                'Cost Analysis',
-                'Laporan Analisis Biaya Penggajian per Divisi',
-                headers,
-                bodyRows,
-                totalRow,
-                [0, 2, 3, 4, 5, 6, 7]
-            );
-        } else if (type === 'database') {
-            fileName = `Database_Payroll_${dateStamp}.xlsx`;
-            const rawCols = headerRow.length > 0 ? headerRow.map((h, i) => h || `Kolom ${i + 1}`) : ['Data'];
-            const headers = ['No', ...rawCols];
-            const bodyRows = filtered.map((row, idx) => [
-                idx + 1,
-                ...rawCols.map((_, i) => row[i] !== undefined && row[i] !== null ? row[i].toString().trim() : '')
-            ]);
-            const totalRow = ['TOTAL', `${filtered.length} Baris Database`, ...new Array(Math.max(0, headers.length - 2)).fill('')];
-
-            workbook = createStyledReportWorkbook(
-                'Database Payroll',
-                'Laporan Database Mentah Penggajian Karyawan',
-                headers,
-                bodyRows,
-                totalRow,
-                [0]
-            );
-        }
-
-        if (!workbook) {
-            showToast('Jenis laporan Excel tidak dikenali.', 'error');
-            return;
-        }
-
-        XLSX.writeFile(workbook, fileName);
-        showToast(`File ${fileName} berhasil diunduh.`, 'success');
     }
 </script>
 </body>
